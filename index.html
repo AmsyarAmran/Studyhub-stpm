@@ -72,9 +72,110 @@
 </div>
 <script>
 // Masukkan bahan sebenar di sini. Pastikan pautan PDF/Drive telah diuji.
-const papers = [
- // Contoh format:
- // {state:"Kelantan", subject:"PAM", year:"2026", semester:"Sem 1", title:"Kertas Percubaan", url:"https://..."}
+const negeri = [
+  "Johor", "Kedah", "Kelantan", "Melaka",
+  "Negeri Sembilan", "Pahang", "Perak", "Perlis",
+  "Pulau Pinang", "Sabah", "Sarawak", "Selangor",
+  "Terengganu", "WP Kuala Lumpur", "WP Putrajaya"
+];
+
+const dataFolders = [
+  ["PAM", "2026", [
+    "125fibHCSN22nwjol9QrFbwc8d43zu1HY",
+    "1EEgDJNu3CUiwY3yRI78Bhn1yL6IdKn4Z",
+    "1tjN14_D_HKEPTNFTnh_NV_fOuiRuj5kN",
+    "1xVaQxmrUHza9wVLCbdY3uleZBiYe7Ze1",
+    "1tkNEKgLsLpPzGUD_KmRmhIEI1QGDmAfy",
+    "1B4dbyetYvVdnDESRrXtdmrbrK62DUBr-",
+    "1oYBTlEAEYJ3zPbfnX3bC2RRebEtgqpUj",
+    "13Fhbt5_oGk5C8uoRE_gaRvNLZy6UHtnK",
+    "1QT4R0HXdj6dx-pFwikD8uGvCUItjxhsJ",
+    "1VCXCwlPtcUz5BtSLFZB50WXXZ1ewD_Ki",
+    "1A63kP-NCSFsj40pG193b_sH1A_Wm1owE"
+  ]],
+
+  ["BM", "2026", [
+    "1KbNr4zrtgSkjC0PGCb458Owb61vfdjue",
+    "1EYAD3gMc7oH2Pdzrpq0oQHbVAkOpo0g-",
+    "1mjlNLtZ6R6xhWg72pjgIgMxZmXGMtwc4",
+    "1F4Jv_YtmgBL-epS_6zrsEwHUYxW8qddV",
+    "13xq5pIyESS8hGe9C0DRYca1LoZYTojvw",
+    "1_vZ7NzRHs7ruEKNj2gfmoGgikAYYF6Pa",
+    "1nDZBKDmnzUY49E8LToCGBs6Cn1PdjRT9",
+    "1ZtKp8408OM5hoQI4hylIT5TXfq2PsWEl",
+    "1eve1ZKJ5jzkGsUd5y5KCkcvDDwBEa8dp",
+    "1NYMyyKicXzcpuk8EqMcWITTG1jOgq5Ls"
+  ]],
+
+  ["KMK", "2026", [
+    "1yH4egUK9jPzbusQzuJiguI7EXgZa-FTV",
+    "1jaJzA7xK4_u2LgAabE1QIzuD7W3dljg5",
+    "1twD4c4EEPRqjFB3O-K8SPCiTalL49Gj-",
+    "1IrFoA6dA77aKyxgYFMch_5lBavegF9R0",
+    "1KqX5aiL5cD0kylvrb2Qe3wYLx6R2Gwzg"
+  ]],
+
+  ["SENI", "2026", [
+    "1CXFTIz9STTKfGd0hcOuTR-SZXOmbSpci",
+    "1tlFDFXrjoUsH_9uY1E7T98aYdCRH6-oZ",
+    "1huBCdEpDhR_sIpNdbhQHQeHZyEx2OGxf"
+  ]],
+
+  ["PAM", "2027", [
+    "1WKI7-NnZbeqH3hzh34O-MEmgRBQYBR4P",
+    "1Tqys12vmV5OmzhPeT2x03ZvwUoAwY0i4",
+    "1MS06fvs4HakByXq7tAn3DGo2JDU4xh_4",
+    "1i0wGZwzj5GnHkG-hj2N9ATT2I8p0_v1J",
+    "1ZPQAbmeyWpvBto1CRlnAre0gGAUR9Brf",
+    "1qE6Cur58R36DZi1kFMbEiuOCdT0XqPng",
+    "1GvoDI60fpJqXQxHFezjzTdKaSZRpJcK-",
+    "1b9pla6JwcDOo4ByWqOuvOBt53Ij7MImq",
+    "1PH6yJ8D6SP5srhhtsbwMC4sGQ2p7bOlH",
+    "1MV7UdfKx9uG9C1MyXz-w6CvLJ8jodfNY",
+    "1vAvtMxpIsxa__XElTGhaShAIDLFHkAnN",
+    "1OOBUA5Msk4i7vkvJ4-vlwQZAgjM7R6eO"
+  ]],
+
+  ["BM", "2027", [
+    "1hW4wrUTb6HQiFYwfu-oBTJVvNUnNADtE",
+    "1wKzisnLWgMqjoZI7ZHTR-M8E6NKxkPOX",
+    "1vbIaM0Vs2bXzm8xUPI4Bb9kCZZ3XMNhF",
+    "1FBAMj2u9YRWJ3c_RAzscXFOdtroQQYTw",
+    "1wWiNZiQtdVdCIxp4kwCfFsvdvAaUoFwO",
+    "1rPuzV2HJQC0RCuN-xxbY3CNQbcgYxBLj",
+    "1vl0nztLJGttOf9hPIRks-KNYLQ8at0qH"
+  ]],
+
+  ["KMK", "2027", [
+    "1EmhuDJTbZh_oW89Yasc3kw7Szlep9-50",
+    "1nefjiE7S-psJa5FiPX9Gdsn2FTBMoqYn",
+    "14G-YjTF8kS14sHxT3UoEMOkveD1quXvp",
+    "1FiDtrQsxKvStuaqF-U9bBW1LuJtP6bTk",
+    "10mHae2sVIhUCqn-pPwU9T2Fu5h7Vqh3o"
+  ]],
+
+  ["SENI", "2027", [
+    "1BcGbGkxFlsKN4J-8wEnjpwea9g8i2dN5",
+    "1CgfTO3fZEtplnxAIwyY9k510YvNJOirM",
+    "1ZEGg1ef2DUZGlY_qKWI0Md8pcTn-Ckun",
+    "1VW1DKgJ_6WJL7C0uiyEM-9EZpKZDHUv6",
+    "1deDhSwzEOYaddHfXlz8V9LTaKRjsNqEF",
+    "1iRG-L8Kt7Dtl4HnYH2PyNFl7eRZCElfG",
+    "1q22gyl53axErtC-EdttmdrOj3XR0AzDO"
+  ]]
+];
+
+const papers = dataFolders.flatMap(([subject, year, ids]) =>
+  ids.map((id, i) => ({
+    state: negeri[i],
+    subject: subject,
+    year: year,
+    semester: "Sem 1",
+    title: `${subject} - ${negeri[i]} - ${year}`,
+    url: `https://drive.google.com/drive/folders/${id}`
+  }))
+);
+ 
 ];
 const rows=document.getElementById('questionRows');
 function render(){
@@ -82,7 +183,7 @@ function render(){
  const filtered=papers.filter(p=>(!y||p.year===y)&&(!s||p.subject===s)&&(!st||p.state===st)&&(!q||(p.title+' '+p.state+' '+p.subject).toLowerCase().includes(q)));
  rows.innerHTML=filtered.map(p=>`<tr><td>${p.state}</td><td><span class="tag">${p.subject}</span></td><td>${p.year}</td><td>${p.semester||'Sem 1'}</td><td>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="color:#7fe4f0">Buka bahan ↗</a>`:p.title}</td></tr>`).join('');
  document.getElementById('empty').hidden=filtered.length!==0;
-}
+  }
 ['year','subject','state','search'].forEach(id=>document.getElementById(id).addEventListener('input',render));render();
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ]\s*/, '')}));
 </script>
