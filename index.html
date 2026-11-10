@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101225">
+<title>STUDYHUB STPM</title>
+<style>
+:root{--bg:#0b1020;--panel:#141b31;--panel2:#1b2440;--text:#f4f6ff;--muted:#aab4d0;--line:#2b3657;--purple:#8b7cff;--cyan:#53d8e8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0%,#25205a 0,transparent 32%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,Arial,sans-serif}
+.app{display:flex;min-height:100vh}.side{width:245px;padding:26px 18px;background:#0d1428;border-right:1px solid var(--line);position:fixed;inset:0 auto 0 0}.brand{font-size:20px;font-weight:850;letter-spacing:.5px;margin:4px 10px 30px}.brand span{color:var(--cyan)}.navlabel{color:#7380a5;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin:22px 10px 8px}.nav button{width:100%;border:0;background:transparent;color:var(--muted);padding:12px;border-radius:12px;text-align:left;font-size:14px;cursor:pointer;margin:3px 0}.nav button.active,.nav button:hover{background:#24244e;color:white}.nav button b{display:inline-block;width:27px;color:var(--cyan)}main{margin-left:245px;width:calc(100% - 245px);padding:34px clamp(18px,4vw,55px) 60px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}.h1{font-size:clamp(27px,4vw,38px);font-weight:850;margin:5px 0}.muted{color:var(--muted)}.pill{border:1px solid var(--line);padding:8px 13px;border-radius:30px;color:var(--muted);font-size:12px}.hero{background:linear-gradient(115deg,#28245e,#183d59);border:1px solid #44427d;border-radius:22px;padding:27px;display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:22px}.hero h2{font-size:24px;margin:0 0 6px}.hero p{margin:0;color:#d2d8f3}.hero .orb{width:82px;height:82px;border-radius:25px;background:linear-gradient(140deg,#8b7cff,#53d8e8);display:grid;place-items:center;font-size:34px;flex-shrink:0}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0 28px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px}.stat{font-size:27px;font-weight:800;margin:7px 0 0}.card small{color:var(--muted)}.sectionhead{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:28px 0 13px}.sectionhead h2{font-size:19px;margin:0}.subjects{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.subject{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.subject .code{font-weight:850;font-size:22px;color:var(--cyan)}.subject p{color:var(--muted);font-size:13px;margin:5px 0 0}.count{font-size:28px;font-weight:850;color:white}.filters{display:flex;flex-wrap:wrap;gap:10px;margin:15px 0}.filters select,.filters input{background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:11px 12px;min-width:145px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:15px;background:var(--panel)}table{border-collapse:collapse;width:100%;min-width:650px}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line)}th{color:#93a2c8;font-size:12px;text-transform:uppercase;letter-spacing:.8px}td{font-size:14px}.tag{background:#292753;color:#c6c1ff;padding:4px 8px;border-radius:20px;font-size:12px}.empty{padding:24px;text-align:center;color:var(--muted)}.btn{border:0;border-radius:10px;background:linear-gradient(100deg,var(--purple),#5c9ce8);color:white;padding:10px 14px;font-weight:700;cursor:pointer}.notice{border:1px dashed #526184;border-radius:13px;padding:15px;color:var(--muted);font-size:13px;margin-top:14px}.page{display:none}.page.active{display:block}.planner{display:grid;grid-template-columns:repeat(7,minmax(110px,1fr));gap:8px;overflow:auto}.day{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:100px}.day strong{display:block;margin-bottom:9px}.day span{font-size:12px;color:var(--muted)}footer{color:#7582a4;font-size:12px;margin-top:38px}
+@media(max-width:900px){.side{width:76px;padding:18px 9px}.brand{font-size:0;margin:5px 8px 28px}.brand:after{content:"SH";font-size:19px;color:var(--cyan)}.navlabel{display:none}.nav button{font-size:0;text-align:center;padding:13px 4px}.nav button b{font-size:18px;width:auto}main{margin-left:76px;width:calc(100% - 76px)}.grid{grid-template-columns:repeat(2,1fr)}.subjects{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){main{padding:22px 14px 45px}.top{align-items:flex-start}.pill{display:none}.hero{padding:20px}.hero .orb{width:60px;height:60px;font-size:25px}.grid{gap:9px}.card{padding:13px}.stat{font-size:22px}.subjects{gap:9px}.subject{padding:13px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+ <div class="brand">STUDY<span>HUB</span></div>
+ <div class="navlabel">Menu utama</div>
+ <nav class="nav">
+  <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
+  <button data-page="bank"><b>▤</b> Bank Soalan</button>
+  <button data-page="planner"><b>▦</b> Planner</button>
+ </nav>
+ <div class="navlabel">Lain-lain</div>
+ <nav class="nav"><button data-page="about"><b>ⓘ</b> Panduan</button></nav>
+</aside>
+<main>
+<header class="top"><div><div class="eyebrow">Ruang pembelajaran STPM</div><div class="h1" id="pageTitle">Dashboard</div><div class="muted">Belajar dengan lebih teratur. Satu langkah setiap hari.</div></div><div class="pill">✦ SEMESTER 1 · 2026/2027</div></header>
+<section id="home" class="page active">
+ <div class="hero"><div><div class="eyebrow">Selamat datang ke STUDYHUB</div><h2>Fokus hari ini, berjaya kemudian.</h2><p>Semua bahan Semester 1 dalam satu tempat.</p></div><div class="orb">✦</div></div>
+ <div class="grid">
+  <div class="card"><small>Subjek tersedia</small><div class="stat">04</div><small>PAM · KMK · SENI · BM</small></div>
+  <div class="card"><small>Tahun bahan</small><div class="stat">2026–27</div><small>Koleksi percubaan</small></div>
+  <div class="card"><small>Fokus</small><div class="stat">Sem 1</div><small>Soalan Semester 1 sahaja</small></div>
+  <div class="card"><small>Countdown Sem 1</small><div class="stat count" id="countdown">Tetapkan</div><small id="countLabel">Tarikh peperiksaan belum ditetapkan</small></div>
+ </div>
+ <div class="sectionhead"><h2>Subjek STPM</h2><span class="muted">4 subjek pilihan</span></div>
+ <div class="subjects">
+  <div class="subject"><div class="code">PAM</div><strong>Pengajian Am</strong><p>Semester 1</p></div>
+  <div class="subject"><div class="code">KMK</div><strong>Kesusasteraan Melayu Komunikatif</strong><p>Semester 1</p></div>
+  <div class="subject"><div class="code">SENI</div><strong>Seni Visual</strong><p>Semester 1</p></div>
+  <div class="subject"><div class="code">BM</div><strong>Bahasa Melayu</strong><p>Semester 1</p></div>
+ </div>
+ <div class="notice">📌 Countdown akan dikemas kini selepas tarikh peperiksaan rasmi Sem 1 dimasukkan dalam tetapan kod.</div>
+</section>
+<section id="bank" class="page">
+ <div class="sectionhead"><div><h2>Bank Soalan Percubaan</h2><div class="muted">Semester 1 sahaja · 2026 dan 2027</div></div></div>
+ <div class="filters">
+  <select id="year"><option value="">Semua tahun</option><option>2026</option><option>2027</option></select>
+  <select id="subject"><option value="">Semua subjek</option><option>PAM</option><option>KMK</option><option>SENI</option><option>BM</option></select>
+  <select id="state"><option value="">Semua negeri</option><option>Johor</option><option>Kedah</option><option>Kelantan</option><option>Melaka</option><option>Negeri Sembilan</option><option>Pahang</option><option>Perak</option><option>Perlis</option><option>Pulau Pinang</option><option>Sabah</option><option>Sarawak</option><option>Selangor</option><option>Terengganu</option><option>W.P. Kuala Lumpur</option><option>W.P. Labuan</option><option>W.P. Putrajaya</option></select>
+  <input id="search" placeholder="Cari nama fail / negeri...">
+ </div>
+ <div class="tablewrap"><table><thead><tr><th>Negeri</th><th>Subjek</th><th>Tahun</th><th>Semester</th><th>Bahan</th></tr></thead><tbody id="questionRows"></tbody></table><div id="empty" class="empty" hidden>Belum ada bahan yang sepadan. Tambahkan pautan soalan dalam senarai data.</div></div>
+ <div class="notice">Bahan soalan belum dimasukkan. Ruang ini disediakan untuk pautan PDF/Google Drive yang sah. Jangan paparkan pautan rekaan.</div>
+</section>
+<section id="planner" class="page">
+ <div class="sectionhead"><div><h2>Planner Mingguan</h2><div class="muted">Contoh susunan ulang kaji — ubah ikut jadual sendiri.</div></div></div>
+ <div class="planner">
+  <div class="day"><strong>Isnin</strong><span>PAM<br>Ulang kaji nota</span></div><div class="day"><strong>Selasa</strong><span>KMK<br>Analisis teks</span></div><div class="day"><strong>Rabu</strong><span>BM<br>Latihan esei</span></div><div class="day"><strong>Khamis</strong><span>SENI<br>Latihan teori</span></div><div class="day"><strong>Jumaat</strong><span>PAM<br>Latihan struktur</span></div><div class="day"><strong>Sabtu</strong><span>KMK + BM<br>Ulang kaji</span></div><div class="day"><strong>Ahad</strong><span>Rehat / semak<br>kemajuan</span></div>
+ </div>
+ <div class="notice">Ini planner contoh. Anda boleh ubah aktiviti terus dalam fail index.html apabila projek diterbitkan.</div>
+</section>
+<section id="about" class="page">
+ <div class="sectionhead"><h2>Tentang STUDYHUB</h2></div>
+ <div class="card"><p>STUDYHUB ialah ruang pembelajaran ringkas untuk pelajar STPM. Fokus awal projek ini ialah bahan percubaan Semester 1 bagi Pengajian Am (PAM), Kesusasteraan Melayu Komunikatif (KMK), Seni Visual (SENI) dan Bahasa Melayu (BM).</p><p class="muted">Versi permulaan · Bahan soalan perlu ditambah selepas pautan PDF disahkan.</p></div>
+</section>
+<footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
+</main>
+</div>
+<script>
+// Masukkan bahan sebenar di sini. Pastikan pautan PDF/Drive telah diuji.
+const papers = [
+ // Contoh format:
+ // {state:"Kelantan", subject:"PAM", year:"2026", semester:"Sem 1", title:"Kertas Percubaan", url:"https://..."}
+];
+const rows=document.getElementById('questionRows');
+function render(){
+ const y=document.getElementById('year').value,s=document.getElementById('subject').value,st=document.getElementById('state').value,q=document.getElementById('search').value.toLowerCase();
+ const filtered=papers.filter(p=>(!y||p.year===y)&&(!s||p.subject===s)&&(!st||p.state===st)&&(!q||(p.title+' '+p.state+' '+p.subject).toLowerCase().includes(q)));
+ rows.innerHTML=filtered.map(p=>`<tr><td>${p.state}</td><td><span class="tag">${p.subject}</span></td><td>${p.year}</td><td>${p.semester||'Sem 1'}</td><td>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="color:#7fe4f0">Buka bahan ↗</a>`:p.title}</td></tr>`).join('');
+ document.getElementById('empty').hidden=filtered.length!==0;
+}
+['year','subject','state','search'].forEach(id=>document.getElementById(id).addEventListener('input',render));render();
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ]\s*/, '')}));
+</script>
+</body></html>
