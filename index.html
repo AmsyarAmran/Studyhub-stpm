@@ -132,18 +132,13 @@ const dataFolders = [
   ]],
 
   ["PAM", "2027", [
-    "1WKI7-NnZbeqH3hzh34O-MEmgRBQYBR4P",
-    "1Tqys12vmV5OmzhPeT2x03ZvwUoAwY0i4",
-    "1MS06fvs4HakByXq7tAn3DGo2JDU4xh_4",
-    "1i0wGZwzj5GnHkG-hj2N9ATT2I8p0_v1J",
-    "1ZPQAbmeyWpvBto1CRlnAre0gGAUR9Brf",
-    "1qE6Cur58R36DZi1kFMbEiuOCdT0XqPng",
-    "1GvoDI60fpJqXQxHFezjzTdKaSZRpJcK-",
-    "1b9pla6JwcDOo4ByWqOuvOBt53Ij7MImq",
-    "1PH6yJ8D6SP5srhhtsbwMC4sGQ2p7bOlH",
-    "1MV7UdfKx9uG9C1MyXz-w6CvLJ8jodfNY",
-    "1vAvtMxpIsxa__XElTGhaShAIDLFHkAnN",
-    "1OOBUA5Msk4i7vkvJ4-vlwQZAgjM7R6eO"
+    { state: "Kelantan", id: "1WKI7-NnZbeqH3hzh34O-MEmgRBQYBR4P" },
+    { state: "Johor", area: "PPD Batu Pahat", id: "1Tqys12vmV5OmzhPeT2x03ZvwUoAwY0i4" },
+    { state: "Terengganu", id: "1ZPQAbmeyWpvBto1CRlnAre0gGAUR9Brf" },
+    { state: "Pulau Pinang", id: "1GvoDI60fpJqXQxHFezjzTdKaSZRpJcK-" },
+    { state: "W.P. Kuala Lumpur", id: "1b9pla6JwcDOo4ByWqOuvOBt53Ij7MImq" },
+    { state: "Kedah", id: "1vAvtMxpIsxa__XElTGhaShAIDLFHkAnN" },
+    { state: "Pahang", id: "1OOBUA5Msk4i7vkvJ4-vlwQZAgjM7R6eO" }
   ]],
 
   ["BM", "2027", [
@@ -176,21 +171,31 @@ const dataFolders = [
 ];
 
 const papers = dataFolders.flatMap(([subject, year, ids]) =>
-  ids.flatMap((id, i) => id ? [{
-    state: negeri[i],
-    subject: subject,
-    year: year,
-    semester: "Sem 1",
-    title: `${subject} - ${negeri[i]} - ${year}`,
-    url: `https://drive.google.com/drive/folders/${id}`
-  }] : [])
+  ids.flatMap((entry, i) => {
+    const item = typeof entry === "string"
+      ? { id: entry, state: negeri[i] }
+      : entry;
+    if (!item || !item.id) return [];
+    const displayState = item.area
+      ? `${item.state} (${item.area})`
+      : item.state;
+    return [{
+      state: item.state,
+      displayState: displayState,
+      subject: subject,
+      year: year,
+      semester: "Sem 1",
+      title: `${subject} - ${displayState} - ${year}`,
+      url: `https://drive.google.com/drive/folders/${item.id}`
+    }];
+  })
 );
  
 const rows=document.getElementById('questionRows');
 function render(){
  const y=document.getElementById('year').value,s=document.getElementById('subject').value,st=document.getElementById('state').value,q=document.getElementById('search').value.toLowerCase();
  const filtered=papers.filter(p=>(!y||p.year===y)&&(!s||p.subject===s)&&(!st||p.state===st)&&(!q||(p.title+' '+p.state+' '+p.subject).toLowerCase().includes(q)));
- rows.innerHTML=filtered.map(p=>`<tr><td>${p.state}</td><td><span class="tag">${p.subject}</span></td><td>${p.year}</td><td>${p.semester||'Sem 1'}</td><td>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="color:#7fe4f0">Buka bahan ↗</a>`:p.title}</td></tr>`).join('');
+ rows.innerHTML=filtered.map(p=>`<tr><td>${p.displayState||p.state}</td><td><span class="tag">${p.subject}</span></td><td>${p.year}</td><td>${p.semester||'Sem 1'}</td><td>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="color:#7fe4f0">Buka bahan ↗</a>`:p.title}</td></tr>`).join('');
  document.getElementById('empty').hidden=filtered.length!==0;
   }
 ['year','subject','state','search'].forEach(id=>document.getElementById(id).addEventListener('input',render));render();
