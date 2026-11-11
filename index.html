@@ -81,18 +81,22 @@ const negeri = [
 
 const dataFolders = [
   ["PAM", "2026", [
-    "125fibHCSN22nwjol9QrFbwc8d43zu1HY",
-    "1EEgDJNu3CUiwY3yRI78Bhn1yL6IdKn4Z",
-    "1tjN14_D_HKEPTNFTnh_NV_fOuiRuj5kN",
-    "1xVaQxmrUHza9wVLCbdY3uleZBiYe7Ze1",
-    "1tkNEKgLsLpPzGUD_KmRmhIEI1QGDmAfy",
-    "1B4dbyetYvVdnDESRrXtdmrbrK62DUBr-",
-    "1oYBTlEAEYJ3zPbfnX3bC2RRebEtgqpUj",
-    "13Fhbt5_oGk5C8uoRE_gaRvNLZy6UHtnK",
-    "1QT4R0HXdj6dx-pFwikD8uGvCUItjxhsJ",
-    "1VCXCwlPtcUz5BtSLFZB50WXXZ1ewD_Ki",
-    "1A63kP-NCSFsj40pG193b_sH1A_Wm1owE"
-  ]],
+  "1xVaQxmrUHza9wVLCbdY3uleZBiYe7Ze1", // Johor
+  null, // Kedah
+  "1tkNEKgLsLpPzGUD_KmRmhIEI1QGDmAfy", // Kelantan
+  "1A63kP-NCSFsj40pG193b_sH1A_Wm1owE", // Melaka
+  null, // Negeri Sembilan
+  "13Fhbt5_oGk5C8uoRE_gaRvNLZy6UHtnK", // Pahang
+  "1B4dbyetYvVdnDESRrXtdmrbrK62DUBr-", // Perak
+  "1tjN14_D_HKEPTNFTnh_NV_fOuiRuj5kN", // Perlis
+  "125fibHCSN22nwjol9QrFbwc8d43zu1HY", // Pulau Pinang
+  "1VCXCwlPtcUz5BtSLFZB50WXXZ1ewD_Ki", // Sabah
+  "1EEgDJNu3CUiwY3yRI78Bhn1yL6IdKn4Z", // Sarawak
+  "1QT4R0HXdj6dx-pFwikD8uGvCUItjxhsJ", // Selangor
+  "1oYBTlEAEYJ3zPbfnX3bC2RRebEtgqpUj", // Terengganu
+  null, // W.P. Kuala Lumpur
+  null  // W.P. Putrajaya
+]],
 
   ["BM", "2026", [
     "1KbNr4zrtgSkjC0PGCb458Owb61vfdjue",
@@ -166,14 +170,14 @@ const dataFolders = [
 ];
 
 const papers = dataFolders.flatMap(([subject, year, ids]) =>
-  ids.map((id, i) => ({
+  ids.flatMap((id, i) => id ? [{
     state: negeri[i],
     subject: subject,
     year: year,
     semester: "Sem 1",
     title: `${subject} - ${negeri[i]} - ${year}`,
     url: `https://drive.google.com/drive/folders/${id}`
-  }))
+  }] : [])
 );
  
 const rows=document.getElementById('questionRows');
