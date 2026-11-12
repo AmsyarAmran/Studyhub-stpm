@@ -36,6 +36,34 @@ a:hover{color:white!important;text-decoration:underline}
 
 @media(max-width:900px){.side{width:76px;padding:18px 9px}.brand{font-size:0;margin:5px 8px 28px}.brand:after{content:"SH";font-size:19px;color:var(--cyan)}.navlabel{display:none}.nav button{font-size:0;text-align:center;padding:13px 4px}.nav button b{font-size:18px;width:auto}main{margin-left:76px;width:calc(100% - 76px)}.grid{grid-template-columns:repeat(2,1fr)}.subjects{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){main{padding:22px 14px 45px}.top{align-items:flex-start}.pill{display:none}.hero{padding:20px}.hero .orb{width:60px;height:60px;font-size:25px}.grid{gap:9px}.card{padding:13px}.stat{font-size:22px}.subjects{gap:9px}.subject{padding:13px}}
+
+/* Leaderboard berwarna */
+.leaderboard-banner{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px 30px;margin:8px 0 20px;border-radius:24px;background:linear-gradient(120deg,#43258c 0%,#7045c5 48%,#168ca9 100%);border:1px solid #9a80ed66;box-shadow:0 16px 38px #080b2455}
+.leaderboard-banner:after{content:"";position:absolute;width:230px;height:230px;border:1px solid #ffffff22;border-radius:50%;right:55px;top:-130px;box-shadow:0 0 0 28px #ffffff0b,0 0 0 58px #ffffff08}
+.leaderboard-banner h2{font-size:clamp(24px,4vw,34px);margin:5px 0}.leaderboard-banner p{margin:0;color:#e4e7ff}.leaderboard-banner .eyebrow{color:#b9f6ff}.leaderboard-trophy{z-index:1;font-size:56px;filter:drop-shadow(0 8px 12px #17113d88);animation:trophyFloat 3s ease-in-out infinite}
+@keyframes trophyFloat{50%{transform:translateY(-7px) rotate(4deg)}}
+.leaderboard-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:17px;background:linear-gradient(120deg,#171e3a,#20264b);border:1px solid #454b82;border-radius:18px}
+.leaderboard-controls>div{display:grid;gap:6px;min-width:175px;flex:1}.control-label{font-size:10px;letter-spacing:1.3px;color:#9ca9d4;font-weight:800}
+.leaderboard-controls select{width:100%;background:#111a32;border:1px solid #46517c;color:white;border-radius:11px;padding:12px;font:inherit}
+.leaderboard-refresh{background:linear-gradient(100deg,#0e9f9a,#2779d7);min-height:43px}
+.leaderboard-heading{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:28px 0 14px}.leaderboard-heading h2{margin:3px 0 0;font-size:22px}.leaderboard-heading .eyebrow{font-size:10px;color:#c29cff}
+.leaderboard-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:end;margin:0 0 22px}
+.podium-card{position:relative;text-align:center;padding:20px 12px 17px;border:1px solid;border-radius:19px;overflow:hidden;background:linear-gradient(160deg,#22294a,#171d35);min-width:0}
+.podium-card:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--podium-color)}
+.podium-card.first{background:linear-gradient(155deg,#55421c,#26223c 75%);border-color:#e8bd55;min-height:190px}
+.podium-card.second{border-color:#91a9c7;--podium-color:#a9c4df;min-height:170px}
+.podium-card.third{border-color:#c88a62;--podium-color:#d99469;min-height:155px}
+.podium-card.first{--podium-color:#ffd45e}.podium-medal{font-size:31px;line-height:1.2}.podium-rank{font-size:10px;letter-spacing:1.4px;font-weight:900;color:var(--podium-color);margin:5px 0}
+.podium-name{font-weight:800;font-size:15px;overflow-wrap:anywhere;margin:7px 0;color:#fff}.podium-score{font-size:23px;font-weight:900;color:var(--podium-color)}.podium-score small{font-size:11px;color:#b8c2df;font-weight:600}
+.podium-empty{grid-column:1/-1;padding:25px;text-align:center;color:var(--muted);border:1px dashed #48547b;border-radius:17px;background:#151c32}
+.leaderboard-list-card{background:linear-gradient(145deg,#171e36,#11182c);border:1px solid #354263;border-radius:19px;padding:17px}
+.leaderboard-list-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.leaderboard-list-head h3{margin:0;font-size:17px}.leaderboard-list-head p{font-size:12px;margin:3px 0 0}
+.leaderboard-live{font-size:10px;letter-spacing:.7px;color:#66e4c0;font-weight:900;white-space:nowrap}
+.leaderboard-table th{color:#9da9d2}.leaderboard-table tbody tr:nth-child(1) td:first-child{color:#ffd45e;font-weight:900}.leaderboard-table tbody tr:nth-child(2) td:first-child{color:#c7d8ed;font-weight:900}.leaderboard-table tbody tr:nth-child(3) td:first-child{color:#e4a078;font-weight:900}
+.leaderboard-table tbody tr:hover{background:#282b50}.leaderboard-table td:last-child{font-weight:800;color:#8fe7f0}
+.leaderboard-note{font-size:12px;color:#8e9abb;margin:12px 2px}
+@media(max-width:600px){.leaderboard-banner{padding:21px;border-radius:18px}.leaderboard-trophy{font-size:43px}.leaderboard-controls{align-items:stretch}.leaderboard-controls>div{min-width:100%}.leaderboard-refresh{width:100%}.leaderboard-podium{gap:7px}.podium-card{padding:15px 6px}.podium-card.first{min-height:170px}.podium-card.second{min-height:155px}.podium-card.third{min-height:140px}.podium-name{font-size:12px}.podium-score{font-size:19px}.podium-medal{font-size:25px}.leaderboard-list-card{padding:12px}.leaderboard-list-head{align-items:flex-start}.leaderboard-live{font-size:9px}}
+
 </style>
 </head>
 <body>
@@ -134,17 +162,23 @@ a:hover{color:white!important;text-decoration:underline}
  </div>
 </section>
 <section id="leaderboard" class="page">
- <div class="sectionhead"><div><h2>Leaderboard StudyHub</h2><div class="muted">Paparan ranking pencapaian pelajar mengikut subjek dan set kuiz.</div></div><span class="tag">Ranking kuiz</span></div>
+ <div class="leaderboard-banner">
+  <div><div class="eyebrow">Hall of achievement</div><h2>Leaderboard StudyHub</h2><p>Raikan usaha, kumpul markah dan naik ke tangga teratas!</p></div>
+  <div class="leaderboard-trophy" aria-hidden="true">🏆</div>
+ </div>
  <div id="leaderboardWorkspace">
-  <div class="card">
-   <div class="filters" style="margin-top:0">
-    <select id="leaderboardSubject" aria-label="Pilih subjek leaderboard"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select>
-    <select id="leaderboardSet" aria-label="Pilih set leaderboard"><option value="">Memuatkan set...</option></select>
-    <button class="btn" type="button" id="studentQuizRankingRefresh">Muat semula ranking</button>
-   </div>
-   <p class="muted">Kedudukan disusun mengikut markah tertinggi. Jika markah sama, masa penghantaran lebih awal diberi keutamaan.</p>
-   <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Rank</th><th>Nama paparan</th><th>Markah</th></tr></thead><tbody id="studentQuizRankingRows"></tbody></table><div id="studentQuizRankingEmpty" class="empty" hidden>Belum ada keputusan bagi set ini.</div></div>
+  <div class="leaderboard-controls">
+   <div><span class="control-label">SUBJEK</span><select id="leaderboardSubject" aria-label="Pilih subjek leaderboard"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select></div>
+   <div><span class="control-label">SET KUIZ</span><select id="leaderboardSet" aria-label="Pilih set leaderboard"><option value="">Memuatkan set...</option></select></div>
+   <button class="btn leaderboard-refresh" type="button" id="studentQuizRankingRefresh">↻ Muat semula</button>
   </div>
+  <div class="leaderboard-heading"><div><span class="eyebrow">THE TOP PERFORMERS</span><h2>🏅 Carta Kedudukan</h2></div><span class="tag">Markah tertinggi</span></div>
+  <div id="leaderboardPodium" class="leaderboard-podium" aria-live="polite"></div>
+  <div class="leaderboard-list-card">
+   <div class="leaderboard-list-head"><div><h3>Kedudukan Pelajar</h3><p class="muted">Senarai keputusan bagi set yang dipilih.</p></div><span class="leaderboard-live">● LIVE RANKING</span></div>
+   <div class="tablewrap"><table class="leaderboard-table" style="min-width:0"><thead><tr><th>Kedudukan</th><th>Nama paparan</th><th>Markah</th></tr></thead><tbody id="studentQuizRankingRows"></tbody></table><div id="studentQuizRankingEmpty" class="empty" hidden>Belum ada keputusan bagi set ini. Jadilah pelajar pertama yang mengisi carta!</div></div>
+  </div>
+  <p class="leaderboard-note">ℹ️ Ranking disusun mengikut markah tertinggi. Jika markah sama, penghantaran lebih awal diberi keutamaan.</p>
  </div>
 </section>
 <section id="admin" class="page">
@@ -739,10 +773,15 @@ async function loadStudentRanking(){
     const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_public_studyhub_leaderboard",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_subject:subject,p_set_number:setNumber})});
     const result=await response.json();
     if(!response.ok)throw new Error(result.message||"Tidak dapat memuatkan scoreboard.");
-    rows.innerHTML=result.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeStudentText(r.display_name)+'</td><td>'+Number(r.score)+' / '+Number(r.total_questions)+'</td></tr>').join("");
+    const podium=document.getElementById("leaderboardPodium");
+    const medals=["🥇","🥈","🥉"];
+    const ranks=["first","second","third"];
+    const top=result.slice(0,3);
+    podium.innerHTML=top.length?top.map((r,i)=>'<div class="podium-card '+ranks[i]+'"><div class="podium-medal">'+medals[i]+'</div><div class="podium-rank">'+["CHAMPION","NAIB JUARA","TEMPAT KETIGA"][i]+'</div><div class="podium-name">'+escapeStudentText(r.display_name)+'</div><div class="podium-score">'+Number(r.score)+'<small> / '+Number(r.total_questions)+'</small></div></div>').join(""):'<div class="podium-empty">🏆 Belum ada pencapaian untuk dipaparkan.</div>';
+    rows.innerHTML=result.slice(3).map((r,i)=>'<tr><td>'+(i+4)+'</td><td>'+escapeStudentText(r.display_name)+'</td><td>'+Number(r.score)+' / '+Number(r.total_questions)+'</td></tr>').join("");
     empty.hidden=result.length!==0;
     if(!result.length)rows.innerHTML="";
-  }catch(error){rows.innerHTML='<tr><td colspan="3" class="muted">'+escapeStudentText(error.message)+'</td></tr>';}
+  }catch(error){document.getElementById("leaderboardPodium").innerHTML='<div class="podium-empty">'+escapeStudentText(error.message)+'</div>';rows.innerHTML="";}
 }
 async function loadLeaderboardSets(){
   const subject=document.getElementById("leaderboardSubject").value;
