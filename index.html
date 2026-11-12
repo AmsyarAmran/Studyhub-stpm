@@ -78,6 +78,26 @@ a:hover{color:white!important;text-decoration:underline}
 #admin td,#admin th{border-bottom-color:#593044}
 #admin tbody tr:hover{background:#492238}
 #admin .notice{border-color:#8b405b;color:#e5c0cc}
+
+/* Profil pelajar */
+.profile-shell{border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--panel);margin:12px 0 20px}
+.profile-cover{min-height:185px;border-radius:18px;padding:22px;display:flex;align-items:end;gap:18px;background:linear-gradient(125deg,#43358d,#176c86);border:1px solid #ffffff25;position:relative;overflow:hidden}
+.profile-cover:after{content:"";position:absolute;width:230px;height:230px;border:1px solid #ffffff30;border-radius:50%;right:-50px;top:-120px;box-shadow:0 0 0 28px #ffffff0b,0 0 0 58px #ffffff08}
+.profile-avatar{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;font-size:48px;background:#111a32;border:5px solid #b8a5ff;box-shadow:0 8px 25px #05081666;overflow:hidden;flex-shrink:0;z-index:1}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-cover-copy{z-index:1;min-width:0}.profile-cover-copy h2{margin:0;font-size:24px;overflow-wrap:anywhere}.profile-cover-copy p{margin:4px 0 0;color:#e4e9ff;font-size:13px}
+.profile-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:16px}
+.profile-option{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:15px}
+.profile-option h3{font-size:14px;margin:0 0 11px}.avatar-choices,.profile-swatches,.border-choices{display:flex;flex-wrap:wrap;gap:9px}
+.avatar-choice,.profile-swatch,.border-choice{border:2px solid #526184;background:#10182c;color:white;border-radius:12px;min-width:42px;min-height:42px;padding:6px;cursor:pointer;font-size:23px}
+.avatar-choice.selected,.profile-swatch.selected,.border-choice.selected{border-color:#fff;box-shadow:0 0 0 3px #8b7cff66}
+.profile-swatch{width:48px;height:42px;border-radius:10px}
+.border-choice{font-size:12px;min-width:70px}
+.profile-upload{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#30375b;color:white;font-size:12px;font-weight:700;cursor:pointer}
+.profile-upload input{display:none}
+.profile-save-note{font-size:12px;color:var(--muted);margin:12px 0 0}
+@media(max-width:520px){.profile-shell{padding:12px}.profile-cover{min-height:155px;padding:15px;gap:12px}.profile-avatar{width:78px;height:78px;font-size:36px}.profile-cover-copy h2{font-size:19px}}
+
 </style>
 </head>
 <body>
@@ -89,6 +109,7 @@ a:hover{color:white!important;text-decoration:underline}
   <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
   <button data-page="bank"><b>▤</b> Bank Soalan</button>
    <button data-page="students"><b>♙</b> Direktori Pelajar</button>
+  <button data-page="profile"><b>◎</b> Profil Saya</button>
   <button data-page="quiz"><b>✎</b> Kuiz Interaktif</button>
   <button data-page="leaderboard"><b>★</b> Leaderboard</button>
   <button data-page="admin"><b>⚙</b> Panel Admin</button>
@@ -153,6 +174,29 @@ a:hover{color:white!important;text-decoration:underline}
  <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Bil.</th><th>Nama paparan</th><th>Tarikh disertai</th></tr></thead><tbody id="studentRows"><tr><td colspan="3" class="muted">Memuatkan senarai pelajar...</td></tr></tbody></table><div id="studentEmpty" class="empty" hidden>Belum ada nama yang diluluskan untuk dipaparkan.</div></div>
  
 </section>
+
+<section id="profile" class="page">
+ <div class="sectionhead"><div><h2>Profil Pelajar</h2><div class="muted">Hias ruang profil anda mengikut gaya sendiri.</div></div><span class="tag">My StudyHub</span></div>
+ <div id="profileLoginNotice" class="card"><strong>Log masuk diperlukan</strong><p class="muted">Log masuk melalui Direktori Pelajar untuk melihat dan mengubah profil anda.</p><button class="btn" type="button" id="profileGoDirectory">Pergi ke Direktori Pelajar</button></div>
+ <div id="profileWorkspace" hidden>
+  <div class="profile-shell">
+   <div class="profile-cover" id="profileCover">
+    <div class="profile-avatar" id="profileAvatar">🌟</div>
+    <div class="profile-cover-copy"><div class="eyebrow">STUDYHUB STUDENT</div><h2 id="profileDisplayName">Pelajar</h2><p id="profileStatus">Ahli StudyHub</p></div>
+   </div>
+   <div class="profile-options">
+    <div class="profile-option"><h3>Gambar profil</h3><div class="avatar-choices" id="profileAvatarChoices"><button class="avatar-choice selected" type="button" data-avatar="🌟">🌟</button><button class="avatar-choice" type="button" data-avatar="📚">📚</button><button class="avatar-choice" type="button" data-avatar="🎓">🎓</button><button class="avatar-choice" type="button" data-avatar="🐼">🐼</button><button class="avatar-choice" type="button" data-avatar="🐱">🐱</button><button class="avatar-choice" type="button" data-avatar="🦊">🦊</button><button class="avatar-choice" type="button" data-avatar="🚀">🚀</button><button class="avatar-choice" type="button" data-avatar="🌙">🌙</button></div>
+     <label class="profile-upload">📷 Muat naik gambar<input id="profilePhotoInput" type="file" accept="image/*"></label>
+     <button class="btn" id="profileRemovePhoto" type="button" style="background:#526184;margin:10px 0 0">Guna avatar</button>
+    </div>
+    <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div></div>
+    <div class="profile-option"><h3>Pilihan border avatar</h3><div class="border-choices"><button class="border-choice selected" type="button" data-border="#b8a5ff">Ungu</button><button class="border-choice" type="button" data-border="#53d8e8">Biru</button><button class="border-choice" type="button" data-border="#f472b6">Pink</button><button class="border-choice" type="button" data-border="#fbbf24">Emas</button><button class="border-choice" type="button" data-border="#ffffff">Putih</button></div></div>
+   </div>
+   <p class="profile-save-note" id="profileSaveNote" role="status">Perubahan profil disimpan pada peranti ini.</p>
+  </div>
+ </div>
+</section>
+
 <section id="quiz" class="page">
  <div class="sectionhead"><div><h2>Kuiz Interaktif</h2><div class="muted">Uji kefahaman anda melalui set soalan PAM dan BM.</div></div><span class="tag">Satu percubaan setiap set</span></div>
  <div class="card" id="quizGate" style="margin-bottom:16px"><strong>Log masuk diperlukan</strong><p class="muted" style="margin:6px 0 12px">Log masuk dan pastikan akaun anda telah diluluskan oleh admin untuk menjawab kuiz.</p><button class="btn" type="button" id="quizGoDirectory">Pergi ke Direktori Pelajar</button></div>
@@ -388,7 +432,7 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
  card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSubject();}});
 });
 
-document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ]\s*/, '')}));
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\s*/, '');if(b.dataset.page==='profile')renderStudentProfile()}));
 
 // Direktori Pelajar StudyHub — hanya gunakan publishable key di frontend.
 const SUPABASE_URL = "https://pkfbvfymrlxklgdmydqe.supabase.co";
@@ -842,6 +886,7 @@ let studentAccessToken = null;
 let studentAuthMode = "signup";
 let studentUserId = null;
 let studentApproved = false;
+let studentDisplayName = "";
 const studentForm = document.getElementById("studentForm");
 const studentMessage = document.getElementById("studentMessage");
 function setStudentAuthMode(mode){
@@ -868,15 +913,17 @@ function showStudentSession(status,message){
   document.getElementById("studentAccountMessage").textContent = message;
 }
 async function checkStudentRegistration(){
-  const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id,display_name,approved&user_id=eq."+encodeURIComponent(studentUserId),{
+  const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id,display_name,approved,created_at&user_id=eq."+encodeURIComponent(studentUserId),{
     headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}
   });
   if(!response.ok) throw new Error("Tidak dapat menyemak status pendaftaran.");
   const rows = await response.json();
   if(rows.length){
     const row = rows[0];
+    studentDisplayName = row.display_name || "Pelajar";
     studentApproved = !!row.approved;
     showStudentSession(row.approved ? "Akaun diluluskan" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Admin StudyHub perlu meluluskan nama paparan anda sebelum anda boleh menjawab kuiz.");
+    updateStudentProfile(row);
     updateStudentQuizAccess();
     if(studentApproved){ await loadStudentQuizSets(); await loadLeaderboardSets(); }
   }else{
@@ -936,12 +983,73 @@ studentForm.addEventListener("submit",async event=>{
 });
 document.getElementById("studentLogoutButton").addEventListener("click",async()=>{
   if(studentAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});}catch(error){}}
-  studentAccessToken=null;studentUserId=null;studentApproved=false;clearStoredSession(STUDENT_SESSION_KEY);updateStudentQuizAccess();showStudentSession("","");setStudentAuthMode("signup");
+  studentAccessToken=null;studentUserId=null;studentApproved=false;studentDisplayName="";renderStudentProfile();clearStoredSession(STUDENT_SESSION_KEY);updateStudentQuizAccess();showStudentSession("","");setStudentAuthMode("signup");
 });
 setStudentAuthMode("signup");
 showStudentSession("","");
 updateStudentQuizAccess();
 loadStudents();
+
+
+/* Profil pelajar — tetapan visual disimpan pada peranti semasa. */
+function profileStorageKey(){return "studyhub_profile_"+(studentUserId||"guest");}
+function readStudentProfile(){try{return JSON.parse(localStorage.getItem(profileStorageKey())||"{}");}catch(error){return {};}}
+function saveStudentProfile(data){try{localStorage.setItem(profileStorageKey(),JSON.stringify(data));document.getElementById("profileSaveNote").textContent="Perubahan profil berjaya disimpan pada peranti ini.";}catch(error){document.getElementById("profileSaveNote").textContent="Storan peranti penuh. Cuba gambar yang lebih kecil.";}}
+function applyStudentProfile(){
+ const data=readStudentProfile(),avatar=document.getElementById("profileAvatar"),cover=document.getElementById("profileCover");
+ cover.style.background=data.background||"linear-gradient(125deg,#43358d,#176c86)";
+ avatar.style.borderColor=data.border||"#b8a5ff";
+ avatar.innerHTML=data.photo?'<img alt="Gambar profil pelajar" src="'+data.photo+'">':escapeStudentText(data.avatar||"🌟");
+ document.querySelectorAll("[data-avatar]").forEach(b=>b.classList.toggle("selected",b.dataset.avatar===(data.avatar||"🌟")));
+ document.querySelectorAll("[data-bg]").forEach(b=>b.classList.toggle("selected",b.dataset.bg===(data.background||"linear-gradient(125deg,#43358d,#176c86)")));
+ document.querySelectorAll("[data-border]").forEach(b=>b.classList.toggle("selected",b.dataset.border===(data.border||"#b8a5ff")));
+}
+function updateStudentProfile(row){
+ if(row?.display_name)studentDisplayName=row.display_name;
+ document.getElementById("profileDisplayName").textContent=studentDisplayName||"Pelajar";
+ document.getElementById("profileStatus").textContent=studentApproved?"Ahli StudyHub · Akaun diluluskan":"Ahli StudyHub · Menunggu kelulusan";
+ renderStudentProfile();
+}
+function renderStudentProfile(){
+ const signedIn=!!studentAccessToken;
+ document.getElementById("profileLoginNotice").hidden=signedIn;
+ document.getElementById("profileWorkspace").hidden=!signedIn;
+ if(!signedIn)return;
+ document.getElementById("profileDisplayName").textContent=studentDisplayName||"Pelajar";
+ document.getElementById("profileStatus").textContent=studentApproved?"Ahli StudyHub · Akaun diluluskan":"Ahli StudyHub · Menunggu kelulusan";
+ applyStudentProfile();
+}
+document.getElementById("profileGoDirectory").addEventListener("click",()=>document.querySelector('[data-page="students"]').click());
+document.getElementById("profileAvatarChoices").addEventListener("click",event=>{
+ const button=event.target.closest("[data-avatar]");if(!button)return;
+ const data=readStudentProfile();data.avatar=button.dataset.avatar;data.photo="";saveStudentProfile(data);applyStudentProfile();
+});
+document.querySelectorAll("[data-bg]").forEach(button=>button.addEventListener("click",()=>{
+ const data=readStudentProfile();data.background=button.dataset.bg;saveStudentProfile(data);applyStudentProfile();
+}));
+document.querySelectorAll("[data-border]").forEach(button=>button.addEventListener("click",()=>{
+ const data=readStudentProfile();data.border=button.dataset.border;saveStudentProfile(data);applyStudentProfile();
+}));
+document.getElementById("profileRemovePhoto").addEventListener("click",()=>{
+ const data=readStudentProfile();data.photo="";data.avatar=data.avatar||"🌟";saveStudentProfile(data);applyStudentProfile();
+});
+document.getElementById("profilePhotoInput").addEventListener("change",event=>{
+ const file=event.target.files?.[0];if(!file)return;
+ if(!file.type.startsWith("image/")){document.getElementById("profileSaveNote").textContent="Sila pilih fail gambar.";return;}
+ if(file.size>5*1024*1024){document.getElementById("profileSaveNote").textContent="Gambar mestilah kurang daripada 5 MB.";event.target.value="";return;}
+ const reader=new FileReader();
+ reader.onload=()=>{
+  const image=new Image();
+  image.onload=()=>{
+   const canvas=document.createElement("canvas"),scale=Math.min(1,420/Math.max(image.width,image.height));
+   canvas.width=Math.round(image.width*scale);canvas.height=Math.round(image.height*scale);
+   canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
+   const data=readStudentProfile();data.photo=canvas.toDataURL("image/jpeg",.78);saveStudentProfile(data);applyStudentProfile();
+  };
+  image.src=reader.result;
+ };
+ reader.readAsDataURL(file);
+});
 
 // Pulihkan sesi pelajar dan admin selepas halaman dimuat semula.
 (async()=>{
