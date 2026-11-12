@@ -135,8 +135,7 @@ a:hover{color:white!important;text-decoration:underline}
 </section>
 <section id="leaderboard" class="page">
  <div class="sectionhead"><div><h2>Leaderboard StudyHub</h2><div class="muted">Paparan ranking pencapaian pelajar mengikut subjek dan set kuiz.</div></div><span class="tag">Ranking kuiz</span></div>
- <div class="card" id="leaderboardGate" style="margin-bottom:16px"><strong>Akses pelajar diperlukan</strong><p class="muted" style="margin:6px 0">Log masuk menggunakan akaun pelajar yang telah diluluskan untuk melihat ranking.</p><button class="btn" type="button" id="leaderboardGoDirectory">Pergi ke Direktori Pelajar</button></div>
- <div id="leaderboardWorkspace" hidden>
+ <div id="leaderboardWorkspace">
   <div class="card">
    <div class="filters" style="margin-top:0">
     <select id="leaderboardSubject" aria-label="Pilih subjek leaderboard"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select>
@@ -642,13 +641,9 @@ function updateStudentQuizAccess(){
   const allowed = !!studentAccessToken && studentApproved;
   document.getElementById("quizGate").hidden = allowed;
   document.getElementById("quizWorkspace").hidden = !allowed;
-  document.getElementById("leaderboardGate").hidden = allowed;
-  document.getElementById("leaderboardWorkspace").hidden = !allowed;
+  document.getElementById("leaderboardWorkspace").hidden = false;
 }
 document.getElementById("quizGoDirectory").addEventListener("click",()=>{
-  document.querySelector('[data-page="students"]').click();
-});
-document.getElementById("leaderboardGoDirectory").addEventListener("click",()=>{
   document.querySelector('[data-page="students"]').click();
 });
 async function loadStudentQuizSets(){
@@ -735,14 +730,13 @@ document.getElementById("studentQuizSubmit").addEventListener("click",async()=>{
   finally{button.disabled=false;button.textContent="Hantar jawapan";}
 });
 async function loadStudentRanking(){
-  if(!studentAccessToken||!studentApproved)return;
   const subject=document.getElementById("leaderboardSubject").value;
   const setNumber=Number(document.getElementById("leaderboardSet").value);
   const rows=document.getElementById("studentQuizRankingRows");
   const empty=document.getElementById("studentQuizRankingEmpty");
   rows.innerHTML='<tr><td colspan="3" class="muted">Memuatkan ranking...</td></tr>';empty.hidden=true;
   try{
-    const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_studyhub_leaderboard",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json"},body:JSON.stringify({p_subject:subject,p_set_number:setNumber})});
+    const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_public_studyhub_leaderboard",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_subject:subject,p_set_number:setNumber})});
     const result=await response.json();
     if(!response.ok)throw new Error(result.message||"Tidak dapat memuatkan scoreboard.");
     rows.innerHTML=result.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeStudentText(r.display_name)+'</td><td>'+Number(r.score)+' / '+Number(r.total_questions)+'</td></tr>').join("");
@@ -751,12 +745,11 @@ async function loadStudentRanking(){
   }catch(error){rows.innerHTML='<tr><td colspan="3" class="muted">'+escapeStudentText(error.message)+'</td></tr>';}
 }
 async function loadLeaderboardSets(){
-  if(!studentAccessToken||!studentApproved)return;
   const subject=document.getElementById("leaderboardSubject").value;
   const select=document.getElementById("leaderboardSet");
   select.innerHTML='<option value="">Memuatkan...</option>';
   try{
-    const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=set_number&subject=eq."+subject+"&active=eq.true&order=set_number.asc",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
+    const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=set_number&subject=eq."+subject+"&active=eq.true&order=set_number.asc",{headers:{"apikey":SUPABASE_KEY}});
     if(!response.ok)throw new Error("Tidak dapat memuatkan set leaderboard.");
     const rows=await response.json();
     const sets=[...new Set(rows.map(x=>Number(x.set_number||1)))].sort((a,b)=>a-b);
@@ -771,6 +764,7 @@ document.getElementById("studentQuizLoad").addEventListener("click",loadStudentQ
 document.getElementById("studentQuizRankingRefresh").addEventListener("click",loadStudentRanking);
 document.getElementById("leaderboardSubject").addEventListener("change",loadLeaderboardSets);
 document.getElementById("leaderboardSet").addEventListener("change",loadStudentRanking);
+document.querySelector('[data-page="leaderboard"]').addEventListener("click",()=>{loadLeaderboardSets();});
 
 // Akaun pelajar: pendaftaran direktori sentiasa dipautkan kepada auth.uid().
 let studentAccessToken = null;
