@@ -121,6 +121,32 @@ a:hover{color:white!important;text-decoration:underline}
   </div>
   <div class="filters"><select id="pendingSort" aria-label="Susun permohonan"><option value="oldest">Paling awal</option><option value="newest">Paling baharu</option></select></div>
   <div class="tablewrap"><table style="min-width:520px"><thead><tr><th>Nama paparan</th><th>Tarikh daftar</th><th>Tindakan</th></tr></thead><tbody id="pendingStudentRows"></tbody></table><div id="pendingEmpty" class="empty" hidden>Tiada permohonan yang menunggu kelulusan.</div></div>
+  <div class="sectionhead"><div><h2>Pengurusan Kuiz Interaktif</h2><div class="muted">Tambah soalan objektif untuk PAM dan BM.</div></div><span class="tag">PAM · BM</span></div>
+  <div class="card" style="margin-bottom:16px">
+   <h3 id="quizEditorTitle" style="margin-top:0">Tambah soalan baharu</h3>
+   <form id="quizQuestionForm">
+    <label class="muted" for="quizSubject" style="display:block;margin-bottom:6px">Subjek</label>
+    <select id="quizSubject" required style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select>
+    <label class="muted" for="quizQuestionText" style="display:block;margin-bottom:6px">Soalan</label>
+    <textarea id="quizQuestionText" required rows="3" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px;resize:vertical"></textarea>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:0 0 12px">
+     <div><label class="muted" for="quizOptionA">Pilihan A</label><input id="quizOptionA" required style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px"></div>
+     <div><label class="muted" for="quizOptionB">Pilihan B</label><input id="quizOptionB" required style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px"></div>
+     <div><label class="muted" for="quizOptionC">Pilihan C</label><input id="quizOptionC" required style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px"></div>
+     <div><label class="muted" for="quizOptionD">Pilihan D</label><input id="quizOptionD" required style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px"></div>
+    </div>
+    <label class="muted" for="quizCorrectOption" style="display:block;margin-bottom:6px">Jawapan betul</label>
+    <select id="quizCorrectOption" required style="width:100%;max-width:220px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+    <label class="muted" for="quizExplanation" style="display:block;margin-bottom:6px">Penerangan jawapan (pilihan)</label>
+    <textarea id="quizExplanation" rows="2" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px;resize:vertical"></textarea>
+    <button class="btn" id="quizSaveButton" type="submit">Simpan soalan</button>
+    <button class="btn" id="quizCancelEdit" type="button" hidden style="background:#526184;margin-left:6px">Batal edit</button>
+    <p id="quizAdminMessage" class="muted" role="status" aria-live="polite" style="font-size:13px;margin-bottom:0"></p>
+   </form>
+  </div>
+  <div class="sectionhead"><h2>Senarai soalan kuiz</h2><button class="btn" id="quizRefreshButton" type="button">Muat semula</button></div>
+  <div class="filters"><select id="quizAdminFilter"><option value="">Semua subjek</option><option value="PAM">PAM</option><option value="BM">BM</option></select></div>
+  <div class="tablewrap"><table style="min-width:600px"><thead><tr><th>Subjek</th><th>Soalan</th><th>Jawapan</th><th>Tindakan</th></tr></thead><tbody id="adminQuizRows"></tbody></table><div id="adminQuizEmpty" class="empty" hidden>Belum ada soalan kuiz. Tambahkan soalan pertama di atas.</div></div>
   <p id="adminActionMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p>
  </div>
  
@@ -357,6 +383,139 @@ async function loadPendingStudents(){
   }
 }
 document.getElementById("pendingSort").addEventListener("change",renderPendingStudents);
+
+let adminQuizQuestions = [];
+let editingQuizQuestionId = null;
+const quizForm = document.getElementById("quizQuestionForm");
+const quizAdminRows = document.getElementById("adminQuizRows");
+const quizAdminMessage = document.getElementById("quizAdminMessage");
+
+function resetQuizEditor(){
+  editingQuizQuestionId = null;
+  quizForm.reset();
+  document.getElementById("quizSubject").value = "PAM";
+  document.getElementById("quizEditorTitle").textContent = "Tambah soalan baharu";
+  document.getElementById("quizSaveButton").textContent = "Simpan soalan";
+  document.getElementById("quizCancelEdit").hidden = true;
+}
+function renderAdminQuizQuestions(){
+  const filter = document.getElementById("quizAdminFilter").value;
+  const filtered = adminQuizQuestions.filter(q => !filter || q.subject === filter);
+  quizAdminRows.innerHTML = filtered.map(q => {
+    const safeQuestion = escapeStudentText(q.question_text);
+    return '<tr><td><span class="tag">'+q.subject+'</span></td><td>'+safeQuestion+'</td><td>'+escapeStudentText(q.correct_option || "—")+'</td><td><button class="btn" type="button" data-quiz-edit="'+q.id+'" style="margin:3px">Edit</button><button class="btn" type="button" data-quiz-delete="'+q.id+'" style="margin:3px;background:#8b405b">Padam</button></td></tr>';
+  }).join("");
+  document.getElementById("adminQuizEmpty").hidden = filtered.length !== 0;
+}
+async function loadAdminQuizQuestions(){
+  quizAdminRows.innerHTML = '<tr><td colspan="4" class="muted">Memuatkan soalan...</td></tr>';
+  try{
+    const [questionResponse, answerResponse] = await Promise.all([
+      fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=id,subject,question_text,option_a,option_b,option_c,option_d,active,created_at&order=created_at.desc",{headers:adminHeaders()}),
+      fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_answers?select=question_id,correct_option,explanation",{headers:adminHeaders()})
+    ]);
+    if(!questionResponse.ok || !answerResponse.ok) throw new Error("Tidak dapat memuatkan soalan. Semak jadual dan polisi RLS kuiz.");
+    const questions = await questionResponse.json();
+    const answers = await answerResponse.json();
+    const answerMap = new Map(answers.map(a => [String(a.question_id),a]));
+    adminQuizQuestions = questions.map(q => ({...q,...(answerMap.get(String(q.id)) || {})}));
+    renderAdminQuizQuestions();
+  }catch(error){
+    quizAdminRows.innerHTML = '<tr><td colspan="4" class="muted">'+escapeStudentText(error.message)+'</td></tr>';
+    document.getElementById("adminQuizEmpty").hidden = true;
+  }
+}
+quizForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!adminAccessToken){quizAdminMessage.textContent="Sila log masuk sebagai admin dahulu.";return;}
+  const saveButton = document.getElementById("quizSaveButton");
+  const question = {
+    subject:document.getElementById("quizSubject").value,
+    question_text:document.getElementById("quizQuestionText").value.trim(),
+    option_a:document.getElementById("quizOptionA").value.trim(),
+    option_b:document.getElementById("quizOptionB").value.trim(),
+    option_c:document.getElementById("quizOptionC").value.trim(),
+    option_d:document.getElementById("quizOptionD").value.trim(),
+    active:true
+  };
+  const answer = {
+    correct_option:document.getElementById("quizCorrectOption").value,
+    explanation:document.getElementById("quizExplanation").value.trim() || null
+  };
+  if(Object.values(question).some(v=>typeof v==="string"&&!v)){quizAdminMessage.textContent="Sila lengkapkan semua ruangan soalan dan pilihan jawapan.";return;}
+  saveButton.disabled = true;
+  saveButton.textContent = "Menyimpan...";
+  quizAdminMessage.textContent = "";
+  try{
+    let questionId = editingQuizQuestionId;
+    if(questionId){
+      const updateResponse = await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?id=eq."+encodeURIComponent(questionId),{
+        method:"PATCH",headers:adminHeaders({"Content-Type":"application/json","Prefer":"return=minimal"}),body:JSON.stringify(question)
+      });
+      if(!updateResponse.ok) throw new Error("Tidak dapat mengemas kini soalan.");
+      const answerResponse = await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_answers?on_conflict=question_id",{
+        method:"POST",headers:adminHeaders({"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify({...answer,question_id:questionId})
+      });
+      if(!answerResponse.ok) throw new Error("Soalan dikemas kini tetapi jawapan gagal disimpan. Sila cuba edit semula.");
+      quizAdminMessage.textContent = "Soalan berjaya dikemas kini.";
+    }else{
+      const createResponse = await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=id",{
+        method:"POST",headers:adminHeaders({"Content-Type":"application/json","Prefer":"return=representation"}),body:JSON.stringify(question)
+      });
+      if(!createResponse.ok) throw new Error("Tidak dapat menyimpan soalan.");
+      const created = await createResponse.json();
+      questionId = created[0]?.id;
+      if(!questionId) throw new Error("Soalan disimpan tetapi ID tidak diterima.");
+      const answerResponse = await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_answers",{
+        method:"POST",headers:adminHeaders({"Content-Type":"application/json","Prefer":"return=minimal"}),body:JSON.stringify({...answer,question_id:questionId})
+      });
+      if(!answerResponse.ok){
+        await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?id=eq."+encodeURIComponent(questionId),{method:"DELETE",headers:adminHeaders()});
+        throw new Error("Jawapan gagal disimpan. Soalan baharu dibatalkan; cuba sekali lagi.");
+      }
+      quizAdminMessage.textContent = "Soalan berjaya ditambah.";
+    }
+    resetQuizEditor();
+    await loadAdminQuizQuestions();
+  }catch(error){quizAdminMessage.textContent=error.message||"Ralat semasa menyimpan soalan.";}
+  finally{saveButton.disabled=false;if(!editingQuizQuestionId)saveButton.textContent="Simpan soalan";}
+});
+quizAdminRows.addEventListener("click",async event=>{
+  const editButton = event.target.closest("[data-quiz-edit]");
+  const deleteButton = event.target.closest("[data-quiz-delete]");
+  if(editButton){
+    const q = adminQuizQuestions.find(item=>String(item.id)===editButton.dataset.quizEdit);
+    if(!q)return;
+    editingQuizQuestionId = q.id;
+    document.getElementById("quizSubject").value=q.subject;
+    document.getElementById("quizQuestionText").value=q.question_text;
+    document.getElementById("quizOptionA").value=q.option_a;
+    document.getElementById("quizOptionB").value=q.option_b;
+    document.getElementById("quizOptionC").value=q.option_c;
+    document.getElementById("quizOptionD").value=q.option_d;
+    document.getElementById("quizCorrectOption").value=q.correct_option||"A";
+    document.getElementById("quizExplanation").value=q.explanation||"";
+    document.getElementById("quizEditorTitle").textContent="Edit soalan";
+    document.getElementById("quizSaveButton").textContent="Simpan perubahan";
+    document.getElementById("quizCancelEdit").hidden=false;
+    quizAdminMessage.textContent="Anda sedang mengedit soalan yang dipilih.";
+    document.getElementById("quizEditorTitle").scrollIntoView({behavior:"smooth",block:"center"});
+  }else if(deleteButton){
+    const q = adminQuizQuestions.find(item=>String(item.id)===deleteButton.dataset.quizDelete);
+    if(!q || !confirm("Padam soalan ini? Tindakan ini tidak boleh dibatalkan."))return;
+    deleteButton.disabled=true;
+    try{
+      const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?id=eq."+encodeURIComponent(q.id),{method:"DELETE",headers:adminHeaders()});
+      if(!response.ok)throw new Error("Tidak dapat memadam soalan.");
+      quizAdminMessage.textContent="Soalan berjaya dipadam.";
+      if(String(editingQuizQuestionId)===String(q.id))resetQuizEditor();
+      await loadAdminQuizQuestions();
+    }catch(error){quizAdminMessage.textContent=error.message||"Ralat memadam soalan.";deleteButton.disabled=false;}
+  }
+});
+document.getElementById("quizCancelEdit").addEventListener("click",resetQuizEditor);
+document.getElementById("quizRefreshButton").addEventListener("click",loadAdminQuizQuestions);
+document.getElementById("quizAdminFilter").addEventListener("change",renderAdminQuizQuestions);
 adminLoginForm.addEventListener("submit",async event=>{
   event.preventDefault();
   const button=document.getElementById("adminLoginButton");
@@ -378,6 +537,7 @@ adminLoginForm.addEventListener("submit",async event=>{
     adminLoginCard.hidden=true;adminDashboard.hidden=false;
     document.getElementById("adminPassword").value="";
     await loadPendingStudents();
+    await loadAdminQuizQuestions();
   }catch(error){adminLoginMessage.textContent=error.message||"Ralat log masuk.";}
   finally{button.disabled=false;button.textContent="Log masuk";}
 });
