@@ -48,6 +48,7 @@ a:hover{color:white!important;text-decoration:underline}
   <button data-page="bank"><b>▤</b> Bank Soalan</button>
   <button data-page="planner"><b>▦</b> Planner</button>
   <button data-page="students"><b>♙</b> Direktori Pelajar</button>
+  <button data-page="admin"><b>⚙</b> Panel Admin</button>
  </nav>
  <div class="navlabel">Lain-lain</div>
  <nav class="nav"><button data-page="about"><b>ⓘ</b> Panduan</button></nav>
@@ -98,6 +99,26 @@ a:hover{color:white!important;text-decoration:underline}
  <div class="filters"><input id="studentSearch" placeholder="Cari nama paparan..." aria-label="Cari nama pelajar"></div>
  <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Bil.</th><th>Nama paparan</th><th>Tarikh disertai</th></tr></thead><tbody id="studentRows"><tr><td colspan="3" class="muted">Memuatkan senarai pelajar...</td></tr></tbody></table><div id="studentEmpty" class="empty" hidden>Belum ada nama yang diluluskan untuk dipaparkan.</div></div>
  <div class="notice">Nama yang dihantar tidak dipaparkan serta-merta. Pentadbir StudyHub perlu meluluskannya terlebih dahulu. Gunakan nama samaran dan jangan kongsi maklumat peribadi.</div>
+</section>
+<section id="admin" class="page">
+ <div class="sectionhead"><div><h2>Panel Admin StudyHub</h2><div class="muted">Urus pendaftaran pelajar yang menunggu kelulusan.</div></div><span class="tag">Akses pentadbir sahaja</span></div>
+ <div class="card" id="adminLoginCard" style="max-width:520px">
+  <h3 style="margin-top:0">Log masuk pentadbir</h3>
+  <form id="adminLoginForm">
+   <label for="adminEmail" class="muted" style="display:block;margin-bottom:6px">E-mel admin</label>
+   <input id="adminEmail" type="email" value="amsyar291008@gmail.com" required autocomplete="username" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
+   <label for="adminPassword" class="muted" style="display:block;margin-bottom:6px">Kata laluan</label>
+   <input id="adminPassword" type="password" required autocomplete="current-password" placeholder="Kata laluan Supabase" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:14px">
+   <button class="btn" id="adminLoginButton" type="submit">Log masuk</button>
+   <p id="adminLoginMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p>
+  </form>
+ </div>
+ <div id="adminDashboard" hidden>
+  <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
+  <div class="tablewrap"><table style="min-width:520px"><thead><tr><th>Nama paparan</th><th>Tarikh daftar</th><th>Tindakan</th></tr></thead><tbody id="pendingStudentRows"></tbody></table><div id="pendingEmpty" class="empty" hidden>Tiada permohonan yang menunggu kelulusan.</div></div>
+  <p id="adminActionMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p>
+ </div>
+ <div class="notice">Log masuk menggunakan akaun admin yang didaftarkan dalam Supabase Authentication. Jangan kongsi kata laluan.</div>
 </section>
 <section id="planner" class="page">
  <div class="sectionhead"><div><h2>Planner Mingguan</h2><div class="muted">Contoh susunan ulang kaji — ubah ikut jadual sendiri.</div></div></div>
@@ -288,6 +309,89 @@ async function loadStudents(){
     document.getElementById("studentCount").textContent = "Tidak tersedia";
   }
 }
+
+// Panel admin: sesi disimpan dalam memori halaman sahaja.
+let adminAccessToken = null;
+const ADMIN_EMAIL = "amsyar291008@gmail.com";
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminLoginMessage = document.getElementById("adminLoginMessage");
+const adminDashboard = document.getElementById("adminDashboard");
+const adminLoginCard = document.getElementById("adminLoginCard");
+const pendingRows = document.getElementById("pendingStudentRows");
+
+function adminHeaders(extra={}){
+  return {"apikey":SUPABASE_KEY,"Authorization":"Bearer "+adminAccessToken,...extra};
+}
+function showAdminMessage(message){
+  document.getElementById("adminActionMessage").textContent = message;
+}
+async function loadPendingStudents(){
+  pendingRows.innerHTML = '<tr><td colspan="3" class="muted">Memuatkan...</td></tr>';
+  try{
+    const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id,display_name,created_at,approved&approved=eq.false&order=created_at.asc",{headers:adminHeaders()});
+    if(!response.ok) throw new Error("Tidak dapat memuatkan permohonan. Semak polisi RLS dan kebenaran jadual.");
+    const students = await response.json();
+    document.getElementById("pendingCount").textContent = students.length+" permohonan menunggu";
+    document.getElementById("pendingEmpty").hidden = students.length !== 0;
+    pendingRows.innerHTML = students.map(student=>{
+      const date = student.created_at ? new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"short",year:"numeric"}) : "—";
+      return '<tr><td>'+escapeStudentText(student.display_name)+'</td><td>'+date+'</td><td><button class="btn" type="button" data-approve="'+student.id+'" style="margin:3px">Luluskan</button><button class="btn" type="button" data-reject="'+student.id+'" style="margin:3px;background:#8b405b">Tolak</button></td></tr>';
+    }).join("");
+    showAdminMessage("");
+  }catch(error){
+    pendingRows.innerHTML = "";
+    showAdminMessage(error.message);
+  }
+}
+adminLoginForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const button=document.getElementById("adminLoginButton");
+  const email=document.getElementById("adminEmail").value.trim().toLowerCase();
+  const password=document.getElementById("adminPassword").value;
+  if(email!==ADMIN_EMAIL){adminLoginMessage.textContent="Akaun ini tidak dibenarkan sebagai pentadbir.";return;}
+  button.disabled=true;button.textContent="Menyemak...";
+  adminLoginMessage.textContent="";
+  try{
+    const response=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({email,password})
+    });
+    const result=await response.json();
+    if(!response.ok) throw new Error(result.msg||result.message||result.error_description||"Log masuk gagal. Semak e-mel dan kata laluan.");
+    if(!result.user||String(result.user.email||"").toLowerCase()!==ADMIN_EMAIL) throw new Error("Akaun ini bukan pentadbir StudyHub.");
+    adminAccessToken=result.access_token;
+    adminLoginCard.hidden=true;adminDashboard.hidden=false;
+    document.getElementById("adminPassword").value="";
+    await loadPendingStudents();
+  }catch(error){adminLoginMessage.textContent=error.message||"Ralat log masuk.";}
+  finally{button.disabled=false;button.textContent="Log masuk";}
+});
+pendingRows.addEventListener("click",async event=>{
+  const approveButton=event.target.closest("[data-approve]");
+  const rejectButton=event.target.closest("[data-reject]");
+  if(!approveButton&&!rejectButton)return;
+  const id=(approveButton||rejectButton).dataset.approve||(approveButton||rejectButton).dataset.reject;
+  const isApprove=!!approveButton;
+  if(!isApprove&&!confirm("Tolak dan padam pendaftaran ini?"))return;
+  const button=approveButton||rejectButton;button.disabled=true;
+  try{
+    const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?id=eq."+encodeURIComponent(id),{
+      method:isApprove?"PATCH":"DELETE",
+      headers:adminHeaders({"Content-Type":"application/json","Prefer":"return=minimal"}),
+      ...(isApprove?{body:JSON.stringify({approved:true})}:{})
+    });
+    if(!response.ok)throw new Error("Tindakan gagal. Sila cuba lagi.");
+    showAdminMessage(isApprove?"Nama berjaya diluluskan.":"Pendaftaran telah ditolak dan dipadam.");
+    await loadPendingStudents();
+    if(isApprove)await loadStudents();
+  }catch(error){showAdminMessage(error.message||"Ralat semasa mengemas kini.");button.disabled=false;}
+});
+document.getElementById("adminLogoutButton").addEventListener("click",async()=>{
+  if(adminAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:adminHeaders()});}catch(error){}}
+  adminAccessToken=null;adminDashboard.hidden=true;adminLoginCard.hidden=false;
+  adminLoginMessage.textContent="Anda telah log keluar.";
+});
 
 document.getElementById("studentSearch").addEventListener("input",renderStudents);
 document.getElementById("studentForm").addEventListener("submit",async event=>{
