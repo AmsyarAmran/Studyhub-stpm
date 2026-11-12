@@ -87,13 +87,23 @@ a:hover{color:white!important;text-decoration:underline}
  <div class="card" style="margin-bottom:16px">
   <h3 style="margin:0 0 6px">Sertai Direktori StudyHub</h3>
   <p class="muted" style="margin:0 0 14px;font-size:13px">Gunakan nama samaran atau nama paparan. Jangan masukkan nama penuh, nama sekolah, nombor telefon atau maklumat peribadi.</p>
-  <form id="studentForm">
-   <label for="displayName" class="muted" style="display:block;margin-bottom:6px">Nama paparan</label>
-   <input id="displayName" name="displayName" maxlength="24" minlength="2" required autocomplete="nickname" placeholder="Contoh: PelajarSTPM27" style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
-   <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted);margin-bottom:14px"><input id="publicConsent" type="checkbox" required style="margin-top:4px"> Saya bersetuju nama paparan ini dipaparkan secara umum dalam Direktori Pelajar StudyHub.</label>
-   <button class="btn" id="studentSubmit" type="submit">Hantar nama</button>
-   <p id="studentMessage" class="muted" role="status" aria-live="polite" style="margin:12px 0 0;font-size:13px"></p>
-  </form>
+  <div id="studentAuthPanel">
+   <div class="filters" style="margin-top:0"><button class="btn" id="studentSignupMode" type="button">Daftar akaun</button><button class="btn" id="studentLoginMode" type="button" style="background:#526184">Log masuk</button></div>
+   <form id="studentForm">
+    <label for="studentEmail" class="muted" style="display:block;margin-bottom:6px">E-mel</label>
+    <input id="studentEmail" type="email" required autocomplete="email" placeholder="nama@email.com" style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
+    <label for="studentPassword" class="muted" style="display:block;margin-bottom:6px">Kata laluan</label>
+    <input id="studentPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="Sekurang-kurangnya 6 aksara" style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
+    <div id="studentRegistrationFields">
+     <label for="displayName" class="muted" style="display:block;margin-bottom:6px">Nama paparan</label>
+     <input id="displayName" name="displayName" maxlength="24" minlength="2" autocomplete="nickname" placeholder="Contoh: PelajarSTPM27" style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
+     <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted);margin-bottom:14px"><input id="publicConsent" type="checkbox" style="margin-top:4px"> Saya bersetuju nama paparan ini dipaparkan secara umum dalam Direktori Pelajar StudyHub.</label>
+    </div>
+    <button class="btn" id="studentSubmit" type="submit">Daftar akaun</button>
+    <p id="studentMessage" class="muted" role="status" aria-live="polite" style="margin:12px 0 0;font-size:13px"></p>
+   </form>
+  </div>
+  <div id="studentSignedIn" class="notice" hidden><strong id="studentAccountStatus">Anda telah log masuk.</strong><p id="studentAccountMessage" style="margin:6px 0 12px"></p><button class="btn" id="studentLogoutButton" type="button">Log keluar</button></div>
  </div>
  <div class="filters"><input id="studentSearch" placeholder="Cari nama paparan..." aria-label="Cari nama pelajar"></div>
  <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Bil.</th><th>Nama paparan</th><th>Tarikh disertai</th></tr></thead><tbody id="studentRows"><tr><td colspan="3" class="muted">Memuatkan senarai pelajar...</td></tr></tbody></table><div id="studentEmpty" class="empty" hidden>Belum ada nama yang diluluskan untuk dipaparkan.</div></div>
@@ -568,43 +578,97 @@ document.getElementById("adminLogoutButton").addEventListener("click",async()=>{
 });
 
 document.getElementById("studentSearch").addEventListener("input",renderStudents);
-document.getElementById("studentForm").addEventListener("submit",async event=>{
+
+// Akaun pelajar: pendaftaran direktori sentiasa dipautkan kepada auth.uid().
+let studentAccessToken = null;
+let studentAuthMode = "signup";
+let studentUserId = null;
+const studentForm = document.getElementById("studentForm");
+const studentMessage = document.getElementById("studentMessage");
+function setStudentAuthMode(mode){
+  studentAuthMode = mode;
+  const signup = mode === "signup";
+  document.getElementById("studentRegistrationFields").hidden = !signup;
+  document.getElementById("displayName").required = signup;
+  document.getElementById("publicConsent").required = signup;
+  document.getElementById("studentSubmit").textContent = signup ? "Daftar akaun" : "Log masuk";
+  document.getElementById("studentSignupMode").style.background = signup ? "" : "#526184";
+  document.getElementById("studentLoginMode").style.background = signup ? "#526184" : "";
+  document.getElementById("studentPassword").autocomplete = signup ? "new-password" : "current-password";
+  studentMessage.textContent = "";
+}
+function showStudentSession(status,message){
+  document.getElementById("studentAuthPanel").hidden = !!studentAccessToken;
+  document.getElementById("studentSignedIn").hidden = !studentAccessToken;
+  document.getElementById("studentAccountStatus").textContent = status;
+  document.getElementById("studentAccountMessage").textContent = message;
+}
+async function checkStudentRegistration(){
+  const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id,display_name,approved&user_id=eq."+encodeURIComponent(studentUserId),{
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}
+  });
+  if(!response.ok) throw new Error("Tidak dapat menyemak status pendaftaran.");
+  const rows = await response.json();
+  if(rows.length){
+    const row = rows[0];
+    showStudentSession(row.approved ? "Akaun diluluskan" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Admin StudyHub perlu meluluskan nama paparan anda sebelum anda boleh menjawab kuiz.");
+  }else{
+    showStudentSession("Akaun berjaya log masuk","Lengkapkan pendaftaran nama paparan anda di bawah.");
+    document.getElementById("studentAuthPanel").hidden = false;
+    setStudentAuthMode("signup");
+    document.getElementById("studentEmail").value = "";
+    document.getElementById("studentPassword").value = "";
+    studentMessage.textContent = "Akaun ini belum mempunyai pendaftaran direktori. Log keluar dan daftar semula dengan akaun yang betul.";
+  }
+}
+document.getElementById("studentSignupMode").addEventListener("click",()=>setStudentAuthMode("signup"));
+document.getElementById("studentLoginMode").addEventListener("click",()=>setStudentAuthMode("login"));
+studentForm.addEventListener("submit",async event=>{
   event.preventDefault();
-  const message = document.getElementById("studentMessage");
-  const submit = document.getElementById("studentSubmit");
-  const displayName = document.getElementById("displayName").value.trim();
-  if(displayName.length < 2 || displayName.length > 24){
-    message.textContent = "Nama paparan mestilah antara 2 hingga 24 aksara.";
-    return;
+  const submit=document.getElementById("studentSubmit");
+  const email=document.getElementById("studentEmail").value.trim().toLowerCase();
+  const password=document.getElementById("studentPassword").value;
+  const displayName=document.getElementById("displayName").value.trim();
+  if(studentAuthMode==="signup"){
+    if(displayName.length<2||displayName.length>24){studentMessage.textContent="Nama paparan mestilah antara 2 hingga 24 aksara.";return;}
+    if(!document.getElementById("publicConsent").checked){studentMessage.textContent="Sila berikan persetujuan sebelum menghantar nama.";return;}
   }
-  if(!document.getElementById("publicConsent").checked){
-    message.textContent = "Sila berikan persetujuan sebelum menghantar nama.";
-    return;
-  }
-  submit.disabled = true;
-  submit.textContent = "Menghantar...";
-  message.textContent = "";
+  submit.disabled=true;submit.textContent=studentAuthMode==="signup"?"Mendaftar...":"Log masuk...";
+  studentMessage.textContent="";
   try{
-    const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{
-      method:"POST",
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer "+SUPABASE_KEY,
-        "Content-Type":"application/json",
-        "Prefer":"return=minimal"
-      },
-      body:JSON.stringify({display_name:displayName,consent_public:true,approved:false})
-    });
-    if(!response.ok) throw new Error("Penghantaran gagal. Sila cuba lagi.");
-    document.getElementById("studentForm").reset();
-    message.textContent = "Terima kasih! Nama dihantar dan menunggu kelulusan pentadbir.";
-  }catch(error){
-    message.textContent = error.message || "Ralat sambungan. Cuba lagi sebentar nanti.";
-  }finally{
-    submit.disabled = false;
-    submit.textContent = "Hantar nama";
-  }
+    const endpoint=studentAuthMode==="signup"?"/auth/v1/signup":"/auth/v1/token?grant_type=password";
+    const payload=studentAuthMode==="signup"?{email,password}:{email,password};
+    const response=await fetch(SUPABASE_URL+endpoint,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.msg||result.message||result.error_description||"Tidak berjaya. Semak e-mel dan kata laluan.");
+    if(studentAuthMode==="signup"){
+      if(!result.access_token){
+        studentForm.reset();
+        studentMessage.textContent="Akaun berjaya didaftarkan. Semak e-mel untuk pengesahan, kemudian pilih Log masuk.";
+        return;
+      }
+      studentAccessToken=result.access_token;studentUserId=result.user?.id;
+      if(!studentUserId)throw new Error("ID akaun tidak diterima. Cuba log masuk semula.");
+      const registration=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{
+        method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({user_id:studentUserId,display_name:displayName,consent_public:true,approved:false})
+      });
+      if(!registration.ok)throw new Error("Akaun berjaya dibuat, tetapi pendaftaran nama belum dihantar. Log masuk semula dan hubungi admin jika masalah berterusan.");
+      studentForm.reset();await checkStudentRegistration();await loadStudents();
+    }else{
+      studentAccessToken=result.access_token;studentUserId=result.user?.id;
+      if(!studentUserId)throw new Error("Maklumat akaun tidak diterima.");
+      await checkStudentRegistration();
+    }
+  }catch(error){studentMessage.textContent=error.message||"Ralat sambungan. Cuba lagi.";}
+  finally{submit.disabled=false;submit.textContent=studentAuthMode==="signup"?"Daftar akaun":"Log masuk";}
 });
+document.getElementById("studentLogoutButton").addEventListener("click",async()=>{
+  if(studentAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});}catch(error){}}
+  studentAccessToken=null;studentUserId=null;showStudentSession("","");setStudentAuthMode("signup");
+});
+setStudentAuthMode("signup");
+showStudentSession("","");
 loadStudents();
 
 </script>
