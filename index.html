@@ -48,6 +48,7 @@ a:hover{color:white!important;text-decoration:underline}
   <button data-page="bank"><b>▤</b> Bank Soalan</button>
    <button data-page="students"><b>♙</b> Direktori Pelajar</button>
   <button data-page="quiz"><b>✎</b> Kuiz Interaktif</button>
+  <button data-page="leaderboard"><b>★</b> Leaderboard</button>
   <button data-page="admin"><b>⚙</b> Panel Admin</button>
  </nav>
  <div class="navlabel">Lain-lain</div>
@@ -129,8 +130,20 @@ a:hover{color:white!important;text-decoration:underline}
    </div>
    <div id="studentQuizResult" class="notice" hidden></div>
   </div>
+
+ </div>
+</section>
+<section id="leaderboard" class="page">
+ <div class="sectionhead"><div><h2>Leaderboard StudyHub</h2><div class="muted">Paparan ranking pencapaian pelajar mengikut subjek dan set kuiz.</div></div><span class="tag">Ranking kuiz</span></div>
+ <div class="card" id="leaderboardGate" style="margin-bottom:16px"><strong>Akses pelajar diperlukan</strong><p class="muted" style="margin:6px 0">Log masuk menggunakan akaun pelajar yang telah diluluskan untuk melihat ranking.</p><button class="btn" type="button" id="leaderboardGoDirectory">Pergi ke Direktori Pelajar</button></div>
+ <div id="leaderboardWorkspace" hidden>
   <div class="card">
-   <div class="sectionhead"><div><h3 style="margin:0">Scoreboard</h3><div class="muted">Kedudukan berdasarkan markah bagi set yang dipilih.</div></div><button class="btn" type="button" id="studentQuizRankingRefresh">Muat semula</button></div>
+   <div class="filters" style="margin-top:0">
+    <select id="leaderboardSubject" aria-label="Pilih subjek leaderboard"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select>
+    <select id="leaderboardSet" aria-label="Pilih set leaderboard"><option value="">Memuatkan set...</option></select>
+    <button class="btn" type="button" id="studentQuizRankingRefresh">Muat semula ranking</button>
+   </div>
+   <p class="muted">Kedudukan disusun mengikut markah tertinggi. Jika markah sama, masa penghantaran lebih awal diberi keutamaan.</p>
    <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Rank</th><th>Nama paparan</th><th>Markah</th></tr></thead><tbody id="studentQuizRankingRows"></tbody></table><div id="studentQuizRankingEmpty" class="empty" hidden>Belum ada keputusan bagi set ini.</div></div>
   </div>
  </div>
@@ -629,8 +642,13 @@ function updateStudentQuizAccess(){
   const allowed = !!studentAccessToken && studentApproved;
   document.getElementById("quizGate").hidden = allowed;
   document.getElementById("quizWorkspace").hidden = !allowed;
+  document.getElementById("leaderboardGate").hidden = allowed;
+  document.getElementById("leaderboardWorkspace").hidden = !allowed;
 }
 document.getElementById("quizGoDirectory").addEventListener("click",()=>{
+  document.querySelector('[data-page="students"]').click();
+});
+document.getElementById("leaderboardGoDirectory").addEventListener("click",()=>{
   document.querySelector('[data-page="students"]').click();
 });
 async function loadStudentQuizSets(){
@@ -711,14 +729,15 @@ document.getElementById("studentQuizSubmit").addEventListener("click",async()=>{
     document.getElementById("studentQuizResult").hidden=false;
     document.getElementById("studentQuizResult").innerHTML='<strong>Kuiz selesai!</strong><p style="margin:6px 0">Markah anda: <strong>'+Number(outcome.score)+' / '+Number(outcome.total_questions)+'</strong></p><p style="margin:0">Percubaan bagi set ini telah digunakan.</p>';
     document.getElementById("studentQuizStatus").textContent="Keputusan berjaya disimpan.";
-    await loadStudentRanking();
+    document.getElementById("leaderboardSubject").value=studentQuizSubject;
+    await loadLeaderboardSets();
   }catch(error){document.getElementById("studentQuizStatus").textContent=error.message||"Ralat menghantar jawapan.";}
   finally{button.disabled=false;button.textContent="Hantar jawapan";}
 });
 async function loadStudentRanking(){
   if(!studentAccessToken||!studentApproved)return;
-  const subject=document.getElementById("studentQuizSubject").value;
-  const setNumber=Number(document.getElementById("studentQuizSet").value);
+  const subject=document.getElementById("leaderboardSubject").value;
+  const setNumber=Number(document.getElementById("leaderboardSet").value);
   const rows=document.getElementById("studentQuizRankingRows");
   const empty=document.getElementById("studentQuizRankingEmpty");
   rows.innerHTML='<tr><td colspan="3" class="muted">Memuatkan ranking...</td></tr>';empty.hidden=true;
@@ -731,9 +750,27 @@ async function loadStudentRanking(){
     if(!result.length)rows.innerHTML="";
   }catch(error){rows.innerHTML='<tr><td colspan="3" class="muted">'+escapeStudentText(error.message)+'</td></tr>';}
 }
+async function loadLeaderboardSets(){
+  if(!studentAccessToken||!studentApproved)return;
+  const subject=document.getElementById("leaderboardSubject").value;
+  const select=document.getElementById("leaderboardSet");
+  select.innerHTML='<option value="">Memuatkan...</option>';
+  try{
+    const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=set_number&subject=eq."+subject+"&active=eq.true&order=set_number.asc",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
+    if(!response.ok)throw new Error("Tidak dapat memuatkan set leaderboard.");
+    const rows=await response.json();
+    const sets=[...new Set(rows.map(x=>Number(x.set_number||1)))].sort((a,b)=>a-b);
+    select.innerHTML=sets.length?sets.map(n=>'<option value="'+n+'">Set '+n+'</option>').join(""):'<option value="">Tiada set</option>';
+    if(sets.length)await loadStudentRanking();
+    else document.getElementById("studentQuizRankingRows").innerHTML="";
+    document.getElementById("studentQuizRankingEmpty").hidden=sets.length!==0;
+  }catch(error){select.innerHTML='<option value="">Tidak tersedia</option>';document.getElementById("studentQuizRankingRows").innerHTML='<tr><td colspan="3" class="muted">'+escapeStudentText(error.message)+'</td></tr>';}
+}
 document.getElementById("studentQuizSubject").addEventListener("change",loadStudentQuizSets);
-document.getElementById("studentQuizLoad").addEventListener("click",async()=>{await loadStudentQuiz();await loadStudentRanking();});
+document.getElementById("studentQuizLoad").addEventListener("click",loadStudentQuiz);
 document.getElementById("studentQuizRankingRefresh").addEventListener("click",loadStudentRanking);
+document.getElementById("leaderboardSubject").addEventListener("change",loadLeaderboardSets);
+document.getElementById("leaderboardSet").addEventListener("change",loadStudentRanking);
 
 // Akaun pelajar: pendaftaran direktori sentiasa dipautkan kepada auth.uid().
 let studentAccessToken = null;
@@ -776,7 +813,7 @@ async function checkStudentRegistration(){
     studentApproved = !!row.approved;
     showStudentSession(row.approved ? "Akaun diluluskan" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Admin StudyHub perlu meluluskan nama paparan anda sebelum anda boleh menjawab kuiz.");
     updateStudentQuizAccess();
-    if(studentApproved) await loadStudentQuizSets();
+    if(studentApproved){ await loadStudentQuizSets(); await loadLeaderboardSets(); }
   }else{
     studentApproved = false;
     updateStudentQuizAccess();
