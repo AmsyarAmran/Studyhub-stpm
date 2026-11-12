@@ -115,6 +115,12 @@ a:hover{color:white!important;text-decoration:underline}
  </div>
  <div id="adminDashboard" hidden>
   <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+   <div class="card"><small>Jumlah pelajar</small><div class="stat" id="adminTotalCount">0</div></div>
+   <div class="card"><small>Menunggu kelulusan</small><div class="stat" id="adminPendingCount">0</div></div>
+   <div class="card"><small>Telah diluluskan</small><div class="stat" id="adminApprovedCount">0</div></div>
+  </div>
+  <div class="filters"><select id="pendingSort" aria-label="Susun permohonan"><option value="oldest">Paling awal</option><option value="newest">Paling baharu</option></select></div>
   <div class="tablewrap"><table style="min-width:520px"><thead><tr><th>Nama paparan</th><th>Tarikh daftar</th><th>Tindakan</th></tr></thead><tbody id="pendingStudentRows"></tbody></table><div id="pendingEmpty" class="empty" hidden>Tiada permohonan yang menunggu kelulusan.</div></div>
   <p id="adminActionMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p>
  </div>
@@ -325,24 +331,40 @@ function adminHeaders(extra={}){
 function showAdminMessage(message){
   document.getElementById("adminActionMessage").textContent = message;
 }
+let pendingStudents = [];
+function renderPendingStudents(){
+  const sort = document.getElementById("pendingSort").value;
+  const ordered = [...pendingStudents].sort((a,b)=>{
+    const diff = new Date(a.created_at||0)-new Date(b.created_at||0);
+    return sort === "newest" ? -diff : diff;
+  });
+  document.getElementById("pendingEmpty").hidden = ordered.length !== 0;
+  pendingRows.innerHTML = ordered.map(student=>{
+    const date = student.created_at ? new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"short",year:"numeric"}) : "—";
+    return '<tr><td>'+escapeStudentText(student.display_name)+'</td><td>'+date+'</td><td><button class="btn" type="button" data-approve="'+student.id+'" style="margin:3px">Luluskan</button><button class="btn" type="button" data-reject="'+student.id+'" style="margin:3px;background:#8b405b">Tolak</button></td></tr>';
+  }).join("");
+}
 async function loadPendingStudents(){
   pendingRows.innerHTML = '<tr><td colspan="3" class="muted">Memuatkan...</td></tr>';
   try{
     const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id,display_name,created_at,approved&approved=eq.false&order=created_at.asc",{headers:adminHeaders()});
     if(!response.ok) throw new Error("Tidak dapat memuatkan permohonan. Semak polisi RLS dan kebenaran jadual.");
-    const students = await response.json();
-    document.getElementById("pendingCount").textContent = students.length+" permohonan menunggu";
-    document.getElementById("pendingEmpty").hidden = students.length !== 0;
-    pendingRows.innerHTML = students.map(student=>{
-      const date = student.created_at ? new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"short",year:"numeric"}) : "—";
-      return '<tr><td>'+escapeStudentText(student.display_name)+'</td><td>'+date+'</td><td><button class="btn" type="button" data-approve="'+student.id+'" style="margin:3px">Luluskan</button><button class="btn" type="button" data-reject="'+student.id+'" style="margin:3px;background:#8b405b">Tolak</button></td></tr>';
-    }).join("");
+    pendingStudents = await response.json();
+    const approvedResponse = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id&approved=eq.true",{headers:adminHeaders()});
+    if(!approvedResponse.ok) throw new Error("Tidak dapat memuatkan statistik pelajar.");
+    const approved = await approvedResponse.json();
+    document.getElementById("pendingCount").textContent = pendingStudents.length+" permohonan menunggu";
+    document.getElementById("adminPendingCount").textContent = pendingStudents.length;
+    document.getElementById("adminApprovedCount").textContent = approved.length;
+    document.getElementById("adminTotalCount").textContent = pendingStudents.length + approved.length;
+    renderPendingStudents();
     showAdminMessage("");
   }catch(error){
     pendingRows.innerHTML = "";
     showAdminMessage(error.message);
   }
 }
+document.getElementById("pendingSort").addEventListener("change",renderPendingStudents);
 adminLoginForm.addEventListener("submit",async event=>{
   event.preventDefault();
   const button=document.getElementById("adminLoginButton");
