@@ -47,6 +47,7 @@ a:hover{color:white!important;text-decoration:underline}
   <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
   <button data-page="bank"><b>▤</b> Bank Soalan</button>
   <button data-page="planner"><b>▦</b> Planner</button>
+  <button data-page="students"><b>♙</b> Direktori Pelajar</button>
  </nav>
  <div class="navlabel">Lain-lain</div>
  <nav class="nav"><button data-page="about"><b>ⓘ</b> Panduan</button></nav>
@@ -80,6 +81,23 @@ a:hover{color:white!important;text-decoration:underline}
  </div>
  <div class="tablewrap"><table><thead><tr><th>Negeri</th><th>Subjek</th><th>Tahun</th><th>Semester</th><th>Bahan</th></tr></thead><tbody id="questionRows"></tbody></table><div id="empty" class="empty" hidden>Belum ada bahan yang sepadan. Tambahkan pautan soalan dalam senarai data.</div></div>
  <div class="notice">Bahan soalan belum dimasukkan. Ruang ini disediakan untuk pautan PDF/Google Drive yang sah. Jangan paparkan pautan rekaan.</div>
+</section>
+<section id="students" class="page">
+ <div class="sectionhead"><div><h2>Direktori Pelajar</h2><div class="muted">Kenali komuniti pembelajaran StudyHub.</div></div><span class="tag" id="studentCount">Memuatkan...</span></div>
+ <div class="card" style="margin-bottom:16px">
+  <h3 style="margin:0 0 6px">Sertai Direktori StudyHub</h3>
+  <p class="muted" style="margin:0 0 14px;font-size:13px">Gunakan nama samaran atau nama paparan. Jangan masukkan nama penuh, nama sekolah, nombor telefon atau maklumat peribadi.</p>
+  <form id="studentForm">
+   <label for="displayName" class="muted" style="display:block;margin-bottom:6px">Nama paparan</label>
+   <input id="displayName" name="displayName" maxlength="24" minlength="2" required autocomplete="nickname" placeholder="Contoh: PelajarSTPM27" style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
+   <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted);margin-bottom:14px"><input id="publicConsent" type="checkbox" required style="margin-top:4px"> Saya bersetuju nama paparan ini dipaparkan secara umum dalam Direktori Pelajar StudyHub.</label>
+   <button class="btn" id="studentSubmit" type="submit">Hantar nama</button>
+   <p id="studentMessage" class="muted" role="status" aria-live="polite" style="margin:12px 0 0;font-size:13px"></p>
+  </form>
+ </div>
+ <div class="filters"><input id="studentSearch" placeholder="Cari nama paparan..." aria-label="Cari nama pelajar"></div>
+ <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Bil.</th><th>Nama paparan</th><th>Tarikh disertai</th></tr></thead><tbody id="studentRows"><tr><td colspan="3" class="muted">Memuatkan senarai pelajar...</td></tr></tbody></table><div id="studentEmpty" class="empty" hidden>Belum ada nama yang diluluskan untuk dipaparkan.</div></div>
+ <div class="notice">Nama yang dihantar tidak dipaparkan serta-merta. Pentadbir StudyHub perlu meluluskannya terlebih dahulu. Gunakan nama samaran dan jangan kongsi maklumat peribadi.</div>
 </section>
 <section id="planner" class="page">
  <div class="sectionhead"><div><h2>Planner Mingguan</h2><div class="muted">Contoh susunan ulang kaji — ubah ikut jadual sendiri.</div></div></div>
@@ -228,5 +246,88 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
 });
 
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ]\s*/, '')}));
+
+// Direktori Pelajar StudyHub — hanya gunakan publishable key di frontend.
+const SUPABASE_URL = "https://pkfbvfymrlxklgdmydqe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ACTpdGpfrPyjAWrDrhrCpQ_ntPngWWd";
+const studentRows = document.getElementById("studentRows");
+let approvedStudents = [];
+
+function escapeStudentText(value){
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[ch]);
+}
+
+function renderStudents(){
+  const query = document.getElementById("studentSearch").value.trim().toLowerCase();
+  const filtered = approvedStudents.filter(student =>
+    String(student.display_name || "").toLowerCase().includes(query)
+  );
+  studentRows.innerHTML = filtered.map((student,index) => {
+    const date = student.created_at
+      ? new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"short",year:"numeric"})
+      : "—";
+    return "<tr><td>"+(index+1)+"</td><td>"+escapeStudentText(student.display_name)+"</td><td>"+date+"</td></tr>";
+  }).join("");
+  document.getElementById("studentCount").textContent = approvedStudents.length+" pelajar";
+  document.getElementById("studentEmpty").hidden = filtered.length !== 0;
+  if(!filtered.length) studentRows.innerHTML = "";
+}
+
+async function loadStudents(){
+  try{
+    const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=display_name,created_at&approved=eq.true&order=created_at.desc",{
+      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}
+    });
+    if(!response.ok) throw new Error("Tidak dapat memuatkan direktori.");
+    approvedStudents = await response.json();
+    renderStudents();
+  }catch(error){
+    studentRows.innerHTML = '<tr><td colspan="3" class="muted">Direktori belum dapat dimuatkan. Cuba muat semula halaman.</td></tr>';
+    document.getElementById("studentCount").textContent = "Tidak tersedia";
+  }
+}
+
+document.getElementById("studentSearch").addEventListener("input",renderStudents);
+document.getElementById("studentForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const message = document.getElementById("studentMessage");
+  const submit = document.getElementById("studentSubmit");
+  const displayName = document.getElementById("displayName").value.trim();
+  if(displayName.length < 2 || displayName.length > 24){
+    message.textContent = "Nama paparan mestilah antara 2 hingga 24 aksara.";
+    return;
+  }
+  if(!document.getElementById("publicConsent").checked){
+    message.textContent = "Sila berikan persetujuan sebelum menghantar nama.";
+    return;
+  }
+  submit.disabled = true;
+  submit.textContent = "Menghantar...";
+  message.textContent = "";
+  try{
+    const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify({display_name:displayName,consent_public:true,approved:false})
+    });
+    if(!response.ok) throw new Error("Penghantaran gagal. Sila cuba lagi.");
+    document.getElementById("studentForm").reset();
+    message.textContent = "Terima kasih! Nama dihantar dan menunggu kelulusan pentadbir.";
+  }catch(error){
+    message.textContent = error.message || "Ralat sambungan. Cuba lagi sebentar nanti.";
+  }finally{
+    submit.disabled = false;
+    submit.textContent = "Hantar nama";
+  }
+});
+loadStudents();
+
 </script>
 </body></html>
