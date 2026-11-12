@@ -47,6 +47,7 @@ a:hover{color:white!important;text-decoration:underline}
   <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
   <button data-page="bank"><b>▤</b> Bank Soalan</button>
    <button data-page="students"><b>♙</b> Direktori Pelajar</button>
+  <button data-page="quiz"><b>✎</b> Kuiz Interaktif</button>
   <button data-page="admin"><b>⚙</b> Panel Admin</button>
  </nav>
  <div class="navlabel">Lain-lain</div>
@@ -108,6 +109,31 @@ a:hover{color:white!important;text-decoration:underline}
  <div class="filters"><input id="studentSearch" placeholder="Cari nama paparan..." aria-label="Cari nama pelajar"></div>
  <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Bil.</th><th>Nama paparan</th><th>Tarikh disertai</th></tr></thead><tbody id="studentRows"><tr><td colspan="3" class="muted">Memuatkan senarai pelajar...</td></tr></tbody></table><div id="studentEmpty" class="empty" hidden>Belum ada nama yang diluluskan untuk dipaparkan.</div></div>
  
+</section>
+<section id="quiz" class="page">
+ <div class="sectionhead"><div><h2>Kuiz Interaktif</h2><div class="muted">Uji kefahaman anda melalui set soalan PAM dan BM.</div></div><span class="tag">Satu percubaan setiap set</span></div>
+ <div class="card" id="quizGate" style="margin-bottom:16px"><strong>Log masuk diperlukan</strong><p class="muted" style="margin:6px 0 12px">Log masuk dan pastikan akaun anda telah diluluskan oleh admin untuk menjawab kuiz.</p><button class="btn" type="button" id="quizGoDirectory">Pergi ke Direktori Pelajar</button></div>
+ <div id="quizWorkspace" hidden>
+  <div class="card" style="margin-bottom:16px">
+   <div class="filters" style="margin-top:0">
+    <select id="studentQuizSubject" aria-label="Pilih subjek"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select>
+    <select id="studentQuizSet" aria-label="Pilih set kuiz"><option value="">Memuatkan set...</option></select>
+    <button class="btn" type="button" id="studentQuizLoad">Pilih set</button>
+   </div>
+   <p id="studentQuizStatus" class="muted" role="status" aria-live="polite">Pilih subjek dan set kuiz.</p>
+   <div id="studentQuizPlayer" hidden>
+    <div class="row" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><strong id="studentQuizProgress">Soalan 1</strong><span class="tag" id="studentQuizSetLabel"></span></div>
+    <h3 id="studentQuizQuestion" style="margin:18px 0"></h3>
+    <div id="studentQuizOptions" style="display:grid;gap:9px"></div>
+    <div class="row" style="display:flex;gap:10px;justify-content:space-between;margin-top:18px"><button class="btn" id="studentQuizPrev" type="button" style="background:#526184">Sebelumnya</button><button class="btn" id="studentQuizNext" type="button">Seterusnya</button><button class="btn" id="studentQuizSubmit" type="button" hidden>Hantar jawapan</button></div>
+   </div>
+   <div id="studentQuizResult" class="notice" hidden></div>
+  </div>
+  <div class="card">
+   <div class="sectionhead"><div><h3 style="margin:0">Scoreboard</h3><div class="muted">Kedudukan berdasarkan markah bagi set yang dipilih.</div></div><button class="btn" type="button" id="studentQuizRankingRefresh">Muat semula</button></div>
+   <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Rank</th><th>Nama paparan</th><th>Markah</th></tr></thead><tbody id="studentQuizRankingRows"></tbody></table><div id="studentQuizRankingEmpty" class="empty" hidden>Belum ada keputusan bagi set ini.</div></div>
+  </div>
+ </div>
 </section>
 <section id="admin" class="page">
  <div class="sectionhead"><div><h2>Panel Admin StudyHub</h2><div class="muted">Urus pendaftaran pelajar yang menunggu kelulusan.</div></div><span class="tag">Akses pentadbir sahaja</span></div>
@@ -591,10 +617,129 @@ document.getElementById("adminLogoutButton").addEventListener("click",async()=>{
 
 document.getElementById("studentSearch").addEventListener("input",renderStudents);
 
+
+/* Kuiz pelajar: soalan sahaja dimuatkan ke pelayar; pemarkahan kekal di server. */
+let studentQuizQuestions = [];
+let studentQuizAnswers = {};
+let studentQuizIndex = 0;
+let studentQuizSubject = "PAM";
+let studentQuizSetNumber = 1;
+let studentQuizFinished = false;
+function updateStudentQuizAccess(){
+  const allowed = !!studentAccessToken && studentApproved;
+  document.getElementById("quizGate").hidden = allowed;
+  document.getElementById("quizWorkspace").hidden = !allowed;
+}
+document.getElementById("quizGoDirectory").addEventListener("click",()=>{
+  document.querySelector('[data-page="students"]').click();
+});
+async function loadStudentQuizSets(){
+  if(!studentAccessToken || !studentApproved)return;
+  const subject=document.getElementById("studentQuizSubject").value;
+  const select=document.getElementById("studentQuizSet");
+  select.innerHTML='<option value="">Memuatkan...</option>';
+  try{
+    const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=set_number&subject=eq."+subject+"&active=eq.true&order=set_number.asc",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
+    if(!response.ok)throw new Error("Tidak dapat memuatkan senarai set.");
+    const rows=await response.json();
+    const sets=[...new Set(rows.map(x=>Number(x.set_number||1)))].sort((a,b)=>a-b);
+    select.innerHTML=sets.length?sets.map(n=>'<option value="'+n+'">Set '+n+'</option>').join(""):'<option value="">Tiada set tersedia</option>';
+    if(sets.length)await loadStudentAttemptStatus();
+    document.getElementById("studentQuizStatus").textContent=sets.length?"Pilih set untuk mula menjawab.":"Belum ada set kuiz bagi subjek ini.";
+  }catch(error){select.innerHTML='<option value="">Tidak tersedia</option>';document.getElementById("studentQuizStatus").textContent=error.message;}
+}
+async function loadStudentAttemptStatus(){
+  const subject=document.getElementById("studentQuizSubject").value;
+  const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_attempts?select=set_number&user_id=eq."+encodeURIComponent(studentUserId)+"&subject=eq."+subject,{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
+  if(!response.ok)throw new Error("Tidak dapat menyemak percubaan terdahulu.");
+  return new Set((await response.json()).map(x=>Number(x.set_number)));
+}
+async function loadStudentQuiz(){
+  if(!studentAccessToken || !studentApproved){document.getElementById("studentQuizStatus").textContent="Akaun yang telah diluluskan diperlukan.";return;}
+  const subject=document.getElementById("studentQuizSubject").value;
+  const setNumber=Number(document.getElementById("studentQuizSet").value);
+  if(!Number.isInteger(setNumber)||setNumber<1)return;
+  const status=document.getElementById("studentQuizStatus");
+  status.textContent="Memuatkan soalan...";
+  document.getElementById("studentQuizPlayer").hidden=true;
+  document.getElementById("studentQuizResult").hidden=true;
+  try{
+    const attempted=await loadStudentAttemptStatus();
+    if(attempted.has(setNumber)){status.textContent="Anda telah menjawab "+subject+" Set "+setNumber+". Percubaan kedua tidak dibenarkan.";return;}
+    const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=id,subject,set_number,question_text,option_a,option_b,option_c,option_d&subject=eq."+subject+"&set_number=eq."+setNumber+"&active=eq.true&order=id.asc",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
+    if(!response.ok)throw new Error("Tidak dapat memuatkan soalan kuiz.");
+    studentQuizQuestions=await response.json();
+    if(!studentQuizQuestions.length)throw new Error("Set ini belum mempunyai soalan aktif.");
+    studentQuizSubject=subject;studentQuizSetNumber=setNumber;studentQuizAnswers={};studentQuizIndex=0;studentQuizFinished=false;
+    document.getElementById("studentQuizPlayer").hidden=false;
+    status.textContent="Jawab semua soalan. Anda hanya boleh menghantar sekali.";
+    renderStudentQuizQuestion();
+  }catch(error){status.textContent=error.message||"Ralat memuatkan kuiz.";}
+}
+function renderStudentQuizQuestion(){
+  const q=studentQuizQuestions[studentQuizIndex];
+  document.getElementById("studentQuizProgress").textContent="Soalan "+(studentQuizIndex+1)+" daripada "+studentQuizQuestions.length;
+  document.getElementById("studentQuizSetLabel").textContent=studentQuizSubject+" · Set "+studentQuizSetNumber;
+  document.getElementById("studentQuizQuestion").textContent=q.question_text;
+  const opts=[["A",q.option_a],["B",q.option_b],["C",q.option_c],["D",q.option_d]];
+  document.getElementById("studentQuizOptions").innerHTML=opts.map(([key,value])=>'<label style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer"><input type="radio" name="studentQuizChoice" value="'+key+'" '+(studentQuizAnswers[q.id]===key?'checked':'')+' style="margin-top:4px"><span><strong>'+key+'.</strong> '+escapeStudentText(value)+'</span></label>').join("");
+  document.getElementById("studentQuizPrev").hidden=studentQuizIndex===0;
+  document.getElementById("studentQuizNext").hidden=studentQuizIndex===studentQuizQuestions.length-1;
+  document.getElementById("studentQuizSubmit").hidden=studentQuizIndex!==studentQuizQuestions.length-1;
+}
+document.getElementById("studentQuizOptions").addEventListener("change",event=>{
+  const choice=event.target.closest('input[name="studentQuizChoice"]');
+  if(choice)studentQuizAnswers[studentQuizQuestions[studentQuizIndex].id]=choice.value;
+});
+document.getElementById("studentQuizPrev").addEventListener("click",()=>{if(studentQuizIndex>0){studentQuizIndex--;renderStudentQuizQuestion();}});
+document.getElementById("studentQuizNext").addEventListener("click",()=>{
+  if(!studentQuizAnswers[studentQuizQuestions[studentQuizIndex].id]){document.getElementById("studentQuizStatus").textContent="Pilih satu jawapan sebelum meneruskan.";return;}
+  studentQuizIndex++;renderStudentQuizQuestion();
+});
+document.getElementById("studentQuizSubmit").addEventListener("click",async()=>{
+  if(studentQuizQuestions.some(q=>!studentQuizAnswers[q.id])){document.getElementById("studentQuizStatus").textContent="Sila jawab semua soalan sebelum menghantar.";return;}
+  const button=document.getElementById("studentQuizSubmit");button.disabled=true;button.textContent="Menghantar...";
+  try{
+    const answers=studentQuizQuestions.map(q=>({question_id:q.id,selected_option:studentQuizAnswers[q.id]}));
+    const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/submit_studyhub_quiz",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json"},body:JSON.stringify({p_subject:studentQuizSubject,p_set_number:studentQuizSetNumber,p_answers:answers})});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.message||result.details||"Jawapan tidak dapat dihantar.");
+    const outcome=Array.isArray(result)?result[0]:result;
+    if(!outcome)throw new Error("Keputusan tidak diterima.");
+    studentQuizFinished=true;
+    document.getElementById("studentQuizPlayer").hidden=true;
+    document.getElementById("studentQuizResult").hidden=false;
+    document.getElementById("studentQuizResult").innerHTML='<strong>Kuiz selesai!</strong><p style="margin:6px 0">Markah anda: <strong>'+Number(outcome.score)+' / '+Number(outcome.total_questions)+'</strong></p><p style="margin:0">Percubaan bagi set ini telah digunakan.</p>';
+    document.getElementById("studentQuizStatus").textContent="Keputusan berjaya disimpan.";
+    await loadStudentRanking();
+  }catch(error){document.getElementById("studentQuizStatus").textContent=error.message||"Ralat menghantar jawapan.";}
+  finally{button.disabled=false;button.textContent="Hantar jawapan";}
+});
+async function loadStudentRanking(){
+  if(!studentAccessToken||!studentApproved)return;
+  const subject=document.getElementById("studentQuizSubject").value;
+  const setNumber=Number(document.getElementById("studentQuizSet").value);
+  const rows=document.getElementById("studentQuizRankingRows");
+  const empty=document.getElementById("studentQuizRankingEmpty");
+  rows.innerHTML='<tr><td colspan="3" class="muted">Memuatkan ranking...</td></tr>';empty.hidden=true;
+  try{
+    const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_studyhub_leaderboard",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json"},body:JSON.stringify({p_subject:subject,p_set_number:setNumber})});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.message||"Tidak dapat memuatkan scoreboard.");
+    rows.innerHTML=result.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeStudentText(r.display_name)+'</td><td>'+Number(r.score)+' / '+Number(r.total_questions)+'</td></tr>').join("");
+    empty.hidden=result.length!==0;
+    if(!result.length)rows.innerHTML="";
+  }catch(error){rows.innerHTML='<tr><td colspan="3" class="muted">'+escapeStudentText(error.message)+'</td></tr>';}
+}
+document.getElementById("studentQuizSubject").addEventListener("change",loadStudentQuizSets);
+document.getElementById("studentQuizLoad").addEventListener("click",async()=>{await loadStudentQuiz();await loadStudentRanking();});
+document.getElementById("studentQuizRankingRefresh").addEventListener("click",loadStudentRanking);
+
 // Akaun pelajar: pendaftaran direktori sentiasa dipautkan kepada auth.uid().
 let studentAccessToken = null;
 let studentAuthMode = "signup";
 let studentUserId = null;
+let studentApproved = false;
 const studentForm = document.getElementById("studentForm");
 const studentMessage = document.getElementById("studentMessage");
 function setStudentAuthMode(mode){
@@ -628,8 +773,13 @@ async function checkStudentRegistration(){
   const rows = await response.json();
   if(rows.length){
     const row = rows[0];
+    studentApproved = !!row.approved;
     showStudentSession(row.approved ? "Akaun diluluskan" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Admin StudyHub perlu meluluskan nama paparan anda sebelum anda boleh menjawab kuiz.");
+    updateStudentQuizAccess();
+    if(studentApproved) await loadStudentQuizSets();
   }else{
+    studentApproved = false;
+    updateStudentQuizAccess();
     showStudentSession("Akaun berjaya log masuk","Lengkapkan pendaftaran nama paparan anda di bawah.");
     document.getElementById("studentAuthPanel").hidden = false;
     setStudentAuthMode("register");
@@ -684,10 +834,11 @@ studentForm.addEventListener("submit",async event=>{
 });
 document.getElementById("studentLogoutButton").addEventListener("click",async()=>{
   if(studentAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});}catch(error){}}
-  studentAccessToken=null;studentUserId=null;showStudentSession("","");setStudentAuthMode("signup");
+  studentAccessToken=null;studentUserId=null;studentApproved=false;updateStudentQuizAccess();showStudentSession("","");setStudentAuthMode("signup");
 });
 setStudentAuthMode("signup");
 showStudentSession("","");
+updateStudentQuizAccess();
 loadStudents();
 
 </script>
