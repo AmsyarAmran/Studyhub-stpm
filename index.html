@@ -99,6 +99,23 @@ a:hover{color:white!important;text-decoration:underline}
 .profile-save-note{font-size:12px;color:var(--muted);margin:12px 0 0}
 @media(max-width:520px){.profile-shell{padding:12px}.profile-cover{min-height:155px;padding:15px;gap:12px}.profile-avatar{width:78px;height:78px;font-size:36px}.profile-cover-copy h2{font-size:19px}}
 
+
+/* Navigasi lebih jelas: Dashboard berdiri sendiri, kategori dropdown neutral */
+.nav-dashboard{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2b3657}
+.nav-dashboard button{background:#202b45;color:#f4f6ff;font-weight:750}
+.nav-dashboard button.active{background:#3a3475;box-shadow:inset 3px 0 0 var(--cyan)}
+.nav-group{background:#111827;border:1px solid #34415e}
+.nav-group>summary{background:#26334d;color:#f4f6ff}
+.nav-group>summary:hover{background:#31415f}
+.nav-group[open]>summary{background:#35445f;color:#fff;border-bottom:1px solid #465574}
+.nav-group .nav{background:#101827}
+.nav-group .nav button{color:#c1cbe0}
+.nav-group .nav button:hover{background:#26334d;color:#fff}
+.nav-group .nav button.active{background:#3a3475;color:#fff;box-shadow:inset 3px 0 0 var(--cyan)}
+.group-icon{color:#b8c7e6}
+.group-chevron{color:#d0daee}
+@media(max-width:900px){.nav-dashboard{margin-bottom:9px;padding-bottom:8px}.nav-dashboard button{font-size:0;text-align:center;padding:10px 4px}.nav-dashboard button b{font-size:17px;width:auto}}
+
 </style>
 </head>
 <body>
@@ -106,18 +123,20 @@ a:hover{color:white!important;text-decoration:underline}
 <aside class="side">
  <div class="brand">STUDY<span>HUB</span></div>
  <div class="navlabel">Navigasi</div>
+ <nav class="nav nav-dashboard">
+  <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
+ </nav>
  <div class="nav-groups">
-  <details class="nav-group" open>
+  <details class="nav-group">
    <summary><span class="group-icon">♙</span><span class="group-name">Pelajar</span><span class="group-chevron">⌄</span></summary>
    <nav class="nav">
     <button data-page="profile"><b>◎</b> Profil Saya</button>
     <button data-page="students"><b>♙</b> Direktori Pelajar</button>
    </nav>
   </details>
-  <details class="nav-group" open>
+  <details class="nav-group">
    <summary><span class="group-icon">▤</span><span class="group-name">Akademik</span><span class="group-chevron">⌄</span></summary>
    <nav class="nav">
-    <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
     <button data-page="bank"><b>▤</b> Bank Soalan</button>
     <button data-page="quiz"><b>✎</b> Kuiz Interaktif</button>
     <button data-page="leaderboard"><b>★</b> Leaderboard</button>
