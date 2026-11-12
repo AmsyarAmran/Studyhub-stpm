@@ -587,11 +587,16 @@ const studentForm = document.getElementById("studentForm");
 const studentMessage = document.getElementById("studentMessage");
 function setStudentAuthMode(mode){
   studentAuthMode = mode;
-  const signup = mode === "signup";
+  const signup = mode === "signup" || mode === "register";
+  const registering = mode === "register";
+  document.getElementById("studentEmail").required = !registering;
+  document.getElementById("studentPassword").required = !registering;
+  document.getElementById("studentEmail").disabled = registering;
+  document.getElementById("studentPassword").disabled = registering;
   document.getElementById("studentRegistrationFields").hidden = !signup;
   document.getElementById("displayName").required = signup;
   document.getElementById("publicConsent").required = signup;
-  document.getElementById("studentSubmit").textContent = signup ? "Daftar akaun" : "Log masuk";
+  document.getElementById("studentSubmit").textContent = registering ? "Hantar pendaftaran" : signup ? "Daftar akaun" : "Log masuk";
   document.getElementById("studentSignupMode").style.background = signup ? "" : "#526184";
   document.getElementById("studentLoginMode").style.background = signup ? "#526184" : "";
   document.getElementById("studentPassword").autocomplete = signup ? "new-password" : "current-password";
@@ -615,10 +620,8 @@ async function checkStudentRegistration(){
   }else{
     showStudentSession("Akaun berjaya log masuk","Lengkapkan pendaftaran nama paparan anda di bawah.");
     document.getElementById("studentAuthPanel").hidden = false;
-    setStudentAuthMode("signup");
-    document.getElementById("studentEmail").value = "";
-    document.getElementById("studentPassword").value = "";
-    studentMessage.textContent = "Akaun ini belum mempunyai pendaftaran direktori. Log keluar dan daftar semula dengan akaun yang betul.";
+    setStudentAuthMode("register");
+    studentMessage.textContent = "Lengkapkan nama paparan dan persetujuan untuk menghantar pendaftaran.";
   }
 }
 document.getElementById("studentSignupMode").addEventListener("click",()=>setStudentAuthMode("signup"));
@@ -629,16 +632,20 @@ studentForm.addEventListener("submit",async event=>{
   const email=document.getElementById("studentEmail").value.trim().toLowerCase();
   const password=document.getElementById("studentPassword").value;
   const displayName=document.getElementById("displayName").value.trim();
-  if(studentAuthMode==="signup"){
+  if(studentAuthMode==="signup" || studentAuthMode==="register"){
     if(displayName.length<2||displayName.length>24){studentMessage.textContent="Nama paparan mestilah antara 2 hingga 24 aksara.";return;}
     if(!document.getElementById("publicConsent").checked){studentMessage.textContent="Sila berikan persetujuan sebelum menghantar nama.";return;}
   }
-  submit.disabled=true;submit.textContent=studentAuthMode==="signup"?"Mendaftar...":"Log masuk...";
+  submit.disabled=true;submit.textContent=studentAuthMode==="register"?"Menghantar...":studentAuthMode==="signup"?"Mendaftar...":"Log masuk...";
   studentMessage.textContent="";
   try{
+    if(studentAuthMode==="register"){
+      const registration=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({user_id:studentUserId,display_name:displayName,consent_public:true,approved:false})});
+      if(!registration.ok)throw new Error("Pendaftaran gagal dihantar. Pastikan akaun belum mempunyai permohonan.");
+      await checkStudentRegistration();await loadStudents();return;
+    }
     const endpoint=studentAuthMode==="signup"?"/auth/v1/signup":"/auth/v1/token?grant_type=password";
-    const payload=studentAuthMode==="signup"?{email,password}:{email,password};
-    const response=await fetch(SUPABASE_URL+endpoint,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const response=await fetch(SUPABASE_URL+endpoint,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
     const result=await response.json();
     if(!response.ok)throw new Error(result.msg||result.message||result.error_description||"Tidak berjaya. Semak e-mel dan kata laluan.");
     if(studentAuthMode==="signup"){
@@ -661,7 +668,7 @@ studentForm.addEventListener("submit",async event=>{
       await checkStudentRegistration();
     }
   }catch(error){studentMessage.textContent=error.message||"Ralat sambungan. Cuba lagi.";}
-  finally{submit.disabled=false;submit.textContent=studentAuthMode==="signup"?"Daftar akaun":"Log masuk";}
+  finally{submit.disabled=false;submit.textContent=studentAuthMode==="register"?"Hantar pendaftaran":studentAuthMode==="signup"?"Daftar akaun":"Log masuk";}
 });
 document.getElementById("studentLogoutButton").addEventListener("click",async()=>{
   if(studentAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});}catch(error){}}
