@@ -137,6 +137,8 @@ a:hover{color:white!important;text-decoration:underline}
    <form id="quizQuestionForm">
     <label class="muted" for="quizSubject" style="display:block;margin-bottom:6px">Subjek</label>
     <select id="quizSubject" required style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px"><option value="PAM">Pengajian Am (PAM)</option><option value="BM">Bahasa Melayu (BM)</option></select>
+    <label class="muted" for="quizSetNumber" style="display:block;margin-bottom:6px">Nombor set kuiz</label>
+    <input id="quizSetNumber" type="number" min="1" step="1" value="1" required style="width:100%;max-width:220px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
     <label class="muted" for="quizQuestionText" style="display:block;margin-bottom:6px">Soalan</label>
     <textarea id="quizQuestionText" required rows="3" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px;resize:vertical"></textarea>
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:0 0 12px">
@@ -155,8 +157,8 @@ a:hover{color:white!important;text-decoration:underline}
    </form>
   </div>
   <div class="sectionhead"><h2>Senarai soalan kuiz</h2><button class="btn" id="quizRefreshButton" type="button">Muat semula</button></div>
-  <div class="filters"><select id="quizAdminFilter"><option value="">Semua subjek</option><option value="PAM">PAM</option><option value="BM">BM</option></select></div>
-  <div class="tablewrap"><table style="min-width:600px"><thead><tr><th>Subjek</th><th>Soalan</th><th>Jawapan</th><th>Tindakan</th></tr></thead><tbody id="adminQuizRows"></tbody></table><div id="adminQuizEmpty" class="empty" hidden>Belum ada soalan kuiz. Tambahkan soalan pertama di atas.</div></div>
+  <div class="filters"><select id="quizAdminFilter"><option value="">Semua subjek</option><option value="PAM">PAM</option><option value="BM">BM</option></select><select id="quizAdminSetFilter" aria-label="Tapis nombor set"><option value="">Semua set</option></select></div>
+  <div class="tablewrap"><table style="min-width:600px"><thead><tr><th>Subjek</th><th>Set</th><th>Soalan</th><th>Jawapan</th><th>Tindakan</th></tr></thead><tbody id="adminQuizRows"></tbody></table><div id="adminQuizEmpty" class="empty" hidden>Belum ada soalan kuiz. Tambahkan soalan pertama di atas.</div></div>
   <p id="adminActionMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p>
  </div>
  
@@ -410,18 +412,19 @@ function resetQuizEditor(){
 }
 function renderAdminQuizQuestions(){
   const filter = document.getElementById("quizAdminFilter").value;
-  const filtered = adminQuizQuestions.filter(q => !filter || q.subject === filter);
+  const setFilter = document.getElementById("quizAdminSetFilter").value;
+  const filtered = adminQuizQuestions.filter(q => (!filter || q.subject === filter) && (!setFilter || String(q.set_number||1) === setFilter));
   quizAdminRows.innerHTML = filtered.map(q => {
     const safeQuestion = escapeStudentText(q.question_text);
-    return '<tr><td><span class="tag">'+q.subject+'</span></td><td>'+safeQuestion+'</td><td>'+escapeStudentText(q.correct_option || "—")+'</td><td><button class="btn" type="button" data-quiz-edit="'+q.id+'" style="margin:3px">Edit</button><button class="btn" type="button" data-quiz-delete="'+q.id+'" style="margin:3px;background:#8b405b">Padam</button></td></tr>';
+    return '<tr><td><span class="tag">'+q.subject+'</span></td><td>Set '+Number(q.set_number||1)+'</td><td>'+safeQuestion+'</td><td>'+escapeStudentText(q.correct_option || "—")+'</td><td><button class="btn" type="button" data-quiz-edit="'+q.id+'" style="margin:3px">Edit</button><button class="btn" type="button" data-quiz-delete="'+q.id+'" style="margin:3px;background:#8b405b">Padam</button></td></tr>';
   }).join("");
   document.getElementById("adminQuizEmpty").hidden = filtered.length !== 0;
 }
 async function loadAdminQuizQuestions(){
-  quizAdminRows.innerHTML = '<tr><td colspan="4" class="muted">Memuatkan soalan...</td></tr>';
+  quizAdminRows.innerHTML = '<tr><td colspan="5" class="muted">Memuatkan soalan...</td></tr>';
   try{
     const [questionResponse, answerResponse] = await Promise.all([
-      fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=id,subject,question_text,option_a,option_b,option_c,option_d,active,created_at&order=created_at.desc",{headers:adminHeaders()}),
+      fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=id,subject,set_number,question_text,option_a,option_b,option_c,option_d,active,created_at&order=subject.asc,set_number.asc,created_at.desc",{headers:adminHeaders()}),
       fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_answers?select=question_id,correct_option,explanation",{headers:adminHeaders()})
     ]);
     if(!questionResponse.ok || !answerResponse.ok) throw new Error("Tidak dapat memuatkan soalan. Semak jadual dan polisi RLS kuiz.");
@@ -429,9 +432,14 @@ async function loadAdminQuizQuestions(){
     const answers = await answerResponse.json();
     const answerMap = new Map(answers.map(a => [String(a.question_id),a]));
     adminQuizQuestions = questions.map(q => ({...q,...(answerMap.get(String(q.id)) || {})}));
+    const setFilter = document.getElementById("quizAdminSetFilter");
+    const currentSet = setFilter.value;
+    const sets = [...new Set(adminQuizQuestions.map(q=>Number(q.set_number||1)))].sort((a,b)=>a-b);
+    setFilter.innerHTML = '<option value="">Semua set</option>'+sets.map(n=>'<option value="'+n+'">Set '+n+'</option>').join("");
+    if(sets.includes(Number(currentSet))) setFilter.value=currentSet;
     renderAdminQuizQuestions();
   }catch(error){
-    quizAdminRows.innerHTML = '<tr><td colspan="4" class="muted">'+escapeStudentText(error.message)+'</td></tr>';
+    quizAdminRows.innerHTML = '<tr><td colspan="5" class="muted">'+escapeStudentText(error.message)+'</td></tr>';
     document.getElementById("adminQuizEmpty").hidden = true;
   }
 }
@@ -441,6 +449,7 @@ quizForm.addEventListener("submit",async event=>{
   const saveButton = document.getElementById("quizSaveButton");
   const question = {
     subject:document.getElementById("quizSubject").value,
+    set_number:Number(document.getElementById("quizSetNumber").value),
     question_text:document.getElementById("quizQuestionText").value.trim(),
     option_a:document.getElementById("quizOptionA").value.trim(),
     option_b:document.getElementById("quizOptionB").value.trim(),
@@ -452,6 +461,7 @@ quizForm.addEventListener("submit",async event=>{
     correct_option:document.getElementById("quizCorrectOption").value,
     explanation:document.getElementById("quizExplanation").value.trim() || null
   };
+  if(!Number.isInteger(question.set_number)||question.set_number<1){quizAdminMessage.textContent="Nombor set mestilah 1 atau lebih.";return;}
   if(Object.values(question).some(v=>typeof v==="string"&&!v)){quizAdminMessage.textContent="Sila lengkapkan semua ruangan soalan dan pilihan jawapan.";return;}
   saveButton.disabled = true;
   saveButton.textContent = "Menyimpan...";
@@ -498,6 +508,7 @@ quizAdminRows.addEventListener("click",async event=>{
     if(!q)return;
     editingQuizQuestionId = q.id;
     document.getElementById("quizSubject").value=q.subject;
+    document.getElementById("quizSetNumber").value=Number(q.set_number||1);
     document.getElementById("quizQuestionText").value=q.question_text;
     document.getElementById("quizOptionA").value=q.option_a;
     document.getElementById("quizOptionB").value=q.option_b;
@@ -526,6 +537,7 @@ quizAdminRows.addEventListener("click",async event=>{
 document.getElementById("quizCancelEdit").addEventListener("click",resetQuizEditor);
 document.getElementById("quizRefreshButton").addEventListener("click",loadAdminQuizQuestions);
 document.getElementById("quizAdminFilter").addEventListener("change",renderAdminQuizQuestions);
+document.getElementById("quizAdminSetFilter").addEventListener("change",renderAdminQuizQuestions);
 adminLoginForm.addEventListener("submit",async event=>{
   event.preventDefault();
   const button=document.getElementById("adminLoginButton");
