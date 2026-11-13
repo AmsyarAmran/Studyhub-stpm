@@ -793,6 +793,7 @@ pendingRows.addEventListener("click",async event=>{
     showAdminMessage(isApprove?"Nama berjaya diluluskan.":"Pendaftaran telah ditolak dan dipadam.");
     await loadPendingStudents();
     if(isApprove)await loadStudents();
+registerStudyHubVisitor();
   }catch(error){showAdminMessage(error.message||"Ralat semasa mengemas kini.");button.disabled=false;}
 });
 document.getElementById("adminLogoutButton").addEventListener("click",async()=>{
