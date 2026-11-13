@@ -482,14 +482,16 @@ async function registerStudyHubVisitor(){
       visitorId=window.crypto?.randomUUID?.()||("sh-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
       localStorage.setItem("studyhub_visitor_id",visitorId);
     }
-    await fetch(SUPABASE_URL+"/rest/v1/studyhub_visitors",{
+    const insertResponse=await fetch(SUPABASE_URL+"/rest/v1/studyhub_visitors",{
       method:"POST",
-      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"},
+      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"},
       body:JSON.stringify({visitor_id:visitorId})
     });
+    if(!insertResponse.ok)throw new Error("Visitor registration unavailable");
     const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_studyhub_visitor_count",{
       method:"POST",
-      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"}
+      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"},
+      body:"{}"
     });
     if(!response.ok)throw new Error("Visitor count unavailable");
     const total=await response.json();
