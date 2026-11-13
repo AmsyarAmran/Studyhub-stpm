@@ -161,6 +161,7 @@ a:hover{color:white!important;text-decoration:underline}
   <div class="card"><small>Tahun bahan</small><div class="stat">2026–27</div><small>Koleksi percubaan</small></div>
   <div class="card"><small>Fokus</small><div class="stat">Sem 1</div><small>Soalan Semester 1 sahaja</small></div>
   <div class="card"><small>Countdown Sem 1</small><div class="stat count" id="countdown">Tetapkan</div><small id="countLabel">Tarikh peperiksaan belum ditetapkan</small></div>
+  <div class="card"><small>Jumlah pelawat unik</small><div class="stat" id="visitorCount">—</div><small>Pelawat StudyHub</small></div>
  </div>
  <div class="sectionhead"><h2>Subjek STPM</h2><span class="muted">4 subjek pilihan</span></div>
  <div class="subjects">
@@ -472,6 +473,32 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 // Direktori Pelajar StudyHub — hanya gunakan publishable key di frontend.
 const SUPABASE_URL = "https://pkfbvfymrlxklgdmydqe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ACTpdGpfrPyjAWrDrhrCpQ_ntPngWWd";
+async function registerStudyHubVisitor(){
+  const countElement=document.getElementById("visitorCount");
+  if(!countElement)return;
+  try{
+    let visitorId=localStorage.getItem("studyhub_visitor_id");
+    if(!visitorId){
+      visitorId=window.crypto?.randomUUID?.()||("sh-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
+      localStorage.setItem("studyhub_visitor_id",visitorId);
+    }
+    await fetch(SUPABASE_URL+"/rest/v1/studyhub_visitors",{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"},
+      body:JSON.stringify({visitor_id:visitorId})
+    });
+    const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_studyhub_visitor_count",{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"}
+    });
+    if(!response.ok)throw new Error("Visitor count unavailable");
+    const total=await response.json();
+    countElement.textContent=Number(total).toLocaleString("ms-MY");
+  }catch(error){
+    countElement.textContent="—";
+  }
+}
+
 const studentRows = document.getElementById("studentRows");
 let approvedStudents = [];
 
@@ -1019,6 +1046,7 @@ studentForm.addEventListener("submit",async event=>{
 document.getElementById("studentLogoutButton").addEventListener("click",async()=>{
   if(studentAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});}catch(error){}}
   studentAccessToken=null;studentUserId=null;studentApproved=false;studentDisplayName="";renderStudentProfile();clearStoredSession(STUDENT_SESSION_KEY);updateStudentQuizAccess();showStudentSession("","");setStudentAuthMode("signup");
+registerStudyHubVisitor();
 });
 setStudentAuthMode("signup");
 showStudentSession("","");
