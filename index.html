@@ -1402,6 +1402,19 @@ function studyHubSYARAddChatMessage(role, message) {
   studyHubAIMessages.appendChild(bubble);
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
+function studyHubSYARSpeakReply(message) {
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.lang = "ms-MY";
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
+  const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
+  if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
+  window.speechSynthesis.speak(utterance);
+}
 async function studyHubSYARSendMessage(rawMessage) {
   const message = String(rawMessage || "").trim();
   if (!message || studyHubSYARChatBusy) return;
@@ -1430,6 +1443,7 @@ async function studyHubSYARSendMessage(rawMessage) {
     studyHubSYARChatHistory.push({role:"assistant",content:reply});
     studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
     studyHubSYARAddChatMessage("assistant",reply);
+    studyHubSYARSpeakReply(reply);
     studyHubSYARSetChatStatus("Syar sudah membalas.");
   } catch (error) {
     studyHubSYARSetChatStatus(error.message || "Sambungan kepada Syar terganggu.");
