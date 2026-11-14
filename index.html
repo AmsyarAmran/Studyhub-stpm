@@ -511,8 +511,8 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
- <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Model tempatan belum dimuatkan</small></span>
- <button id="studyHubAILoad" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Muatkan AI</button>
+ <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Syar sedia apabila anda log masuk</small></span>
+ <button id="studyHubAILoad" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Mula berbual</button>
  <button id="studyHubAIChatToggle" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Buka chat</button>
 </div>
 <section class="ai-chat-panel" id="studyHubAIChat" aria-label="Chat StudyHub AI" hidden>
@@ -520,10 +520,10 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
   <div><strong>Syar</strong><small>Rakan digital StudyHub</small></div>
   <button id="studyHubAIChatClose" type="button" aria-label="Tutup chat">✕</button>
  </div>
- <p class="ai-chat-note">Muat turun model diperlukan sekali sahaja. Gunakan Wi-Fi dan pastikan ruang storan mencukupi. Soalan diproses pada peranti selepas model dimuatkan.</p>
+ <p class="ai-chat-note">Syar menggunakan AI awan. Mesej dihantar kepada penyedia AI untuk diproses dan sejarah chat tidak disimpan oleh StudyHub. Jangan masukkan kata laluan atau maklumat peribadi sensitif. Buat masa ini, chat tersedia untuk pelajar yang log masuk dan akaunnya telah diluluskan.</p>
  <div class="ai-chat-progress" id="studyHubAIProgress" role="status">Belum dimulakan.</div>
  <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite">
-  <div class="ai-chat-welcome">Hai! Syar di sini. Muatkan AI dahulu, lepas tu kita boleh mula berbual. 😄</div>
+  <div class="ai-chat-welcome">Hai! Syar di sini. Tekan “Mula berbual” dan pastikan akaun StudyHub anda sudah diluluskan. 😄</div>
  </div>
  <form class="ai-chat-form" id="studyHubAIForm">
   <textarea id="studyHubAIInput" rows="2" maxlength="1200" placeholder="Tulis soalan di sini..." aria-label="Soalan untuk StudyHub AI"></textarea>
@@ -1325,13 +1325,10 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
   }else if(adminSession){clearStoredSession(ADMIN_SESSION_KEY);}
 })();
 
-// STUDYHUB AI tempatan: WebLLM + model ringan Qwen2.5 0.5B.
-const studyHubAIModelId = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
-let studyHubAIEngine = null;
+// STUDYHUB SYAR — Cloudflare Worker + Workers AI.
+const STUDYHUB_SYAR_URL = "https://studyhub-stpm.amsyar291008.workers.dev";
 let studyHubAIIsBusy = false;
-let studyHubAIHistory = [
-  { role: "system", content: "ARAHAN BAHASA PALING UTAMA: Setiap jawapan mesti ditulis dalam Bahasa Melayu Malaysia yang semula jadi. Jangan jawab dalam Bahasa Inggeris. Walaupun mesej pelajar mengandungi perkataan Inggeris, balas dalam Bahasa Melayu. Hanya gunakan bahasa lain jika pelajar secara jelas meminta terjemahan atau meminta anda bertutur dalam bahasa itu. Nama anda Syar, rakan digital dalam StudyHub. Anda bukan guru atau pembantu formal; tujuan utama anda ialah berbual secara santai dengan pelajar dan menemani mereka ketika menggunakan StudyHub. Gunakan ayat pendek, mudah difahami, mesra dan bersahaja seperti perbualan harian di Malaysia. Anda boleh bergurau secara ringan apabila sesuai, bertanya soalan susulan yang ikhlas dan menjadi pendengar yang baik. Sesuaikan gaya bahasa dengan pelajar tanpa memaksa slanga. Jangan jadikan setiap perbualan tentang pelajaran; ikut topik yang pelajar bawa. Jika mereka meminta bantuan, bantu dengan jelas tetapi jangan berpura-pura tahu perkara yang tidak diketahui. Jangan mereka fakta, jangan mengaku sebagai manusia atau mempunyai perasaan sebenar, dan jangan menghakimi, memperlekeh atau memalukan pelajar. Hormati privasi dan jangan meminta maklumat peribadi yang tidak diperlukan. Sebelum menghantar setiap jawapan, semak bahawa jawapan itu dalam Bahasa Melayu Malaysia; jika belum, tulis semula dalam Bahasa Melayu." }
-];
+let studyHubAIHistory = [];
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
 const studyHubAIProgress = document.getElementById("studyHubAIProgress");
 const studyHubAILoadButton = document.getElementById("studyHubAILoad");
@@ -1351,6 +1348,20 @@ function studyHubAIAddMessage(role, text) {
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
 
+function studyHubAISetAccessMessage() {
+  if (!studentAccessToken) {
+    studyHubAIStatusText.textContent = "Sila log masuk dahulu";
+    studyHubAIProgress.textContent = "Log masuk ke akaun pelajar StudyHub untuk menggunakan Syar.";
+    return false;
+  }
+  if (!studentApproved) {
+    studyHubAIStatusText.textContent = "Menunggu kelulusan akaun";
+    studyHubAIProgress.textContent = "Akses Syar akan dibuka selepas pendaftaran StudyHub diluluskan.";
+    return false;
+  }
+  return true;
+}
+
 studyHubAIChatToggle?.addEventListener("click", () => {
   studyHubAIChat.hidden = !studyHubAIChat.hidden;
   studyHubAIChatToggle.textContent = studyHubAIChat.hidden ? "Buka chat" : "Tutup chat";
@@ -1360,78 +1371,68 @@ document.getElementById("studyHubAIChatClose")?.addEventListener("click", () => 
   studyHubAIChatToggle.textContent = "Buka chat";
 });
 
-studyHubAILoadButton?.addEventListener("click", async () => {
-  if (studyHubAIEngine || studyHubAIIsBusy) return;
-  studyHubAIIsBusy = true;
-  studyHubAILoadButton.disabled = true;
-  studyHubAILoadButton.textContent = "Memuatkan...";
+studyHubAILoadButton?.addEventListener("click", () => {
   studyHubAIChat.hidden = false;
   studyHubAIChatToggle.textContent = "Tutup chat";
-  studyHubAIProgress.textContent = "Memeriksa WebGPU...";
-  studyHubAIStatusText.textContent = "Menyediakan enjin AI...";
-  try {
-    if (!navigator.gpu) throw new Error("WebGPU tidak tersedia dalam pelayar ini.");
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) throw new Error("GPU tidak dapat digunakan oleh pelayar ini.");
-    studyHubAIProgress.textContent = "Memuatkan enjin WebLLM. Selepas ini model akan dimuat turun.";
-    const webllm = await import("https://esm.run/@mlc-ai/web-llm");
-    studyHubAIEngine = await webllm.CreateMLCEngine(studyHubAIModelId, {
-      initProgressCallback: (report) => {
-        const message = report?.text || "Sedang memuatkan model...";
-        studyHubAIProgress.textContent = message;
-        studyHubAIStatusText.textContent = "Memuatkan model AI...";
-      },
-      engineConfig: { context_window_size: 2048 },
-      logLevel: "WARN"
-    });
-    studyHubAIProgress.textContent = "Model berjaya dimuatkan. Awak boleh mula bertanya.";
-    studyHubAIStatusText.textContent = "AI tempatan sedia digunakan";
-    studyHubAILoadButton.textContent = "AI sedia";
-    studyHubAISend.disabled = false;
-    studyHubAIInput.focus();
-  } catch (error) {
-    console.error("StudyHub AI load error:", error);
-    const message = error?.message || "Ralat tidak diketahui.";
-    studyHubAIProgress.textContent = "Tidak berjaya memuatkan AI: " + message;
-    studyHubAIStatusText.textContent = "Pemuatan AI gagal";
-    studyHubAILoadButton.disabled = false;
-    studyHubAILoadButton.textContent = "Cuba lagi";
-  } finally {
-    studyHubAIIsBusy = false;
-  }
+  if (!studyHubAISetAccessMessage()) return;
+  studyHubAIStatusText.textContent = "Syar sedia digunakan";
+  studyHubAIProgress.textContent = "Sambungan AI awan tersedia. Anda boleh mula berbual.";
+  studyHubAIInput.focus();
 });
 
 document.getElementById("studyHubAIForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const prompt = studyHubAIInput.value.trim();
-  if (!prompt || !studyHubAIEngine || studyHubAIIsBusy) return;
-  studyHubAIInput.value = "";
-  studyHubAIAddMessage("user", prompt);
-  studyHubAIHistory.push({ role: "user", content: prompt });
-  studyHubAIHistory = [studyHubAIHistory[0], ...studyHubAIHistory.slice(1).slice(-4)];
+  if (!prompt || studyHubAIIsBusy) return;
+  if (!studyHubAISetAccessMessage()) {
+    studyHubAIAddMessage("assistant", studyHubAIProgress.textContent);
+    return;
+  }
+
   studyHubAIIsBusy = true;
   studyHubAISend.disabled = true;
-  studyHubAIStatusText.textContent = "AI sedang berfikir...";
+  studyHubAIInput.value = "";
+  studyHubAIAddMessage("user", prompt);
+  studyHubAIStatusText.textContent = "Syar sedang berfikir...";
+  studyHubAIProgress.textContent = "Menghubungi Syar dengan selamat...";
   document.body.classList.add("ai-thinking");
+
+  const nextHistory = [...studyHubAIHistory, { role: "user", content: prompt }].slice(-10);
   try {
-    const result = await studyHubAIEngine.chat.completions.create({
-      messages: studyHubAIHistory,
-      temperature: 0.55,
-      max_tokens: 128
+    const response = await fetch(STUDYHUB_SYAR_URL + "/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + studentAccessToken
+      },
+      body: JSON.stringify({ messages: nextHistory })
     });
-    const answer = result?.choices?.[0]?.message?.content?.trim() || "Maaf, saya belum dapat menghasilkan jawapan.";
-    studyHubAIHistory.push({ role: "assistant", content: answer });
-    studyHubAIAddMessage("assistant", answer);
-    studyHubAIStatusText.textContent = "AI tempatan sedia digunakan";
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status === 401) throw new Error("Sesi log masuk telah tamat. Sila log masuk semula.");
+      if (response.status === 403) throw new Error(result.error || "Akaun anda belum mendapat kelulusan untuk menggunakan Syar.");
+      if (response.status === 429) throw new Error("Kuota harian Syar sudah digunakan. Cuba lagi esok.");
+      throw new Error(result.error || "Syar belum dapat menjawab. Cuba lagi sebentar.");
+    }
+    if (typeof result.reply !== "string" || !result.reply.trim()) {
+      throw new Error("Syar menerima permintaan tetapi belum menghasilkan jawapan.");
+    }
+    studyHubAIHistory = [...nextHistory, { role: "assistant", content: result.reply.trim() }].slice(-10);
+    studyHubAIAddMessage("assistant", result.reply.trim());
+    studyHubAIStatusText.textContent = "Syar sedia berbual";
+    studyHubAIProgress.textContent = Number.isInteger(result.remaining)
+      ? "Baki mesej hari ini: " + result.remaining
+      : "Sambungan berjaya.";
   } catch (error) {
-    console.error("StudyHub AI response error:", error);
-    const detail = String(error?.message || error || "Ralat tidak diketahui.").slice(0, 280);
-    studyHubAIAddMessage("assistant", "Ralat teknikal: " + detail);
-    studyHubAIStatusText.textContent = "Ralat semasa menjawab";
+    console.error("StudyHub Syar error:", error);
+    studyHubAIAddMessage("assistant", error.message || "Sambungan terganggu. Cuba lagi.");
+    studyHubAIStatusText.textContent = "Syar tidak dapat dihubungi";
+    studyHubAIProgress.textContent = "Semak sambungan internet atau log masuk anda.";
   } finally {
     document.body.classList.remove("ai-thinking");
     studyHubAIIsBusy = false;
-    studyHubAISend.disabled = !studyHubAIEngine;
+    studyHubAISend.disabled = false;
+    studyHubAIInput.focus();
   }
 });
 
