@@ -1694,14 +1694,11 @@ document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
 });
-function studyHubSYARHandleTextSend(event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  studyHubAIChatPanel.hidden = false;
-  studyHubAIOpenChat.setAttribute("aria-expanded","trdocument.getElementById("studyHubMascot").addEventListener("click",() => {
-  // Bot kekal sebagai maskot; tekan untuk memainkan sapaan suara Syar.
+// Maskot memainkan ucapan alu-aluan melalui tindakan pengguna.
+document.getElementById("studyHubMascot").addEventListener("click", () => {
   studyHubAIStatus.click();
 });
 // Chat teks telah dibuang; maskot dan sapaan suara dikekalkan.
+</script>
+</body>
+</html>
