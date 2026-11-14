@@ -1405,6 +1405,7 @@ function studyHubSYARAddChatMessage(role, message) {
 }
 function studyHubSYARStopRecognition() {
   studyHubSYARListeningMode = "off";
+  studyHubSYARPausedForReply = false;
   studyHubSYARRecognitionStarting = false;
   document.body.classList.remove("ai-listening");
   studyHubAIPushToTalk.classList.remove("active");
@@ -1413,8 +1414,26 @@ function studyHubSYARStopRecognition() {
   studyHubAIAlwaysOn.setAttribute("aria-pressed","false");
   try { if (studyHubSYARRecognition) studyHubSYARRecognition.stop(); } catch (error) {}
 }
+let studyHubSYARSpeakingReply = false;
+let studyHubSYARPausedForReply = false;
+
+function studyHubSYARResumeAlwaysOn() {
+  if (studyHubSYARListeningMode !== "always" || document.hidden || studyHubSYARChatBusy || studyHubSYARSpeakingReply) return;
+  studyHubSYARPausedForReply = false;
+  if (!studyHubSYARRecognitionStarting) {
+    window.setTimeout(() => {
+      if (studyHubSYARListeningMode === "always" && !document.hidden && !studyHubSYARChatBusy && !studyHubSYARSpeakingReply && !studyHubSYARRecognitionStarting) {
+        studyHubSYARStartRecognition("always");
+      }
+    }, 500);
+  }
+}
+
 function studyHubSYARSpeakReply(message) {
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    studyHubSYARResumeAlwaysOn();
+    return;
+  }
   window.speechSynthesis.cancel();
   const speech = new SpeechSynthesisUtterance(message);
   speech.lang = "ms-MY";
@@ -1422,8 +1441,13 @@ function studyHubSYARSpeakReply(message) {
   speech.pitch = 1;
   const voice = studyHubSYARGetPreferredVoice();
   if (voice) speech.voice = voice;
+  studyHubSYARSpeakingReply = true;
   speech.onstart = () => document.body.classList.add("ai-speaking");
-  speech.onend = speech.onerror = () => document.body.classList.remove("ai-speaking");
+  speech.onend = speech.onerror = () => {
+    document.body.classList.remove("ai-speaking");
+    studyHubSYARSpeakingReply = false;
+    studyHubSYARResumeAlwaysOn();
+  };
   window.speechSynthesis.speak(speech);
 }
 async function studyHubSYARSendMessage(rawMessage) {
@@ -1463,6 +1487,8 @@ async function studyHubSYARSendMessage(rawMessage) {
     studyHubSYARChatBusy = false;
     document.body.classList.remove("ai-thinking");
     sendButton.disabled = false;
+    // Sambung semula Always On selepas ralat rangkaian; jika ada jawapan suara, ia akan disambung selepas audio tamat.
+    if (!studyHubSYARSpeakingReply) studyHubSYARResumeAlwaysOn();
   }
 }
 function studyHubSYARStartRecognition(mode) {
@@ -1500,8 +1526,15 @@ function studyHubSYARStartRecognition(mode) {
       if (!event.results[i].isFinal) continue;
       const transcript = event.results[i][0]?.transcript?.trim();
       if (!transcript) continue;
-      if (mode === "always") studyHubSYARSendMessage(transcript);
-      else studyHubSYARPendingSpeech += (studyHubSYARPendingSpeech ? " " : "") + transcript;
+      if (mode === "always") {
+        if (studyHubSYARChatBusy || studyHubSYARPausedForReply) continue;
+        // Hentikan pendengaran sebelum menghantar soalan supaya suara Syar tidak dirakam semula.
+        studyHubSYARPausedForReply = true;
+        try { recognition.stop(); } catch (error) {}
+        studyHubSYARSendMessage(transcript);
+      } else {
+        studyHubSYARPendingSpeech += (studyHubSYARPendingSpeech ? " " : "") + transcript;
+      }
     }
   };
   recognition.onerror = event => {
@@ -1525,8 +1558,10 @@ function studyHubSYARStartRecognition(mode) {
     }
     if (mode === "always" && studyHubSYARListeningMode === "always") {
       document.body.classList.remove("ai-listening");
+      // Jika dihentikan untuk menunggu jawapan Syar, jangan hidupkan mikrofon semula dahulu.
+      if (studyHubSYARPausedForReply) return;
       window.setTimeout(() => {
-        if (studyHubSYARListeningMode === "always" && !document.hidden) {
+        if (studyHubSYARListeningMode === "always" && !document.hidden && !studyHubSYARChatBusy && !studyHubSYARSpeakingReply && !studyHubSYARRecognitionStarting) {
           studyHubSYARStartRecognition("always");
         }
       },700);
