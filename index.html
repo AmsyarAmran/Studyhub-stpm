@@ -1050,8 +1050,8 @@ function renderAdminQuizQuestions(){
   }).join("");
   document.getElementById("adminQuizEmpty").hidden = filtered.length !== 0;
 }
-async function loadAdminQuizQuestions(){
-  quizAdminRows.innerHTML = '<tr><td colspan="5" class="muted">Memuatkan soalan...</td></tr>';
+async function loadAdminQuizQuestions(silent=false){
+  if(!silent) quizAdminRows.innerHTML = '<tr><td colspan="5" class="muted">Memuatkan soalan...</td></tr>';
   try{
     const [questionResponse, answerResponse] = await Promise.all([
       fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=id,subject,set_number,question_text,option_a,option_b,option_c,option_d,active,created_at&order=subject.asc,set_number.asc,created_at.desc",{headers:adminHeaders()}),
@@ -1241,19 +1241,21 @@ function updateStudentQuizAccess(){
 document.getElementById("quizGoDirectory").addEventListener("click",()=>{
   document.querySelector('[data-page="students"]').click();
 });
-async function loadStudentQuizSets(){
+async function loadStudentQuizSets(silent=false){
   if(!studentAccessToken || !studentApproved)return;
   const subject=document.getElementById("studentQuizSubject").value;
   const select=document.getElementById("studentQuizSet");
-  select.innerHTML='<option value="">Memuatkan...</option>';
+  const previousSet=select.value;
+  if(!silent) select.innerHTML='<option value="">Memuatkan...</option>';
   try{
     const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_quiz_questions?select=set_number&subject=eq."+subject+"&active=eq.true&order=set_number.asc",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
     if(!response.ok)throw new Error("Tidak dapat memuatkan senarai set.");
     const rows=await response.json();
     const sets=[...new Set(rows.map(x=>Number(x.set_number||1)))].sort((a,b)=>a-b);
     select.innerHTML=sets.length?sets.map(n=>'<option value="'+n+'">Set '+n+'</option>').join(""):'<option value="">Tiada set tersedia</option>';
+    if(sets.some(n=>String(n)===previousSet))select.value=previousSet;
     if(sets.length)await loadStudentAttemptStatus();
-    document.getElementById("studentQuizStatus").textContent=sets.length?"Pilih set untuk mula menjawab.":"Belum ada set kuiz bagi subjek ini.";
+    if(!silent)document.getElementById("studentQuizStatus").textContent=sets.length?"Pilih set untuk mula menjawab.":"Belum ada set kuiz bagi subjek ini.";
   }catch(error){select.innerHTML='<option value="">Tidak tersedia</option>';document.getElementById("studentQuizStatus").textContent=error.message;}
 }
 async function loadStudentAttemptStatus(){
@@ -1360,6 +1362,27 @@ async function loadLeaderboardSets(){
   }catch(error){select.innerHTML='<option value="">Tidak tersedia</option>';document.getElementById("studentQuizRankingRows").innerHTML='<tr><td colspan="3" class="muted">'+escapeStudentText(error.message)+'</td></tr>';}
 }
 document.getElementById("studentQuizSubject").addEventListener("change",loadStudentQuizSets);
+
+// Kemas kini automatik tanpa refresh pelayar (polling senyap setiap 5 saat).
+// Elakkan mengganggu editor admin atau sesi kuiz yang sedang dijawab.
+let studyHubAutoSyncBusy = false;
+setInterval(async()=>{
+  if(document.hidden || studyHubAutoSyncBusy)return;
+  studyHubAutoSyncBusy=true;
+  try{
+    const activePage=document.querySelector(".page.active")?.id;
+    if(activePage==="admin" && adminAccessToken && !editingQuizQuestionId && !adminDashboard.hidden){
+      await loadAdminQuizQuestions(true);
+    }
+    if(activePage==="quiz" && studentAccessToken && studentApproved && document.getElementById("studentQuizPlayer").hidden){
+      await loadStudentQuizSets(true);
+    }
+  }catch(error){
+    console.warn("StudyHub auto-sync:",error);
+  }finally{
+    studyHubAutoSyncBusy=false;
+  }
+},5000);
 document.getElementById("studentQuizLoad").addEventListener("click",loadStudentQuiz);
 document.getElementById("studentQuizRankingRefresh").addEventListener("click",loadStudentRanking);
 document.getElementById("leaderboardSubject").addEventListener("change",loadLeaderboardSets);
