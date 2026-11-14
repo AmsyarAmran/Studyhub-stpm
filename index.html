@@ -1662,7 +1662,7 @@ function studyHubSYARQueueDashboardWelcome() {
 studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
-  studyHubAITextInput.focus();
+  // Jangan fokuskan input secara automatik supaya papan kekunci telefon tidak terbuka sendiri.
 });
 
 // Sapaan automatik Syar bermula selepas status sesi disahkan.
