@@ -716,7 +716,7 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{
  const pageId=b.dataset.page;
  // Pelajar tidak boleh membuka Panel Admin; Syar akan memberi peringatan melalui suara.
- if(pageId==='admin' && studentAccessToken && !adminAccessToken){
+ if(pageId==='admin' && studentAccessToken && String(studentEmail||"").toLowerCase()!==ADMIN_EMAIL){
   studyHubSYARSpeakReply("Emm, tak boleh. Hanya Syar yang boleh akses panel ni.");
   return;
  }
@@ -1203,6 +1203,7 @@ document.querySelector('[data-page="leaderboard"]').addEventListener("click",()=
 let studentAccessToken = null;
 let studentAuthMode = "signup";
 let studentUserId = null;
+let studentEmail = "";
 let studentApproved = false;
 let studentDisplayName = "";
 const studentForm = document.getElementById("studentForm");
@@ -1283,7 +1284,7 @@ studentForm.addEventListener("submit",async event=>{
         studentMessage.textContent="Akaun berjaya didaftarkan. Semak e-mel untuk pengesahan, kemudian pilih Log masuk.";
         return;
       }
-      studentAccessToken=result.access_token;studentUserId=result.user?.id;saveStoredSession(STUDENT_SESSION_KEY,result);
+      studentAccessToken=result.access_token;studentUserId=result.user?.id;studentEmail=String(result.user?.email||"").toLowerCase();saveStoredSession(STUDENT_SESSION_KEY,result);
       if(!studentUserId)throw new Error("ID akaun tidak diterima. Cuba log masuk semula.");
       const registration=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{
         method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"return=minimal"},
@@ -1301,7 +1302,7 @@ studentForm.addEventListener("submit",async event=>{
 });
 document.getElementById("studentLogoutButton").addEventListener("click",async()=>{
   if(studentAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});}catch(error){}}
-  studentAccessToken=null;studentUserId=null;studentApproved=false;studentDisplayName="";renderStudentProfile();clearStoredSession(STUDENT_SESSION_KEY);updateStudentQuizAccess();showStudentSession("","");setStudentAuthMode("signup");
+  studentAccessToken=null;studentUserId=null;studentEmail="";studentApproved=false;studentDisplayName="";renderStudentProfile();clearStoredSession(STUDENT_SESSION_KEY);updateStudentQuizAccess();showStudentSession("","");setStudentAuthMode("signup");
 
 });
 setStudentAuthMode("signup");
@@ -1378,9 +1379,10 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
   if(studentSession?.access_token&&studentSession.user?.id){
     studentAccessToken=studentSession.access_token;
     studentUserId=studentSession.user.id;
+    studentEmail=String(studentSession.user.email||"").toLowerCase();
     try{await checkStudentRegistration();}
     catch(error){
-      studentAccessToken=null;studentUserId=null;studentApproved=false;
+      studentAccessToken=null;studentUserId=null;studentEmail="";studentApproved=false;
       clearStoredSession(STUDENT_SESSION_KEY);
       showStudentSession("Sesi perlu log masuk semula","Sila log masuk semula untuk meneruskan.");
       updateStudentQuizAccess();
