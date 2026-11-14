@@ -1377,7 +1377,7 @@ studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 const STUDYHUB_SYAR_IDLE_DELAY = 20 * 1000;
 let studyHubSYARIdleTimer = null;
 let studyHubSYARIdleUtterance = null;
-let studyHubSYARIdlePromptSpoken = false;
+let studyHubSYARIdleCycle = 0;
 
 function studyHubSYARGetMealGreeting() {
   const messages = [
@@ -1395,12 +1395,21 @@ function studyHubSYARGetMealGreeting() {
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
-function studyHubSYARSpeakWhenIdle() {
-  if (document.hidden || studyHubSYARIdlePromptSpoken) return;
-  studyHubSYARIdlePromptSpoken = true;
+function studyHubSYARScheduleNextIdlePrompt(cycle) {
+  window.clearTimeout(studyHubSYARIdleTimer);
+  if (!document.hidden && cycle === studyHubSYARIdleCycle) {
+    studyHubSYARIdleTimer = window.setTimeout(() => studyHubSYARSpeakWhenIdle(cycle), STUDYHUB_SYAR_IDLE_DELAY);
+  }
+}
+
+function studyHubSYARSpeakWhenIdle(cycle = studyHubSYARIdleCycle) {
+  if (document.hidden || cycle !== studyHubSYARIdleCycle) return;
   const message = studyHubSYARGetMealGreeting();
   studyHubAIStatusText.textContent = "Syar: " + message;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    studyHubSYARScheduleNextIdlePrompt(cycle);
+    return;
+  }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(message);
   studyHubSYARIdleUtterance = utterance;
@@ -1412,25 +1421,30 @@ function studyHubSYARSpeakWhenIdle() {
   utterance.onstart = () => document.body.classList.add("ai-speaking");
   utterance.onend = utterance.onerror = () => {
     document.body.classList.remove("ai-speaking");
-    if (studyHubSYARIdleUtterance === utterance) studyHubSYARIdleUtterance = null;
+    if (studyHubSYARIdleUtterance === utterance) {
+      studyHubSYARIdleUtterance = null;
+      studyHubSYARScheduleNextIdlePrompt(cycle);
+    }
   };
   window.speechSynthesis.speak(utterance);
 }
 
-function studyHubSYARResetIdleTimer(resetPromptCycle = true) {
+function studyHubSYARResetIdleTimer(resetCycle = true) {
   window.clearTimeout(studyHubSYARIdleTimer);
-  if (resetPromptCycle) studyHubSYARIdlePromptSpoken = false;
-  if (studyHubSYARIdleUtterance && "speechSynthesis" in window) {
+  if (resetCycle) studyHubSYARIdleCycle++;
+  const previousUtterance = studyHubSYARIdleUtterance;
+  studyHubSYARIdleUtterance = null;
+  if (previousUtterance && "speechSynthesis" in window) {
     window.speechSynthesis.cancel();
-    studyHubSYARIdleUtterance = null;
     document.body.classList.remove("ai-speaking");
   }
-  if (!document.hidden && !studyHubSYARIdlePromptSpoken) {
-    studyHubSYARIdleTimer = window.setTimeout(studyHubSYARSpeakWhenIdle, STUDYHUB_SYAR_IDLE_DELAY);
+  if (!document.hidden) {
+    const cycle = studyHubSYARIdleCycle;
+    studyHubSYARIdleTimer = window.setTimeout(() => studyHubSYARSpeakWhenIdle(cycle), STUDYHUB_SYAR_IDLE_DELAY);
   }
 }
 
-// Kiraan idle hanya dimulakan semula apabila pelajar bertukar menu.
+// Kiraan 20 saat berulang selagi pelajar kekal pada menu yang sama.
 let studyHubSYARHiddenAt = null;
 function studyHubSYARHandleVisibilityChange() {
   if (document.hidden) {
