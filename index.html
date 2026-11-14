@@ -1335,9 +1335,7 @@ const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
 function studyHubSYARGetPreferredVoice() {
   const voices = window.speechSynthesis.getVoices();
   const voicesInMalay = voices.filter(voice => /^ms(-|_)/i.test(voice.lang));
-  const maleMalayVoice = voicesInMalay.find(voice => /male|lelaki|pria/i.test(voice.name));
-  if (maleMalayVoice) return maleMalayVoice;
-  return voicesInMalay[0] || voices.find(voice => /male|lelaki|pria/i.test(voice.name)) || null;
+  return voicesInMalay[0] || null;
 }
 
 function studyHubSYARGetWelcomeGreeting() {
@@ -1359,7 +1357,7 @@ function studyHubAISpeakGreeting() {
   const greeting = new SpeechSynthesisUtterance(welcomeMessage);
   greeting.lang = "ms-MY";
   greeting.rate = 0.95;
-  greeting.pitch = 0.9;
+  greeting.pitch = 1;
   const preferredVoice = studyHubSYARGetPreferredVoice();
     if (preferredVoice) greeting.voice = preferredVoice;
   greeting.onstart = () => {
@@ -1423,7 +1421,7 @@ function studyHubSYARSpeakWhenIdle(cycle = studyHubSYARIdleCycle) {
   studyHubSYARIdleUtterance = utterance;
   utterance.lang = "ms-MY";
   utterance.rate = 0.95;
-  utterance.pitch = 0.9;
+  utterance.pitch = 1;
   const preferredVoice = studyHubSYARGetPreferredVoice();
     if (preferredVoice) utterance.voice = preferredVoice;
   utterance.onstart = () => document.body.classList.add("ai-speaking");
@@ -1471,7 +1469,7 @@ function studyHubSYARHandleVisibilityChange() {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 0.9;
+    utterance.pitch = 1;
     const preferredVoice = studyHubSYARGetPreferredVoice();
     if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
@@ -1494,7 +1492,7 @@ window.addEventListener("studyhub:navigation", event => {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 0.9;
+    utterance.pitch = 1;
     const preferredVoice = studyHubSYARGetPreferredVoice();
     if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
@@ -1515,7 +1513,7 @@ window.addEventListener("studyhub:navigation", event => {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 0.9;
+    utterance.pitch = 1;
     const preferredVoice = studyHubSYARGetPreferredVoice();
     if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
@@ -1566,7 +1564,7 @@ window.addEventListener("studyhub:navigation", event => {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 0.9;
+    utterance.pitch = 1;
     const preferredVoice = studyHubSYARGetPreferredVoice();
     if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
