@@ -244,13 +244,14 @@ body.ai-speaking .ai-aura{
 .studyhub-ai-status{
  position:fixed;right:18px;bottom:18px;z-index:9998;
  display:flex;align-items:center;gap:10px;
- pointer-events:auto;
- max-width:min(330px,calc(100vw - 112px));
+ width:min(360px,calc(100vw - 32px));box-sizing:border-box;
  padding:10px 14px;border:1px solid #425477;border-radius:15px;
  background:#111a2eef;color:#f4f7ff;
  box-shadow:0 10px 30px #02061766;backdrop-filter:blur(14px);
- pointer-events:auto;
 }
+.studyhub-ai-status > span:nth-child(2){min-width:0;flex:1 1 auto}
+.studyhub-ai-status small{white-space:normal;overflow-wrap:anywhere}
+.studyhub-ai-status .syar-mic-toggle{flex:0 0 auto;white-space:nowrap}
 .syar-mic-toggle{
  flex:0 0 auto;border:1px solid #52658a;background:#263653;color:#eaf5ff;
  border-radius:999px;padding:8px 11px;font-size:11px;font-weight:750;cursor:pointer;
@@ -268,9 +269,10 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 body.ai-thinking .studyhub-ai-status .ai-status-orb{background:#a58bff;box-shadow:0 0 0 4px #a58bff25,0 0 13px #a58bff}
 body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shadow:0 0 0 4px #5de2cf25,0 0 16px #5de2cf}
 @media(max-width:520px){
- .studyhub-ai-status{right:10px;bottom:10px;padding:8px 11px;max-width:calc(100vw - 100px)}
+ .studyhub-ai-status{left:10px;right:10px;bottom:10px;width:auto;max-width:none;padding:8px 11px;gap:8px}
  .studyhub-ai-status strong{font-size:11px}
- .studyhub-ai-status small{font-size:9px}
+ .studyhub-ai-status small{font-size:9px;line-height:1.35}
+ .studyhub-ai-status .syar-mic-toggle{padding:7px 9px;font-size:10px}
 }
 .ai-chat-panel{
  position:fixed;right:14px;bottom:82px;z-index:9999;width:min(390px,calc(100vw - 28px));
