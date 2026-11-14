@@ -1377,6 +1377,7 @@ studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 const STUDYHUB_SYAR_IDLE_DELAY = 20 * 1000;
 let studyHubSYARIdleTimer = null;
 let studyHubSYARIdleUtterance = null;
+let studyHubSYARIdlePromptSpoken = false;
 
 function studyHubSYARGetMealGreeting() {
   const messages = [
@@ -1395,7 +1396,8 @@ function studyHubSYARGetMealGreeting() {
 }
 
 function studyHubSYARSpeakWhenIdle() {
-  if (document.hidden) return;
+  if (document.hidden || studyHubSYARIdlePromptSpoken) return;
+  studyHubSYARIdlePromptSpoken = true;
   const message = studyHubSYARGetMealGreeting();
   studyHubAIStatusText.textContent = "Syar: " + message;
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
@@ -1415,31 +1417,32 @@ function studyHubSYARSpeakWhenIdle() {
   window.speechSynthesis.speak(utterance);
 }
 
-function studyHubSYARResetIdleTimer() {
+function studyHubSYARResetIdleTimer(resetPromptCycle = true) {
   window.clearTimeout(studyHubSYARIdleTimer);
+  if (resetPromptCycle) studyHubSYARIdlePromptSpoken = false;
   if (studyHubSYARIdleUtterance && "speechSynthesis" in window) {
     window.speechSynthesis.cancel();
     studyHubSYARIdleUtterance = null;
     document.body.classList.remove("ai-speaking");
   }
-  if (!document.hidden) {
+  if (!document.hidden && !studyHubSYARIdlePromptSpoken) {
     studyHubSYARIdleTimer = window.setTimeout(studyHubSYARSpeakWhenIdle, STUDYHUB_SYAR_IDLE_DELAY);
   }
 }
 
 ["pointerdown", "keydown", "touchstart", "scroll", "input", "change"].forEach(eventName => {
-  document.addEventListener(eventName, studyHubSYARResetIdleTimer, { passive: true });
+  document.addEventListener(eventName, () => studyHubSYARResetIdleTimer(true), { passive: true });
 });
 let studyHubSYARHiddenAt = null;
 function studyHubSYARHandleVisibilityChange() {
   if (document.hidden) {
     studyHubSYARHiddenAt = Date.now();
-    studyHubSYARResetIdleTimer();
+    studyHubSYARResetIdleTimer(false);
     return;
   }
   const awayDuration = studyHubSYARHiddenAt === null ? 0 : Date.now() - studyHubSYARHiddenAt;
   studyHubSYARHiddenAt = null;
-  studyHubSYARResetIdleTimer();
+  studyHubSYARResetIdleTimer(false);
   if (awayDuration >= 20 * 1000) {
     const message = "Eh, dah kembali? Tadi pergi mana? Ada urusan ke? Hehe~";
     studyHubAIStatusText.textContent = "Syar: " + message;
@@ -1457,8 +1460,7 @@ function studyHubSYARHandleVisibilityChange() {
   }
 }
 document.addEventListener("visibilitychange", studyHubSYARHandleVisibilityChange);
-studyHubSYARResetIdleTimer();
-
+studyHubSYARResetIdleTimer(false);
 window.addEventListener("studyhub:navigation", event => {
   const title = event.detail?.title;
   if (!title) return;
