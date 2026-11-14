@@ -1381,11 +1381,24 @@ function studyHubAISpeak(text, controls) {
   studyHubAIStopSpeech();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ms-MY";
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
+  utterance.rate = 0.92;
+  utterance.pitch = 1.02;
+
+  // Utamakan suara Melayu; suara Indonesia ialah pilihan paling hampir
+  // jika peranti tidak menyediakan suara Bahasa Melayu.
   const voices = window.speechSynthesis.getVoices();
-  const malayVoice = voices.find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) utterance.voice = malayVoice;
+  const preferredVoice =
+    voices.find(voice => /^ms[-_]MY$/i.test(voice.lang)) ||
+    voices.find(voice => /^ms([_-]|$)/i.test(voice.lang)) ||
+    voices.find(voice => /^id[-_]ID$/i.test(voice.lang)) ||
+    voices.find(voice => /^id([_-]|$)/i.test(voice.lang));
+  if (preferredVoice) {
+    utterance.voice = preferredVoice;
+    studyHubAIProgress.textContent = "Suara: " + preferredVoice.name + " (" + preferredVoice.lang + ")";
+  } else {
+    studyHubAIProgress.textContent = "Menggunakan suara lalai peranti. Untuk sebutan lebih natural, pasang suara Bahasa Melayu pada tetapan peranti jika tersedia.";
+  }
+
   studyHubAISpeakingUtterance = utterance;
   studyHubAISpeakingControls = controls;
   controls.listen.hidden = true;
