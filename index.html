@@ -341,6 +341,37 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 @media(max-width:520px){.studyhub-ai-status{left:8px;right:8px;bottom:8px;max-width:none;justify-content:space-between;gap:7px;padding:8px}.studyhub-ai-status .syar-open-chat{padding:7px 8px}.ai-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px)}}
 
 
+
+/* MASKOT SYAR — bot kecil yang menyapa pelawat */
+.studyhub-mascot{
+ position:fixed;right:24px;bottom:100px;z-index:9996;
+ display:flex;align-items:center;gap:9px;border:0;background:transparent;
+ color:#f4f7ff;cursor:pointer;padding:0;text-align:left;
+ animation:syarMascotFloat 3.2s ease-in-out infinite;
+}
+.studyhub-mascot-bubble{
+ max-width:165px;padding:9px 12px;border:1px solid #52658a;border-radius:14px 14px 4px 14px;
+ background:#111a2ef2;box-shadow:0 8px 24px #02061777;backdrop-filter:blur(12px);
+ font-size:11px;line-height:1.4;
+}
+.studyhub-mascot-bubble strong{display:block;color:#8fe7f0;font-size:12px;margin-bottom:2px}
+.studyhub-mascot-avatar{
+ width:54px;height:54px;display:grid;place-items:center;border-radius:19px;
+ border:1px solid #8c9cff;background:linear-gradient(145deg,#5146a5,#177e91);
+ box-shadow:0 9px 25px #02061788,inset 0 1px #ffffff55;font-size:29px;
+}
+.studyhub-mascot:hover .studyhub-mascot-avatar{transform:rotate(-9deg) scale(1.08)}
+.studyhub-mascot-avatar{transition:transform .2s ease}
+@keyframes syarMascotFloat{
+ 0%,100%{transform:translateY(0) rotate(-1deg)}
+ 50%{transform:translateY(-8px) rotate(2deg)}
+}
+@media(max-width:520px){
+ .studyhub-mascot{right:12px;bottom:84px;gap:7px}
+ .studyhub-mascot-bubble{max-width:142px;padding:7px 9px;font-size:10px}
+ .studyhub-mascot-avatar{width:48px;height:48px;border-radius:16px;font-size:26px}
+}
+@media(prefers-reduced-motion:reduce){.studyhub-mascot{animation:none}}
 </style>
 </head>
 <body>
@@ -558,6 +589,10 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  <div class="card"><p>STUDYHUB ialah ruang pembelajaran ringkas untuk pelajar STPM. Fokus awal projek ini ialah bahan percubaan Semester 1 bagi Pengajian Am (PAM), Kesusasteraan Melayu Komunikatif (KMK), Seni Visual (SENI) dan Bahasa Melayu (BM).</p></div>
 </section>
 
+<button class="studyhub-mascot" id="studyHubMascot" type="button" aria-label="Sembang dengan Syar, pembantu StudyHub">
+ <span class="studyhub-mascot-bubble"><strong>Hai, saya Syar!</strong>Perlukan bantuan? Tekan saya 😊</span>
+ <span class="studyhub-mascot-avatar" aria-hidden="true">🤖</span>
+</button>
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-controls">
  <div class="studyhub-ai-status" id="studyHubAIStatus" role="button" tabindex="0" aria-label="Tekan untuk memainkan ucapan alu-aluan Syar">
@@ -1655,6 +1690,11 @@ function studyHubSYARQueueDashboardWelcome() {
   });
   studyHubSYARScheduleIdlePrompt();
 }
+document.getElementById("studyHubMascot").addEventListener("click",() => {
+  studyHubAIChatPanel.hidden = false;
+  studyHubAIOpenChat.setAttribute("aria-expanded","true");
+  studyHubAIChatPanel.scrollIntoView({behavior:"smooth",block:"nearest"});
+});
 studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
