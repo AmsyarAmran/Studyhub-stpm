@@ -1489,12 +1489,22 @@ window.addEventListener("studyhub:navigation", event => {
     return;
   }
   if (event.detail?.page === "profile" && event.detail?.studentLoggedIn) {
-    const messages = [
-      "Tahniah, awak sudah menjadi sebahagian StudyHub.",
-      "Tengok-tengoklah profil awak ni.",
-      "Apa kata awak ubah suai profil supaya menjadi lebih cantik?"
-    ];
+    const congratulationsKey = "studyhub_syar_congratulations_" + (studentUserId || "student");
+    const congratulationsShown = localStorage.getItem(congratulationsKey) === "true";
+    const messages = congratulationsShown
+      ? [
+          "Tengok-tengoklah profil awak ni.",
+          "Apa kata awak ubah suai profil supaya menjadi lebih cantik?"
+        ]
+      : [
+          "Tahniah, awak sudah menjadi sebahagian StudyHub.",
+          "Tengok-tengoklah profil awak ni.",
+          "Apa kata awak ubah suai profil supaya menjadi lebih cantik?"
+        ];
     const message = messages[Math.floor(Math.random() * messages.length)];
+    if (message.startsWith("Tahniah,")) {
+      localStorage.setItem(congratulationsKey, "true");
+    }
     studyHubAIStatusText.textContent = "Syar: " + message;
     if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
     window.speechSynthesis.cancel();
