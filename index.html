@@ -1332,6 +1332,14 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
 // STUDYHUB SYAR — ucapan alu-aluan teks dan suara sahaja.
 const studyHubAIStatus = document.getElementById("studyHubAIStatus");
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
+function studyHubSYARGetPreferredVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  const voicesInMalay = voices.filter(voice => /^ms(-|_)/i.test(voice.lang));
+  const maleMalayVoice = voicesInMalay.find(voice => /male|lelaki|pria/i.test(voice.name));
+  if (maleMalayVoice) return maleMalayVoice;
+  return voicesInMalay[0] || voices.find(voice => /male|lelaki|pria/i.test(voice.name)) || null;
+}
+
 function studyHubSYARGetWelcomeGreeting() {
   const hour = new Date().getHours();
   let timeGreeting = "malam";
@@ -1351,9 +1359,9 @@ function studyHubAISpeakGreeting() {
   const greeting = new SpeechSynthesisUtterance(welcomeMessage);
   greeting.lang = "ms-MY";
   greeting.rate = 0.95;
-  greeting.pitch = 1;
-  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) greeting.voice = malayVoice;
+  greeting.pitch = 0.9;
+  const preferredVoice = studyHubSYARGetPreferredVoice();
+    if (preferredVoice) greeting.voice = preferredVoice;
   greeting.onstart = () => {
     studyHubAIStatusText.textContent = "Syar sedang menyapa anda...";
     document.body.classList.add("ai-speaking");
@@ -1415,9 +1423,9 @@ function studyHubSYARSpeakWhenIdle(cycle = studyHubSYARIdleCycle) {
   studyHubSYARIdleUtterance = utterance;
   utterance.lang = "ms-MY";
   utterance.rate = 0.95;
-  utterance.pitch = 1;
-  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) utterance.voice = malayVoice;
+  utterance.pitch = 0.9;
+  const preferredVoice = studyHubSYARGetPreferredVoice();
+    if (preferredVoice) utterance.voice = preferredVoice;
   utterance.onstart = () => document.body.classList.add("ai-speaking");
   utterance.onend = utterance.onerror = () => {
     document.body.classList.remove("ai-speaking");
@@ -1444,7 +1452,7 @@ function studyHubSYARResetIdleTimer(resetCycle = true) {
   }
 }
 
-// Kiraan 20 saat berulang selagi pelajar kekal pada menu yang sama.
+// Kiraan 15 saat berulang selagi pelajar kekal pada menu yang sama.
 let studyHubSYARHiddenAt = null;
 function studyHubSYARHandleVisibilityChange() {
   if (document.hidden) {
@@ -1463,9 +1471,9 @@ function studyHubSYARHandleVisibilityChange() {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
+    utterance.pitch = 0.9;
+    const preferredVoice = studyHubSYARGetPreferredVoice();
+    if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
     utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
     window.speechSynthesis.speak(utterance);
@@ -1474,7 +1482,7 @@ function studyHubSYARHandleVisibilityChange() {
 document.addEventListener("visibilitychange", studyHubSYARHandleVisibilityChange);
 studyHubSYARResetIdleTimer(false);
 window.addEventListener("studyhub:navigation", event => {
-  // Menu baharu memulakan kitaran 20 saat yang baharu.
+  // Menu baharu memulakan kitaran 15 saat yang baharu.
   studyHubSYARResetIdleTimer(true);
   const title = event.detail?.title;
   if (!title) return;
@@ -1486,9 +1494,9 @@ window.addEventListener("studyhub:navigation", event => {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
+    utterance.pitch = 0.9;
+    const preferredVoice = studyHubSYARGetPreferredVoice();
+    if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
     utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
     window.speechSynthesis.speak(utterance);
@@ -1507,9 +1515,9 @@ window.addEventListener("studyhub:navigation", event => {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
+    utterance.pitch = 0.9;
+    const preferredVoice = studyHubSYARGetPreferredVoice();
+    if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
     utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
     window.speechSynthesis.speak(utterance);
@@ -1558,9 +1566,9 @@ window.addEventListener("studyhub:navigation", event => {
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "ms-MY";
     utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
+    utterance.pitch = 0.9;
+    const preferredVoice = studyHubSYARGetPreferredVoice();
+    if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onstart = () => document.body.classList.add("ai-speaking");
     utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
     window.speechSynthesis.speak(utterance);
