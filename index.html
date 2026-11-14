@@ -550,14 +550,20 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
  <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Assalamualaikum, selamat datang!</small></span>
+ <button class="syar-open-chat" id="studyHubAIOpenChat" type="button" aria-expanded="false" aria-controls="studyHubAIChatPanel">💬 Chat</button>
  <button class="syar-mic-toggle" id="studyHubAIAlwaysOn" type="button" aria-pressed="false" aria-label="Hidupkan mikrofon Syar">🎙️ Mic Off</button>
 </div>
-<section class="ai-chat-panel" id="studyHubAIChatPanel" aria-label="Kawalan suara Syar" hidden>
- <button id="studyHubAICloseChat" type="button" hidden>Tutup</button>
- <div class="ai-chat-progress" id="studyHubAIChatStatus" role="status" aria-live="polite">Mikrofon dimatikan.</div>
- <div class="ai-chat-messages" id="studyHubAIMessages" hidden></div>
- <button id="studyHubAIPushToTalk" type="button" hidden>Push to Talk</button>
- <form class="ai-chat-form" id="studyHubAITextForm" hidden><input id="studyHubAITextInput" type="text" maxlength="1000" autocomplete="off"><button type="submit">Hantar</button></form>
+<section class="ai-chat-panel" id="studyHubAIChatPanel" aria-label="Chat dengan Syar" hidden>
+ <div class="ai-chat-head">
+  <span><strong>Syar · StudyHub</strong><small>Bertanya apa-apa atau borak santai.</small></span>
+  <button id="studyHubAICloseChat" type="button" aria-label="Tutup chat">Tutup ✕</button>
+ </div>
+ <div class="ai-chat-progress" id="studyHubAIChatStatus" role="status" aria-live="polite">Sedia untuk berbual.</div>
+ <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite"></div>
+ <form class="ai-chat-form" id="studyHubAITextForm">
+  <input id="studyHubAITextInput" type="text" maxlength="1000" autocomplete="off" placeholder="Taip mesej kepada Syar..." aria-label="Mesej kepada Syar">
+  <button type="submit">Hantar</button>
+ </form>
 </section>
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
@@ -1371,7 +1377,7 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
   }else if(adminSession){clearStoredSession(ADMIN_SESSION_KEY);}
 })();
 
-// STUDYHUB SYAR — ucapan alu-aluan teks dan suara sahaja.
+// STUDYHUB SYAR — ucapan alu-aluan dan chat teks/suara.
 const studyHubAIStatus = document.getElementById("studyHubAIStatus");
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
 function studyHubSYARGetPreferredVoice() {
@@ -1615,8 +1621,12 @@ function studyHubSYARStartRecognition(mode) {
     studyHubSYARSetChatStatus("Tidak dapat mengaktifkan mikrofon. Cuba tekan semula.");
   }
 }
+studyHubAIOpenChat.addEventListener("click",() => {
+  studyHubAIChatPanel.hidden = false;
+  studyHubAIOpenChat.setAttribute("aria-expanded","true");
+  studyHubAITextInput.focus();
+});
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
-  studyHubSYARStopRecognition();
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
 });
