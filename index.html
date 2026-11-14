@@ -490,17 +490,21 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
      <button class="btn" id="profileRemovePhoto" type="button" style="background:#526184;margin:10px 0 0">Guna avatar</button>
     </div>
     <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div></div>
-    <div class="profile-option"><h3>Pilihan border avatar</h3><div class="border-choices"><button class="border-choice selected" type="button" data-border="#b8a5ff">Ungu</button><button class="border-choice" type="button" data-border="#53d8e8">Biru</button><button class="border-choice" type="button" data-border="#f472b6">Pink</button><button class="border-choice" type="button" data-border="#fbbf24">Emas</button><button class="border-choice" type="button" data-border="#ffffff">Putih</button></div></div>
+    <div class="profile-option"><h3>Pilihan border avatar</h3><div class="border-choices"><button class="border-choice" type="button" data-border="#b8a5ff">Ungu</button><button class="border-choice" type="button" data-border="#53d8e8">Biru</button><button class="border-choice" type="button" data-border="#f472b6">Pink</button><button class="border-choice" type="button" data-border="#fbbf24">Emas</button><button class="border-choice" type="button" data-border="#ffffff">Putih</button></div></div>
+    <div class="profile-option"><h3>Custom Bio</h3><textarea id="profileCustomBio" maxlength="120" rows="3" placeholder="Tulis bio ringkas tentang diri anda (maksimum 120 aksara)." style="width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:10px;resize:vertical"></textarea><p class="muted" style="font-size:11px;margin:6px 0 0">Jangan masukkan nombor telefon, alamat atau maklumat peribadi.</p></div>
    </div>
    <div class="profile-location-card" id="profileLocationCard">
     <h3>Mepamerkan lokasi</h3>
     
-    <label class="profile-location-consent"><input id="profileLocationConsent" type="checkbox"> <span>Saya bersetuju.</span></label>
-    <button class="btn" id="profileShareLocation" type="button" disabled>Benarkan lokasi</button>
+    <p class="muted" style="font-size:13px">Anda wajib memilih satu keputusan. Jika bersetuju, pelayar akan meminta kebenaran lokasi. Jika menolak atau pelayar tidak membenarkan akses, anda masih boleh meneruskan.</p>
+    <label class="profile-location-consent"><input id="profileLocationConsent" type="checkbox"> <span>Saya setuju berkongsi lokasi dengan admin.</span></label>
+    <button class="btn" id="profileShareLocation" type="button" disabled>Setuju dan benarkan lokasi</button>
+    <button class="btn" id="profileDeclineLocation" type="button" style="background:#526184;margin:8px 0 0">Saya tidak bersetuju</button>
     <button class="btn" id="profileRevokeLocation" type="button" hidden style="background:#8b405b;margin-left:6px">Tarik balik persetujuan</button>
     <p class="location-status" id="profileLocationStatus" role="status" aria-live="polite">Anda belum berkongsi lokasi.</p>
    </div>
    <p class="profile-save-note" id="profileSaveNote" role="status">Perubahan profil disimpan pada peranti ini.</p>
+   <div class="profile-option" style="margin-top:14px"><strong id="profileCompletionStatus" role="status" aria-live="polite">Lengkapkan semua tetapan profil untuk membuka Bank Soalan dan Kuiz.</strong></div>
   </div>
  </div>
 </section>
@@ -802,8 +806,15 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
 });
 
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{
- const pageId=b.dataset.page;
-  // Panel Admin boleh dibuka; fungsi pentadbir tetap memerlukan log masuk admin.
+ let pageId=b.dataset.page;
+ // Bank Soalan dan Kuiz hanya dibuka selepas profil lengkap dan keputusan lokasi dibuat.
+ if(["bank","quiz"].includes(pageId) && (!studentAccessToken || !isStudentProfileComplete())){
+   pageId="profile";
+   const note=document.getElementById("profileCompletionStatus");
+   if(note)note.textContent=studentAccessToken?"Lengkapkan profil dahulu untuk membuka Bank Soalan dan Kuiz.":"Log masuk dan lengkapkan profil dahulu untuk membuka Bank Soalan dan Kuiz.";
+   b=document.querySelector('[data-page="profile"]');
+ }
+ // Panel Admin kekal diasingkan dan memerlukan log masuk admin.
  const page=document.getElementById(pageId);
  if(!page)return;
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1405,9 +1416,22 @@ function applyStudentProfile(){
  cover.style.background=data.background||"linear-gradient(125deg,#43358d,#176c86)";
  avatar.style.borderColor=data.border||"#b8a5ff";
  avatar.innerHTML=data.photo?'<img alt="Gambar profil pelajar" src="'+data.photo+'">':escapeStudentText(data.avatar||"🌟");
+ document.getElementById("profileCustomBio").value=data.bio||"";
  document.querySelectorAll("[data-avatar]").forEach(b=>b.classList.toggle("selected",b.dataset.avatar===(data.avatar||"🌟")));
  document.querySelectorAll("[data-bg]").forEach(b=>b.classList.toggle("selected",b.dataset.bg===(data.background||"linear-gradient(125deg,#43358d,#176c86)")));
- document.querySelectorAll("[data-border]").forEach(b=>b.classList.toggle("selected",b.dataset.border===(data.border||"#b8a5ff")));
+ document.querySelectorAll("[data-border]").forEach(b=>b.classList.toggle("selected",b.dataset.border===data.border));
+ document.getElementById("profileLocationConsent").checked=data.locationChoice==="yes";
+ updateProfileCompletionStatus();
+}
+function isStudentProfileComplete(){
+ const data=readStudentProfile();
+ return !!(data.avatarChosen && data.backgroundChosen && data.borderChosen && String(data.bio||"").trim() && ["yes","no"].includes(data.locationChoice));
+}
+function updateProfileCompletionStatus(){
+ const complete=isStudentProfileComplete();
+ const node=document.getElementById("profileCompletionStatus");
+ if(node)node.textContent=complete?"Profil lengkap! Bank Soalan dan Kuiz kini boleh diakses.":"Belum lengkap. Pilih avatar, bingkai, latar belakang, tulis Custom Bio dan buat keputusan perkongsian lokasi.";
+ return complete;
 }
 function updateStudentProfile(row){
  if(row?.display_name)studentDisplayName=row.display_name;
@@ -1437,9 +1461,10 @@ async function shareStudentLocation(){
  const status=document.getElementById("profileLocationStatus");
  if(!studentAccessToken||!studentUserId){status.textContent="Sila log masuk sebagai pelajar dahulu.";return;}
  if(!studentApproved){status.textContent="Akaun perlu diluluskan sebelum berkongsi lokasi.";return;}
- if(!document.getElementById("profileLocationConsent").checked){status.textContent="Tandakan persetujuan dahulu.";return;}
- if(!navigator.geolocation){status.textContent="Pelayar ini tidak menyokong perkongsian lokasi.";return;}
- setLocationShareBusy(true);status.textContent="Pelayar akan meminta kebenaran lokasi. Pilih Allow jika anda bersetuju.";
+ if(!document.getElementById("profileLocationConsent").checked){status.textContent="Sila tandakan persetujuan atau pilih tidak bersetuju.";return;}
+ const profileData=readStudentProfile();profileData.locationChoice="yes";saveStudentProfile(profileData);updateProfileCompletionStatus();
+ if(!navigator.geolocation){status.textContent="Pelayar ini tidak menyokong lokasi. Pilihan persetujuan telah direkodkan; anda masih boleh meneruskan.";return;}
+ setLocationShareBusy(true);status.textContent="Pelayar akan meminta kebenaran lokasi. Jika anda menolak, anda masih boleh menggunakan Bank Soalan dan Kuiz.";
  navigator.geolocation.getCurrentPosition(async position=>{
   try{
    const now=new Date().toISOString();
@@ -1452,8 +1477,8 @@ async function shareStudentLocation(){
   }catch(error){status.textContent="Tidak berjaya berkongsi lokasi. "+(error.message||"Sila cuba lagi.");}
   finally{setLocationShareBusy(false);}
  },error=>{
-  const message=error.code===1?"Kebenaran lokasi ditolak. Tiada lokasi dikongsi.":error.code===2?"Lokasi tidak dapat dikenal pasti.":error.code===3?"Permintaan lokasi tamat masa.":"Lokasi tidak dapat diperoleh.";
-  status.textContent=message;setLocationShareBusy(false);
+  const message=error.code===1?"Kebenaran lokasi ditolak. Tiada lokasi dikongsi. Pilihan anda telah direkodkan.":error.code===2?"Lokasi tidak dapat dikenal pasti. Anda masih boleh meneruskan.":error.code===3?"Permintaan lokasi tamat masa. Anda masih boleh meneruskan.":"Lokasi tidak dapat diperoleh. Anda masih boleh meneruskan.";
+  status.textContent=message;setLocationShareBusy(false);updateProfileCompletionStatus();
  },{enableHighAccuracy:false,timeout:15000,maximumAge:0});
 }
 async function revokeStudentLocation(){
@@ -1500,21 +1525,30 @@ function renderStudentProfile(){
  loadOwnStudentLocation();
 }
 document.getElementById("profileLocationConsent").addEventListener("change",()=>setLocationShareBusy(false));
+document.getElementById("profileDeclineLocation").addEventListener("click",()=>{
+ const data=readStudentProfile();data.locationChoice="no";saveStudentProfile(data);
+ document.getElementById("profileLocationConsent").checked=false;
+ document.getElementById("profileLocationStatus").textContent="Anda memilih untuk tidak berkongsi lokasi. Anda masih boleh menggunakan StudyHub.";
+ updateProfileCompletionStatus();
+});
 document.getElementById("profileShareLocation").addEventListener("click",shareStudentLocation);
 document.getElementById("profileRevokeLocation").addEventListener("click",revokeStudentLocation);
 document.getElementById("profileGoDirectory").addEventListener("click",()=>document.querySelector('[data-page="students"]').click());
 document.getElementById("profileAvatarChoices").addEventListener("click",event=>{
  const button=event.target.closest("[data-avatar]");if(!button)return;
- const data=readStudentProfile();data.avatar=button.dataset.avatar;data.photo="";saveStudentProfile(data);applyStudentProfile();
+ const data=readStudentProfile();data.avatar=button.dataset.avatar;data.photo="";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
 });
 document.querySelectorAll("[data-bg]").forEach(button=>button.addEventListener("click",()=>{
- const data=readStudentProfile();data.background=button.dataset.bg;saveStudentProfile(data);applyStudentProfile();
+ const data=readStudentProfile();data.background=button.dataset.bg;data.backgroundChosen=true;saveStudentProfile(data);applyStudentProfile();
 }));
 document.querySelectorAll("[data-border]").forEach(button=>button.addEventListener("click",()=>{
- const data=readStudentProfile();data.border=button.dataset.border;saveStudentProfile(data);applyStudentProfile();
+ const data=readStudentProfile();data.border=button.dataset.border;data.borderChosen=true;saveStudentProfile(data);applyStudentProfile();
 }));
 document.getElementById("profileRemovePhoto").addEventListener("click",()=>{
- const data=readStudentProfile();data.photo="";data.avatar=data.avatar||"🌟";saveStudentProfile(data);applyStudentProfile();
+ const data=readStudentProfile();data.photo="";data.avatar=data.avatar||"🌟";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
+});
+document.getElementById("profileCustomBio").addEventListener("input",event=>{
+ const data=readStudentProfile();data.bio=event.target.value.slice(0,120);saveStudentProfile(data);updateProfileCompletionStatus();
 });
 document.getElementById("profilePhotoInput").addEventListener("change",event=>{
  const file=event.target.files?.[0];if(!file)return;
@@ -1527,7 +1561,7 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
    const canvas=document.createElement("canvas"),scale=Math.min(1,420/Math.max(image.width,image.height));
    canvas.width=Math.round(image.width*scale);canvas.height=Math.round(image.height*scale);
    canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
-   const data=readStudentProfile();data.photo=canvas.toDataURL("image/jpeg",.78);saveStudentProfile(data);applyStudentProfile();
+   const data=readStudentProfile();data.photo=canvas.toDataURL("image/jpeg",.78);data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
   };
   image.src=reader.result;
  };
