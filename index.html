@@ -1430,7 +1430,33 @@ function studyHubSYARResetIdleTimer() {
 ["pointerdown", "keydown", "touchstart", "scroll", "input", "change"].forEach(eventName => {
   document.addEventListener(eventName, studyHubSYARResetIdleTimer, { passive: true });
 });
-document.addEventListener("visibilitychange", studyHubSYARResetIdleTimer);
+let studyHubSYARHiddenAt = null;
+function studyHubSYARHandleVisibilityChange() {
+  if (document.hidden) {
+    studyHubSYARHiddenAt = Date.now();
+    studyHubSYARResetIdleTimer();
+    return;
+  }
+  const awayDuration = studyHubSYARHiddenAt === null ? 0 : Date.now() - studyHubSYARHiddenAt;
+  studyHubSYARHiddenAt = null;
+  studyHubSYARResetIdleTimer();
+  if (awayDuration >= 30 * 1000) {
+    const message = "Eh, dah kembali? Tadi pergi mana? Ada urusan ke? Hehe~";
+    studyHubAIStatusText.textContent = "Syar: " + message;
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "ms-MY";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+    if (malayVoice) utterance.voice = malayVoice;
+    utterance.onstart = () => document.body.classList.add("ai-speaking");
+    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
+    window.speechSynthesis.speak(utterance);
+  }
+}
+document.addEventListener("visibilitychange", studyHubSYARHandleVisibilityChange);
 studyHubSYARResetIdleTimer();
 
 window.addEventListener("studyhub:navigation", event => {
