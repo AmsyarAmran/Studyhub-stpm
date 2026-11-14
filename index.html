@@ -742,6 +742,23 @@ async function restoreStoredSession(key){
     return result;
   }catch(error){return null;}
 }
+async function refreshStudentSession(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(STUDENT_SESSION_KEY)||"null");
+    if(!saved?.refresh_token)return false;
+    const response=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({refresh_token:saved.refresh_token})
+    });
+    const result=await response.json();
+    if(!response.ok||!result.access_token||!result.refresh_token)return false;
+    saveStoredSession(STUDENT_SESSION_KEY,result);
+    studentAccessToken=result.access_token;
+    studentUserId=result.user?.id||studentUserId;
+    return true;
+  }catch(error){return false;}
+}
 function clearStoredSession(key){try{localStorage.removeItem(key);}catch(error){}}
 let adminAccessToken = null;
 const ADMIN_EMAIL = "amsyar291008@gmail.com";
@@ -1399,7 +1416,7 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
 
   const nextHistory = [...studyHubAIHistory, { role: "user", content: prompt }].slice(-10);
   try {
-    const response = await fetch(STUDYHUB_SYAR_URL + "/chat", {
+    const sendSyarMessage = () => fetch(STUDYHUB_SYAR_URL + "/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1407,6 +1424,10 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
       },
       body: JSON.stringify({ messages: nextHistory })
     });
+    let response = await sendSyarMessage();
+    if (response.status === 401 && await refreshStudentSession()) {
+      response = await sendSyarMessage();
+    }
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 401) throw new Error("Sesi log masuk telah tamat. Sila log masuk semula.");
