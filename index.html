@@ -282,6 +282,10 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 .ai-chat-message{max-width:92%;padding:9px 11px;border-radius:12px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
 .ai-chat-message.user{align-self:flex-end;background:#354879}
 .ai-chat-message.assistant{align-self:flex-start;background:#202c45}
+.ai-chat-voice-controls{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.ai-chat-voice-controls button{border:1px solid #52658a;background:#263653;color:#eaf5ff;border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer}
+.ai-chat-voice-controls button:hover{background:#354a70}
+.ai-chat-voice-controls button:disabled{opacity:.45;cursor:not-allowed}
 .ai-chat-form{display:flex;gap:8px;align-items:stretch}
 .ai-chat-form textarea{flex:1;min-width:0;resize:vertical;max-height:100px;background:#0d1528;color:white;border:1px solid #425477;border-radius:10px;padding:9px;font:inherit;font-size:13px}
 .ai-chat-form button{border:0;border-radius:10px;background:linear-gradient(100deg,#8173ef,#399acb);color:white;padding:0 12px;font-weight:750}
@@ -1355,12 +1359,71 @@ const studyHubAIMessages = document.getElementById("studyHubAIMessages");
 const studyHubAIInput = document.getElementById("studyHubAIInput");
 const studyHubAISend = document.getElementById("studyHubAISend");
 
+let studyHubAISpeakingUtterance = null;
+let studyHubAISpeakingControls = null;
+
+function studyHubAIStopSpeech() {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  studyHubAISpeakingUtterance = null;
+  if (studyHubAISpeakingControls) {
+    studyHubAISpeakingControls.listen.hidden = false;
+    studyHubAISpeakingControls.stop.hidden = true;
+    studyHubAISpeakingControls = null;
+  }
+  document.body.classList.remove("ai-speaking");
+}
+
+function studyHubAISpeak(text, controls) {
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    studyHubAIProgress.textContent = "Fungsi suara tidak disokong oleh pelayar ini. Cuba Chrome yang terkini.";
+    return;
+  }
+  studyHubAIStopSpeech();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ms-MY";
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const malayVoice = voices.find(voice => /^ms(-|_)/i.test(voice.lang));
+  if (malayVoice) utterance.voice = malayVoice;
+  studyHubAISpeakingUtterance = utterance;
+  studyHubAISpeakingControls = controls;
+  controls.listen.hidden = true;
+  controls.stop.hidden = false;
+  document.body.classList.add("ai-speaking");
+  utterance.onend = utterance.onerror = () => {
+    if (studyHubAISpeakingUtterance !== utterance) return;
+    studyHubAIStopSpeech();
+  };
+  window.speechSynthesis.speak(utterance);
+}
+
 function studyHubAIAddMessage(role, text) {
   const welcome = studyHubAIMessages.querySelector(".ai-chat-welcome");
   if (welcome) welcome.remove();
   const item = document.createElement("div");
   item.className = "ai-chat-message " + (role === "user" ? "user" : "assistant");
-  item.textContent = text;
+  const messageText = document.createElement("div");
+  messageText.textContent = text;
+  item.appendChild(messageText);
+  if (role !== "user") {
+    const controlsWrap = document.createElement("div");
+    controlsWrap.className = "ai-chat-voice-controls";
+    const listenButton = document.createElement("button");
+    listenButton.type = "button";
+    listenButton.textContent = "🔊 Dengar";
+    listenButton.setAttribute("aria-label", "Dengar jawapan Syar");
+    const stopButton = document.createElement("button");
+    stopButton.type = "button";
+    stopButton.textContent = "■ Henti";
+    stopButton.hidden = true;
+    stopButton.setAttribute("aria-label", "Hentikan suara Syar");
+    const controls = { listen: listenButton, stop: stopButton };
+    listenButton.addEventListener("click", () => studyHubAISpeak(text, controls));
+    stopButton.addEventListener("click", studyHubAIStopSpeech);
+    controlsWrap.append(listenButton, stopButton);
+    item.appendChild(controlsWrap);
+  }
   studyHubAIMessages.appendChild(item);
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
