@@ -1,7 +1,7 @@
 const MAX_BODY_BYTES = 16_000;
 const MAX_MESSAGES = 10;
 const MAX_MESSAGE_CHARS = 3_000;
-const DAILY_LIMIT = 100;
+const DAILY_LIMIT = 500;
 
 const SYAR_SYSTEM_PROMPT = [
   "Nama kamu Syar, teman AI dalam StudyHub.",
