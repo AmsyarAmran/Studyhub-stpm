@@ -87,6 +87,24 @@ a:hover{color:white!important;text-decoration:underline}
 .profile-cover-wallpaper{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.78;pointer-events:none}
 .profile-avatar{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;font-size:48px;background:#111a32;border:5px solid #b8a5ff;box-shadow:0 8px 25px #05081666;overflow:hidden;flex-shrink:0;z-index:1}
 .profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-avatar.cosmetic-neon{border-color:#67e8f9;box-shadow:0 0 0 3px #0891b2,0 0 18px 7px #22d3ee99}
+.profile-avatar.cosmetic-gold{border-color:#facc15;box-shadow:0 0 0 3px #a16207,0 0 0 6px #fde68a88,0 8px 25px #05081666}
+.profile-avatar.cosmetic-silver{border-color:#e2e8f0;box-shadow:0 0 0 3px #64748b,0 0 0 6px #cbd5e188}
+.profile-avatar.cosmetic-rose{border-color:#f9a8d4;box-shadow:0 0 0 3px #be185d,0 0 18px 6px #ec489988}
+.profile-avatar.cosmetic-nature{border-color:#86efac;box-shadow:0 0 0 3px #15803d,0 0 0 6px #4ade8088}
+.profile-avatar.cosmetic-fire{border-color:#fb923c;box-shadow:0 0 0 3px #c2410c,0 0 17px 7px #f9731699}
+.profile-avatar.cosmetic-star{border-color:#c4b5fd;box-shadow:0 0 0 3px #7c3aed,0 0 0 6px #a78bfa88}
+.profile-avatar.cosmetic-holo{border-color:#67e8f9;box-shadow:0 0 0 3px #a78bfa,0 0 0 6px #f0abfc,0 0 18px 7px #67e8f999}
+.border-choice{min-width:82px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px}
+.border-choice .border-preview{width:25px;height:25px;border-radius:50%;background:#202a45;border:4px solid var(--ring);box-shadow:0 0 0 2px var(--halo)}
+.border-choice[data-border-style="neon"]{--ring:#67e8f9;--halo:#0891b2}
+.border-choice[data-border-style="gold"]{--ring:#facc15;--halo:#a16207}
+.border-choice[data-border-style="silver"]{--ring:#e2e8f0;--halo:#64748b}
+.border-choice[data-border-style="rose"]{--ring:#f9a8d4;--halo:#be185d}
+.border-choice[data-border-style="nature"]{--ring:#86efac;--halo:#15803d}
+.border-choice[data-border-style="fire"]{--ring:#fb923c;--halo:#c2410c}
+.border-choice[data-border-style="star"]{--ring:#c4b5fd;--halo:#7c3aed}
+.border-choice[data-border-style="holo"]{--ring:#67e8f9;--halo:#a78bfa}
 .profile-cover-copy{z-index:1;min-width:0}.profile-cover-copy h2{margin:0;font-size:24px;overflow-wrap:anywhere}.profile-cover-copy p{margin:4px 0 0;color:#e4e9ff;font-size:13px}
 .profile-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:16px}
 .profile-option{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:15px}
@@ -492,7 +510,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
      <button class="btn" id="profileRemovePhoto" type="button" style="background:#526184;margin:10px 0 0">Guna avatar</button>
     </div>
     <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div><label class="profile-upload">🖼️ Muat naik gambar sendiri<input id="profileBackgroundImageInput" type="file" accept="image/*"></label><label class="profile-upload" style="margin-left:6px">🎞️ Live wallpaper<input id="profileBackgroundVideoInput" type="file" accept="video/mp4,video/webm"></label><button class="btn" id="profileResetBackground" type="button" style="background:#526184;margin:10px 0 0">Guna background warna</button><p class="muted" style="font-size:11px;margin:7px 0 0">GIF animasi disokong untuk gambar. Live wallpaper menyokong video MP4 atau WebM sehingga 10 MB.</p></div>
-    <div class="profile-option"><h3>Pilihan border avatar</h3><div class="border-choices"><button class="border-choice" type="button" data-border="#b8a5ff">Ungu</button><button class="border-choice" type="button" data-border="#53d8e8">Biru</button><button class="border-choice" type="button" data-border="#f472b6">Pink</button><button class="border-choice" type="button" data-border="#fbbf24">Emas</button><button class="border-choice" type="button" data-border="#ffffff">Putih</button></div></div>
+    <div class="profile-option"><h3>Cosmetics bingkai avatar</h3><p class="muted" style="font-size:11px;margin:-5px 0 10px">Pilih gaya bingkai untuk menyerlahkan avatar anda.</p><div class="border-choices"><button class="border-choice" type="button" data-border-style="neon" data-border="#67e8f9"><span class="border-preview"></span>Neon</button><button class="border-choice" type="button" data-border-style="gold" data-border="#facc15"><span class="border-preview"></span>Emas</button><button class="border-choice" type="button" data-border-style="silver" data-border="#e2e8f0"><span class="border-preview"></span>Perak</button><button class="border-choice" type="button" data-border-style="rose" data-border="#f9a8d4"><span class="border-preview"></span>Rose</button><button class="border-choice" type="button" data-border-style="nature" data-border="#86efac"><span class="border-preview"></span>Nature</button><button class="border-choice" type="button" data-border-style="fire" data-border="#fb923c"><span class="border-preview"></span>Fire</button><button class="border-choice" type="button" data-border-style="star" data-border="#c4b5fd"><span class="border-preview"></span>Star</button><button class="border-choice" type="button" data-border-style="holo" data-border="#67e8f9"><span class="border-preview"></span>Holographic</button></div></div>
     <div class="profile-option"><h3>Custom Bio</h3><textarea id="profileCustomBio" maxlength="120" rows="3" placeholder="Tulis bio ringkas tentang diri anda (maksimum 120 aksara)." style="width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:10px;resize:vertical"></textarea><p class="muted" style="font-size:11px;margin:6px 0 0">Jangan masukkan nombor telefon, alamat atau maklumat peribadi.</p></div>
    </div>
    <div class="profile-location-card" id="profileLocationCard">
@@ -1462,12 +1480,14 @@ function applyStudentProfile(){
  const data=readStudentProfile(),avatar=document.getElementById("profileAvatar"),cover=document.getElementById("profileCover");
  applyProfileBackgroundMedia(data,cover);
  avatar.style.borderColor=data.border||"#b8a5ff";
+  avatar.classList.remove("cosmetic-neon","cosmetic-gold","cosmetic-silver","cosmetic-rose","cosmetic-nature","cosmetic-fire","cosmetic-star","cosmetic-holo");
+  if(data.borderStyle)avatar.classList.add("cosmetic-"+data.borderStyle);
  avatar.innerHTML=data.photo?'<img alt="Gambar profil pelajar" src="'+data.photo+'">':escapeStudentText(data.avatar||"🌟");
  document.getElementById("profileCustomBio").value=data.bio||"";
  document.getElementById("profileBioDisplay").textContent=data.bio||"";
  document.querySelectorAll("[data-avatar]").forEach(b=>b.classList.toggle("selected",b.dataset.avatar===(data.avatar||"🌟")));
  document.querySelectorAll("[data-bg]").forEach(b=>b.classList.toggle("selected",b.dataset.bg===(data.background||"linear-gradient(125deg,#43358d,#176c86)")));
- document.querySelectorAll("[data-border]").forEach(b=>b.classList.toggle("selected",b.dataset.border===data.border));
+ document.querySelectorAll("[data-border]").forEach(b=>b.classList.toggle("selected",b.dataset.borderStyle?(b.dataset.borderStyle===(data.borderStyle||"")):(!data.borderStyle&&b.dataset.border===data.border)));
  document.getElementById("profileLocationConsent").checked=data.locationChoice==="yes";
  updateProfileCompletionStatus();
 }
@@ -1614,7 +1634,7 @@ document.getElementById("profileResetBackground").addEventListener("click",async
  const data=readStudentProfile();delete data.backgroundMediaType;data.background=data.background||"linear-gradient(125deg,#43358d,#176c86)";data.backgroundChosen=true;await deleteProfileBackgroundBlob();saveStudentProfile(data);applyStudentProfile();
 });
 document.querySelectorAll("[data-border]").forEach(button=>button.addEventListener("click",()=>{
- const data=readStudentProfile();data.border=button.dataset.border;data.borderChosen=true;saveStudentProfile(data);applyStudentProfile();
+ const data=readStudentProfile();data.border=button.dataset.border;data.borderStyle=button.dataset.borderStyle||"";data.borderChosen=true;saveStudentProfile(data);applyStudentProfile();
 }));
 document.getElementById("profileRemovePhoto").addEventListener("click",()=>{
  const data=readStudentProfile();data.photo="";data.avatar=data.avatar||"🌟";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
