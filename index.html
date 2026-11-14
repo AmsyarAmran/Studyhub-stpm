@@ -1383,15 +1383,17 @@ function studyHubAICleanSpeechText(text) {
 }
 function studyHubAISpeak(text, controls) {
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    studyHubAIProgress.textContent = "Fungsi suara tidak disokong oleh pelayar ini. Cuba Chrome yang terkini.";
+    studyHubAIProgress.textContent = "Fungsi suara tidak disokong oleh pelayar ini. Cuba pelayar yang terkini.";
     return;
   }
   studyHubAIStopSpeech();
   const voices = window.speechSynthesis.getVoices();
   const malayVoice = voices.find(voice => /^ms[-_]my$/i.test(voice.lang))
     || voices.find(voice => /^ms[-_]/i.test(voice.lang));
+  const englishVoice = voices.find(voice => /^en[-_]gb$/i.test(voice.lang))
+    || voices.find(voice => /^en[-_]/i.test(voice.lang));
   if (!malayVoice) {
-    studyHubAIProgress.textContent = "Suara Bahasa Melayu belum tersedia pada peranti. Sila pilih atau pasang suara Bahasa Melayu dalam tetapan Text-to-speech telefon.";
+    studyHubAIProgress.textContent = "Suara Bahasa Melayu belum tersedia pada peranti. Sila pasang suara Bahasa Melayu dalam tetapan Text-to-speech.";
     return;
   }
   const speechText = studyHubAICleanSpeechText(text);
@@ -1399,26 +1401,55 @@ function studyHubAISpeak(text, controls) {
     studyHubAIProgress.textContent = "Tiada teks untuk dibacakan selepas emoji ditapis.";
     return;
   }
-  const utterance = new SpeechSynthesisUtterance(speechText);
-  utterance.lang = malayVoice.lang || "ms-MY";
-  utterance.voice = malayVoice;
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  studyHubAISpeakingUtterance = utterance;
+
+  // Kenal pasti perkataan Inggeris lazim supaya setiap bahasa menggunakan suara yang sesuai.
+  const englishWords = new Set(("a an the and or but if then than because so as at by for from in into of on onto to with without about after before between during through over under above below is am are was were be been being do does did done have has had can could may might must shall should will would not no yes please thank thanks hello hi welcome good morning afternoon evening today tomorrow yesterday here there this that these those what when where why how who which your you we they he she it my our their me us them i im its youre dont cant wont isnt arent wasnt werent study hub studyhub login logout profile settings quiz score leaderboard admin student students teacher subject question questions answer answers correct incorrect wrong continue submit search save delete edit update download upload website account password username voice button click open close read listen stop play system computer desktop pc mobile phone app application internet browser english malay language translation example examples explain explanation information important available unavailable start finish next previous home back help choose select option result results mark marks grade ranking table test exercise practice notes file folder link link website email message send receive sign in sign out dashboard focus success welcome to".split(/\s+/));
+  const tokens = speechText.match(/[A-Za-z]+(?:['’][A-Za-z]+)?|[^A-Za-z]+/g) || [speechText];
+  const segments = [];
+  tokens.forEach(token => {
+    const isWord = /^[A-Za-z]+(?:['’][A-Za-z]+)?$/.test(token);
+    const language = isWord && englishWords.has(token.toLowerCase()) ? "en" : "ms";
+    const last = segments[segments.length - 1];
+    if (last && last.language === language) last.text += token;
+    else segments.push({ language, text: token });
+  });
+  const queue = segments.filter(segment => segment.text.trim());
+  if (!queue.length) return;
+
   studyHubAISpeakingControls = controls;
   controls.listen.hidden = true;
   controls.stop.hidden = false;
   document.body.classList.add("ai-speaking");
-  utterance.onend = () => {
-    if (studyHubAISpeakingUtterance !== utterance) return;
-    studyHubAIStopSpeech();
+  let index = 0;
+  const speakNext = () => {
+    if (studyHubAISpeakingControls !== controls || index >= queue.length) {
+      if (studyHubAISpeakingControls === controls) studyHubAIStopSpeech();
+      return;
+    }
+    const segment = queue[index++];
+    const utterance = new SpeechSynthesisUtterance(segment.text);
+    if (segment.language === "en") {
+      utterance.lang = englishVoice ? englishVoice.lang : "en-US";
+      if (englishVoice) utterance.voice = englishVoice;
+    } else {
+      utterance.lang = malayVoice.lang || "ms-MY";
+      utterance.voice = malayVoice;
+    }
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    studyHubAISpeakingUtterance = utterance;
+    utterance.onend = () => {
+      if (studyHubAISpeakingUtterance !== utterance) return;
+      speakNext();
+    };
+    utterance.onerror = () => {
+      if (studyHubAISpeakingUtterance !== utterance) return;
+      studyHubAIStopSpeech();
+      studyHubAIProgress.textContent = "Sebahagian suara gagal dimainkan. Semak suara Bahasa Melayu dan Inggeris pada peranti.";
+    };
+    window.speechSynthesis.speak(utterance);
   };
-  utterance.onerror = () => {
-    if (studyHubAISpeakingUtterance !== utterance) return;
-    studyHubAIStopSpeech();
-    studyHubAIProgress.textContent = "Suara gagal dimainkan. Sila cuba lagi.";
-  };
-  window.speechSynthesis.speak(utterance);
+  speakNext();
 }
 
 function studyHubAIAddMessage(role, text) {
