@@ -665,7 +665,7 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
  document.getElementById('pageTitle').textContent=pageName;
  if(pageId==='profile')renderStudentProfile();
  // Jambatan peristiwa untuk StudyHub AI mengumumkan navigasi selepas enjin suara disambungkan.
- window.dispatchEvent(new CustomEvent('studyhub:navigation',{detail:{page:pageId,title:pageName}}));
+ window.dispatchEvent(new CustomEvent('studyhub:navigation',{detail:{page:pageId,title:pageName,studentLoggedIn:!!studentAccessToken}}));
 }));
 
 
@@ -1459,6 +1459,22 @@ function studyHubAISpeakNavigation(pageTitle) {
 window.addEventListener("studyhub:navigation", event => {
   const title = event.detail?.title;
   if (!title) return;
+  if (event.detail?.page === "profile" && !event.detail?.studentLoggedIn) {
+    const message = "Awak perlu log masuk terlebih dahulu.";
+    studyHubAIStatusText.textContent = "Syar: " + message;
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "ms-MY";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+    if (malayVoice) utterance.voice = malayVoice;
+    utterance.onstart = () => document.body.classList.add("ai-speaking");
+    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
+    window.speechSynthesis.speak(utterance);
+    return;
+  }
   if (event.detail?.page === "admin") {
     const message = "Hehe, sini hanya Syar je bole akses~";
     studyHubAIStatusText.textContent = "Syar: " + message;
