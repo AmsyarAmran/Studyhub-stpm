@@ -1424,7 +1424,8 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
     studyHubAIStatusText.textContent = "AI tempatan sedia digunakan";
   } catch (error) {
     console.error("StudyHub AI response error:", error);
-    studyHubAIAddMessage("assistant", "Maaf, berlaku ralat semasa menjawab. Cuba hantar soalan sekali lagi.");
+    const detail = String(error?.message || error || "Ralat tidak diketahui.").slice(0, 280);
+    studyHubAIAddMessage("assistant", "Ralat teknikal: " + detail);
     studyHubAIStatusText.textContent = "Ralat semasa menjawab";
   } finally {
     document.body.classList.remove("ai-thinking");
