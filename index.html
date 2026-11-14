@@ -1565,7 +1565,11 @@ function studyHubSYARScheduleIdlePrompt() {
   clearTimeout(studyHubSYARIdleTimer);
   if (!studyHubSYARIdleVoiceEnabled) return;
   studyHubSYARIdleTimer = setTimeout(() => {
-    if (!studyHubSYARIdleVoiceEnabled || studyHubSYARChatBusy || window.speechSynthesis.speaking || window.speechSynthesis.pending) return;
+    if (!studyHubSYARIdleVoiceEnabled) return;
+    if (studyHubSYARChatBusy || window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      studyHubSYARScheduleIdlePrompt();
+      return;
+    }
     const utterance = new SpeechSynthesisUtterance(studyHubSYARRandomIdleMessage());
     utterance.lang = "ms-MY";
     utterance.rate = 1;
@@ -1575,23 +1579,30 @@ function studyHubSYARScheduleIdlePrompt() {
     const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
     if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
     utterance.onstart = () => { studyHubAIStatusText.textContent = "Syar menyapa kamu..."; };
-    utterance.onend = () => { studyHubAIStatusText.textContent = "Tekan panel Syar untuk ucapan alu-aluan."; };
-    utterance.onerror = () => { studyHubAIStatusText.textContent = "Syar sedia membantu kamu."; };
+    utterance.onend = () => {
+      studyHubAIStatusText.textContent = "Syar akan menyapa selepas 15 saat tanpa pertukaran menu.";
+      studyHubSYARScheduleIdlePrompt();
+    };
+    utterance.onerror = () => {
+      studyHubAIStatusText.textContent = "Syar sedia membantu kamu.";
+      studyHubSYARScheduleIdlePrompt();
+    };
     window.speechSynthesis.speak(utterance);
   }, 15000);
 }
 
 function studyHubSYARQueueDashboardWelcome() {
-  // Tekan panel AI (bukan butang Chat) untuk memainkan atau menghentikan ucapan.
+  // Sapaan automatik bermula selepas sesi pelajar/pelawat disahkan.
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   if (studyHubAIStatus.dataset.welcomeToggleReady === "1") return;
   studyHubAIStatus.dataset.welcomeToggleReady = "1";
+  studyHubSYARIdleVoiceEnabled = true;
   studyHubAIStatus.style.cursor = "pointer";
-  studyHubAIStatus.setAttribute("title", "Tekan panel ini untuk dengar ucapan alu-aluan dan sapaan Syar");
-  ["pointerdown","keydown","touchstart","scroll","wheel","input","focusin"].forEach(eventName => {
-    document.addEventListener(eventName, () => {
-      if (studyHubSYARIdleVoiceEnabled) studyHubSYARScheduleIdlePrompt();
-    }, {passive:true});
+  studyHubAIStatus.setAttribute("title", "Tekan panel ini untuk menghentikan atau memainkan semula ucapan Syar");
+  studyHubAIStatusText.textContent = "Syar akan menyapa selepas 15 saat tanpa pertukaran menu.";
+  // Hanya pertukaran menu utama menetapkan semula kiraan 15 saat.
+  window.addEventListener("studyhub:navigation", () => {
+    if (studyHubSYARIdleVoiceEnabled) studyHubSYARScheduleIdlePrompt();
   });
   studyHubAIStatus.addEventListener("click", event => {
     if (event.target.closest("#studyHubAIOpenChat")) return;
@@ -1599,7 +1610,7 @@ function studyHubSYARQueueDashboardWelcome() {
       window.speechSynthesis.cancel();
       studyHubSYARIdleVoiceEnabled = false;
       clearTimeout(studyHubSYARIdleTimer);
-      studyHubAIStatusText.textContent = "Ucapan Syar dihentikan. Tekan untuk dengar semula.";
+      studyHubAIStatusText.textContent = "Sapaan automatik dihentikan. Tekan untuk aktifkan semula.";
       return;
     }
     studyHubSYARIdleVoiceEnabled = true;
@@ -1613,12 +1624,16 @@ function studyHubSYARQueueDashboardWelcome() {
     if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
     utterance.onstart = () => { studyHubAIStatusText.textContent = "Syar sedang menyampaikan ucapan alu-aluan..."; };
     utterance.onend = () => {
-      studyHubAIStatusText.textContent = "Syar akan menyapa jika kamu tidak aktif selama 15 saat.";
+      studyHubAIStatusText.textContent = "Syar akan menyapa selepas 15 saat tanpa pertukaran menu.";
       studyHubSYARScheduleIdlePrompt();
     };
-    utterance.onerror = () => { studyHubAIStatusText.textContent = "Audio tidak dapat dimainkan. Cuba tekan sekali lagi."; };
+    utterance.onerror = () => {
+      studyHubAIStatusText.textContent = "Syar sedia membantu kamu.";
+      studyHubSYARScheduleIdlePrompt();
+    };
     window.speechSynthesis.speak(utterance);
   });
+  studyHubSYARScheduleIdlePrompt();
 }
 studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAIChatPanel.hidden = false;
@@ -1626,7 +1641,7 @@ studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAITextInput.focus();
 });
 
-// Ucapan dashboard akan dijadualkan hanya selepas status log masuk disahkan.
+// Sapaan automatik Syar bermula selepas status sesi disahkan.
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
