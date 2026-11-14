@@ -1480,6 +1480,27 @@ window.addEventListener("studyhub:navigation", event => {
     window.speechSynthesis.speak(utterance);
     return;
   }
+  if (event.detail?.page === "profile" && event.detail?.studentLoggedIn) {
+    const messages = [
+      "Tahniah, awak sudah menjadi sebahagian StudyHub.",
+      "Tengok-tengoklah profil awak ni.",
+      "Apa kata awak ubah suai profil supaya menjadi lebih cantik?"
+    ];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    studyHubAIStatusText.textContent = "Syar: " + message;
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "ms-MY";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+    if (malayVoice) utterance.voice = malayVoice;
+    utterance.onstart = () => document.body.classList.add("ai-speaking");
+    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
+    window.speechSynthesis.speak(utterance);
+    return;
+  }
   if (event.detail?.page === "admin") {
     const message = "Hehe, sini hanya Syar je bole akses~";
     studyHubAIStatusText.textContent = "Syar: " + message;
