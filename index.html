@@ -1453,9 +1453,22 @@ async function studyHubSYARSendMessage(rawMessage) {
     sendButton.disabled = false;
   }
 }
+let studyHubSYARWelcomeShown = false;
+function studyHubSYARWelcomeMessage() {
+  const name = String(studentDisplayName || "").trim();
+  return name
+    ? "Assalamualaikum " + name + "! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!"
+    : "Assalamualaikum! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!";
+}
 studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
+  if (!studyHubSYARWelcomeShown) {
+    const welcome = studyHubSYARWelcomeMessage();
+    studyHubSYARAddChatMessage("assistant",welcome);
+    studyHubSYARWelcomeShown = true;
+    studyHubSYARSpeakReply(welcome);
+  }
   studyHubAITextInput.focus();
 });
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
@@ -1478,7 +1491,7 @@ studyHubAITextForm.addEventListener("submit",studyHubSYARHandleTextSend);
 document.getElementById("studyHubAISendChat").addEventListener("click",studyHubSYARHandleTextSend);
 // Tamat STUDYHUB SYAR TEXT CHAT
 
-studyHubAIStatusText.textContent = "Chat teks Syar sedia membantu.";
+studyHubAIStatusText.textContent = "Assalamualaikum! Selamat datang ke StudyHub.";
 
 </script>
 </body></html>
