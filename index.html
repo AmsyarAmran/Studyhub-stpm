@@ -1707,6 +1707,33 @@ document.getElementById("studyHubAISendChat").addEventListener("click",studyHubS
 studyHubAIStatusText.textContent = "Syar sedia membantu anda.";
 
 
+/* KEMAS KINI AUTOMATIK STUDYHUB — semakan berkala tanpa refresh seluruh halaman. */
+let studyHubAutoRefreshBusy = false;
+async function studyHubRefreshVisibleData(){
+  if(studyHubAutoRefreshBusy || document.hidden) return;
+  const activePage = document.querySelector(".page.active")?.id;
+  if(!activePage) return;
+  studyHubAutoRefreshBusy = true;
+  try{
+    if(activePage === "students"){
+      await loadStudents();
+    }else if(activePage === "admin" && adminAccessToken){
+      await loadPendingStudents();
+    }else if(activePage === "leaderboard"){
+      await loadStudentRanking();
+    }
+  }catch(error){
+    console.warn("Kemas kini automatik StudyHub tidak berjaya:",error);
+  }finally{
+    studyHubAutoRefreshBusy = false;
+  }
+}
+window.setInterval(studyHubRefreshVisibleData,10000);
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden) studyHubRefreshVisibleData();
+});
+window.addEventListener("focus",studyHubRefreshVisibleData);
+
 /* OneSignal Web Push untuk notifikasi permohonan akaun StudyHub. */
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(async function(OneSignal) {
