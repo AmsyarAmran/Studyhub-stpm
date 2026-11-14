@@ -342,50 +342,36 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 
 
 
-/* MASKOT SYAR — chibi manusia, fokus kepala dan bahu sahaja */
+/* MASKOT SYAR — bot kecil yang menyapa pelawat */
 .studyhub-mascot{
- position:fixed;right:20px;bottom:94px;z-index:9996;
- display:flex;align-items:flex-end;gap:8px;border:0;background:transparent;
+ position:fixed;right:24px;bottom:100px;z-index:9996;
+ display:flex;align-items:center;gap:9px;border:0;background:transparent;
  color:#f4f7ff;cursor:pointer;padding:0;text-align:left;
- animation:syarMascotFloat 3.6s ease-in-out infinite;
+ animation:syarMascotFloat 3.2s ease-in-out infinite;
 }
 .studyhub-mascot-bubble{
- max-width:165px;margin-bottom:24px;padding:9px 12px;border:1px solid #52658a;border-radius:14px 14px 4px 14px;
+ max-width:165px;padding:9px 12px;border:1px solid #52658a;border-radius:14px 14px 4px 14px;
  background:#111a2ef2;box-shadow:0 8px 24px #02061777;backdrop-filter:blur(12px);
  font-size:11px;line-height:1.4;
 }
 .studyhub-mascot-bubble strong{display:block;color:#8fe7f0;font-size:12px;margin-bottom:2px}
 .studyhub-mascot-avatar{
- width:112px;height:112px;display:block;overflow:hidden;flex:none;
- filter:drop-shadow(0 8px 12px #02061755);transform-origin:50% 90%;
+ width:54px;height:54px;display:grid;place-items:center;border-radius:19px;
+ border:1px solid #8c9cff;background:linear-gradient(145deg,#5146a5,#177e91);
+ box-shadow:0 9px 25px #02061788,inset 0 1px #ffffff55;font-size:29px;
 }
-.studyhub-mascot-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid #a9c9ff;box-shadow:0 0 0 3px #ffffffaa,0 0 22px #5ba8ff88}
-.studyhub-mascot:hover .studyhub-mascot-avatar{transform:translateY(-5px) rotate(-4deg) scale(1.06)}
-.studyhub-mascot-avatar{transition:transform .25s ease}
-.syar-blink{transform-box:fill-box;transform-origin:center;animation:syarBlink 5.2s infinite}
-.syar-mouth-open{opacity:0;transform-box:fill-box;transform-origin:center}
-.syar-happy-eyes{opacity:0}
-body.ai-speaking .syar-mouth-open{opacity:1;animation:syarTalkMouth .34s ease-in-out infinite alternate}
-body.ai-speaking .syar-mouth-closed{opacity:0}
-body.ai-speaking .syar-eyes{animation:syarTalkEyes 1.8s ease-in-out infinite}
-body.ai-speaking .syar-happy-eyes{animation:syarHappyFace 2.4s ease-in-out infinite}
-body.ai-speaking .studyhub-mascot-avatar{animation:syarTalkBounce .62s ease-in-out infinite alternate}
-body.ai-thinking .studyhub-mascot-avatar{animation:syarThink 1s ease-in-out infinite alternate}
-body.ai-listening .studyhub-mascot-avatar{animation:syarListen 1.1s ease-in-out infinite}
-@keyframes syarMascotFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1.5deg)}}
-@keyframes syarBlink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.08)}}
-@keyframes syarTalkMouth{from{transform:scaleY(.55)}to{transform:scaleY(1.15)}}
-@keyframes syarTalkEyes{0%,100%{transform:translateY(0)}50%{transform:translateY(1.5px)}}
-@keyframes syarHappyFace{0%,34%,100%{opacity:0}42%,66%{opacity:1}}
-@keyframes syarTalkBounce{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-4px) rotate(1deg)}}
-@keyframes syarThink{from{transform:rotate(-3deg)}to{transform:rotate(3deg) translateY(-3px)}}
-@keyframes syarListen{from{transform:rotate(0)}to{transform:rotate(5deg) translateY(-3px)}}
+.studyhub-mascot:hover .studyhub-mascot-avatar{transform:rotate(-9deg) scale(1.08)}
+.studyhub-mascot-avatar{transition:transform .2s ease}
+@keyframes syarMascotFloat{
+ 0%,100%{transform:translateY(0) rotate(-1deg)}
+ 50%{transform:translateY(-8px) rotate(2deg)}
+}
 @media(max-width:520px){
- .studyhub-mascot{right:8px;bottom:82px;gap:5px}
- .studyhub-mascot-bubble{max-width:126px;margin-bottom:19px;padding:7px 9px;font-size:10px}
- .studyhub-mascot-avatar{width:88px;height:88px}
+ .studyhub-mascot{right:12px;bottom:84px;gap:7px}
+ .studyhub-mascot-bubble{max-width:142px;padding:7px 9px;font-size:10px}
+ .studyhub-mascot-avatar{width:48px;height:48px;border-radius:16px;font-size:26px}
 }
-@media(prefers-reduced-motion:reduce){.studyhub-mascot,.syar-blink{animation:none!important}body.ai-speaking .syar-mouth-open{animation:none!important;opacity:1}}
+@media(prefers-reduced-motion:reduce){.studyhub-mascot{animation:none}}
 </style>
 </head>
 <body>
@@ -605,7 +591,7 @@ body.ai-listening .studyhub-mascot-avatar{animation:syarListen 1.1s ease-in-out 
 
 <button class="studyhub-mascot" id="studyHubMascot" type="button" aria-label="Buka chat dengan Syar, pembantu StudyHub" aria-expanded="false" aria-controls="studyHubAIChatPanel">
  <span class="studyhub-mascot-bubble"><strong>Hai, saya Syar!</strong>Perlukan bantuan? Tekan saya 😊</span>
- <span class="studyhub-mascot-avatar" aria-hidden="true"><img src="data:image/jpeg;base64,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" alt="" /></span>
+ <span class="studyhub-mascot-avatar" aria-hidden="true">🤖</span>
 </button>
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-controls">
