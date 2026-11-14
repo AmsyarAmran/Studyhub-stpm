@@ -1426,17 +1426,21 @@ let studyHubSYARPausedForReply = false;
 let studyHubSYARCurrentSpokenText = "";
 
 function studyHubSYARIsLikelyVoiceEcho(transcript) {
+  // Normalisasi Unicode dan ruang mesti betul supaya teks suara Syar boleh dipadankan.
   const normalize = value => String(value || "").toLocaleLowerCase("ms-MY")
-    .replace(/[^\\p{L}\\p{N}\\s]/gu," ").replace(/\\s+/g," ").trim();
+    .replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
   const heard = normalize(transcript);
   const spoken = normalize(studyHubSYARCurrentSpokenText);
   if (!heard || !spoken) return false;
-  if (spoken.includes(heard) || heard.includes(spoken)) return true;
-  const heardWords = heard.split(" ").filter(word => word.length > 2);
-  if (heardWords.length < 3) return false;
-  const spokenWords = new Set(spoken.split(" "));
-  const matched = heardWords.filter(word => spokenWords.has(word)).length;
-  return matched / heardWords.length >= 0.75;
+  if (spoken.includes(heard)) return true;
+  const heardWords = heard.split(" ").filter(Boolean);
+  const spokenWords = spoken.split(" ").filter(Boolean);
+  // Pengecaman kadangkala memulangkan cebisan pendek daripada audio Syar.
+  if (heardWords.length <= 2) return spokenWords.join(" ").includes(heard);
+  if (heardWords.length >= spokenWords.length && heard.includes(spoken)) return true;
+  const spokenWordSet = new Set(spokenWords);
+  const matched = heardWords.filter(word => spokenWordSet.has(word)).length;
+  return matched / heardWords.length >= 0.7;
 }
 
 function studyHubSYARResumeAlwaysOn() {
