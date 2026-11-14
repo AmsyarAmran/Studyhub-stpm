@@ -470,6 +470,10 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\s*/, '');if(b.dataset.page==='profile')renderStudentProfile()}));
 
 
+// Konfigurasi Supabase untuk fungsi akademik StudyHub.
+const SUPABASE_URL = "https://pkfbvfymrlxklgdmydqe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ACTpdGpfrPyjAWrDrhrCpQ_ntPngWWd";
+
 const studentRows = document.getElementById("studentRows");
 let approvedStudents = [];
 
