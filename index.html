@@ -1407,7 +1407,7 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
   studyHubAIInput.value = "";
   studyHubAIAddMessage("user", prompt);
   studyHubAIHistory.push({ role: "user", content: prompt });
-  studyHubAIHistory = [studyHubAIHistory[0], ...studyHubAIHistory.slice(-8)];
+  studyHubAIHistory = [studyHubAIHistory[0], ...studyHubAIHistory.slice(1).slice(-8)];
   studyHubAIIsBusy = true;
   studyHubAISend.disabled = true;
   studyHubAIStatusText.textContent = "AI sedang berfikir...";
