@@ -1494,10 +1494,15 @@ async function studyHubSYARSendMessage(rawMessage) {
   }
 }
 function studyHubSYARWelcomeMessage() {
-  const name = String(studentDisplayName || "").trim();
-  return name
-    ? "Assalamualaikum " + name + "! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!"
-    : "Assalamualaikum! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!";
+  const hour = new Date().getHours();
+  const greetingTime = hour >= 5 && hour < 12
+    ? "pagi"
+    : hour >= 12 && hour < 15
+      ? "tengah hari"
+      : hour >= 15 && hour < 19
+        ? "petang"
+        : "malam";
+  return "Assalamualaikum, selamat " + greetingTime + ", saya doakan kamu sihat sejahtera dan berjaya di dunia dan akhirat.";
 }
 function studyHubSYARQueueDashboardWelcome() {
   // Tekan panel AI (bukan butang Chat) untuk memainkan atau menghentikan ucapan.
