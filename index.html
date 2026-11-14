@@ -1430,9 +1430,7 @@ function studyHubSYARResetIdleTimer(resetPromptCycle = true) {
   }
 }
 
-["pointerdown", "keydown", "touchstart", "scroll", "input", "change"].forEach(eventName => {
-  document.addEventListener(eventName, () => studyHubSYARResetIdleTimer(true), { passive: true });
-});
+// Kiraan idle hanya dimulakan semula apabila pelajar bertukar menu.
 let studyHubSYARHiddenAt = null;
 function studyHubSYARHandleVisibilityChange() {
   if (document.hidden) {
@@ -1462,6 +1460,8 @@ function studyHubSYARHandleVisibilityChange() {
 document.addEventListener("visibilitychange", studyHubSYARHandleVisibilityChange);
 studyHubSYARResetIdleTimer(false);
 window.addEventListener("studyhub:navigation", event => {
+  // Menu baharu memulakan kitaran 20 saat yang baharu.
+  studyHubSYARResetIdleTimer(true);
   const title = event.detail?.title;
   if (!title) return;
   if (event.detail?.page === "admin") {
