@@ -511,19 +511,19 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
- <span><strong>StudyHub AI</strong><small id="studyHubAIStatusText">Model tempatan belum dimuatkan</small></span>
+ <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Model tempatan belum dimuatkan</small></span>
  <button id="studyHubAILoad" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Muatkan AI</button>
  <button id="studyHubAIChatToggle" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Buka chat</button>
 </div>
 <section class="ai-chat-panel" id="studyHubAIChat" aria-label="Chat StudyHub AI" hidden>
  <div class="ai-chat-head">
-  <div><strong>StudyHub AI</strong><small>Model berjalan pada peranti ini</small></div>
+  <div><strong>Syar</strong><small>Rakan digital StudyHub</small></div>
   <button id="studyHubAIChatClose" type="button" aria-label="Tutup chat">✕</button>
  </div>
  <p class="ai-chat-note">Muat turun model diperlukan sekali sahaja. Gunakan Wi-Fi dan pastikan ruang storan mencukupi. Soalan diproses pada peranti selepas model dimuatkan.</p>
  <div class="ai-chat-progress" id="studyHubAIProgress" role="status">Belum dimulakan.</div>
  <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite">
-  <div class="ai-chat-welcome">Hai! Muatkan model dahulu untuk mula berbual dengan StudyHub AI.</div>
+  <div class="ai-chat-welcome">Hai! Syar di sini. Muatkan AI dahulu, lepas tu kita boleh mula berbual. 😄</div>
  </div>
  <form class="ai-chat-form" id="studyHubAIForm">
   <textarea id="studyHubAIInput" rows="2" maxlength="1200" placeholder="Tulis soalan di sini..." aria-label="Soalan untuk StudyHub AI"></textarea>
@@ -1330,7 +1330,7 @@ const studyHubAIModelId = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 let studyHubAIEngine = null;
 let studyHubAIIsBusy = false;
 let studyHubAIHistory = [
-  { role: "system", content: "Anda ialah StudyHub AI, pembantu pembelajaran STPM yang mesra dan ringkas. Jawab dalam Bahasa Melayu kecuali diminta bahasa lain. Terangkan langkah demi langkah, jangan mereka fakta; nyatakan jika tidak pasti. Bantu pembelajaran PAM, BM, KMK dan Seni Visual." }
+  { role: "system", content: "Nama anda Syar, rakan digital dalam StudyHub. Anda bukan guru atau pembantu formal; tujuan utama anda ialah berbual secara santai dengan pelajar dan menemani mereka ketika menggunakan StudyHub. Gunakan Bahasa Melayu harian yang semula jadi, mesra, ringkas dan bersahaja. Anda boleh bergurau secara ringan apabila sesuai, bertanya soalan susulan yang ikhlas, mengingati konteks perbualan semasa dan menjadi pendengar yang baik. Sesuaikan gaya bahasa dengan pelajar tanpa memaksa slanga. Jangan jadikan setiap perbualan tentang pelajaran; ikut topik yang pelajar bawa. Jika mereka meminta bantuan, bantu dengan jelas tetapi jangan berpura-pura tahu perkara yang tidak diketahui. Jangan mereka fakta, jangan mengaku sebagai manusia atau mempunyai perasaan sebenar, dan jangan menghakimi, memperlekeh atau memalukan pelajar. Hormati privasi dan jangan meminta maklumat peribadi yang tidak diperlukan. Jawab dalam Bahasa Melayu kecuali pelajar menggunakan atau meminta bahasa lain." }
 ];
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
 const studyHubAIProgress = document.getElementById("studyHubAIProgress");
