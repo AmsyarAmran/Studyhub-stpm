@@ -1728,7 +1728,7 @@ async function studyHubRefreshVisibleData(){
     studyHubAutoRefreshBusy = false;
   }
 }
-window.setInterval(studyHubRefreshVisibleData,3000);
+window.setInterval(studyHubRefreshVisibleData,1000);
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden) studyHubRefreshVisibleData();
 });
