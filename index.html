@@ -1375,13 +1375,12 @@ function studyHubAIStopSpeech() {
 
 function studyHubAICleanSpeechText(text) {
   return String(text)
-    .replace(/[\\p{Extended_Pictographic}\\p{Emoji_Presentation}\\p{Regional_Indicator}\\uFE0F\\u200D\\u20E3\\u{1F3FB}-\\u{1F3FF}]/gu, " ")
-    .replace(/\\s+([,.;:!?])/g, "$1")
-    .replace(/([,.;:!?])(?=\\S)/g, "$1 ")
-    .replace(/\\s{2,}/g, " ")
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\uFE0F\u200D\u20E3\u{1F3FB}-\u{1F3FF}]/gu, " ")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/([,.;:!?])(?=\S)/g, "$1 ")
+    .replace(/\s{2,}/g, " ")
     .trim();
 }
-
 function studyHubAISpeak(text, controls) {
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
     studyHubAIProgress.textContent = "Fungsi suara tidak disokong oleh pelayar ini. Cuba Chrome yang terkini.";
