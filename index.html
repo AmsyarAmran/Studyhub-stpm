@@ -1488,43 +1488,32 @@ function studyHubSYARWelcomeMessage() {
     : "Assalamualaikum! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!";
 }
 function studyHubSYARQueueDashboardWelcome() {
-  // Ucapan hanya untuk pelajar yang telah log masuk dan diluluskan.
-  if ((studentAccessToken && !studentApproved) || !("speechSynthesis" in window) ||
-      !("SpeechSynthesisUtterance" in window)) return;
-  const key = "studyhub_syar_dashboard_welcome_played_v3";
-  if (sessionStorage.getItem(key)) return;
-  let finished = false;
-  function cleanup() {
-    window.removeEventListener("pointerdown", attempt);
-    window.removeEventListener("keydown", attempt);
-    window.speechSynthesis.removeEventListener("voiceschanged", attempt);
-  }
-  function attempt() {
-    if (finished || sessionStorage.getItem(key) || !studentAccessToken || !studentApproved) {
-      cleanup();
+  // Tekan panel AI (bukan butang Chat) untuk memainkan atau menghentikan ucapan.
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  if (studyHubAIStatus.dataset.welcomeToggleReady === "1") return;
+  studyHubAIStatus.dataset.welcomeToggleReady = "1";
+  studyHubAIStatus.style.cursor = "pointer";
+  studyHubAIStatus.setAttribute("title", "Tekan panel ini untuk dengar atau hentikan ucapan alu-aluan Syar");
+  studyHubAIStatus.addEventListener("click", event => {
+    if (event.target.closest("#studyHubAIOpenChat")) return;
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+      studyHubAIStatusText.textContent = "Ucapan Syar dihentikan. Tekan untuk dengar semula.";
       return;
     }
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices.length) return;
     const utterance = new SpeechSynthesisUtterance(studyHubSYARWelcomeMessage());
     utterance.lang = "ms-MY";
     utterance.rate = 1;
     utterance.pitch = 1;
+    const voices = window.speechSynthesis.getVoices();
     const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
     const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
     if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
-    utterance.onstart = () => {
-      finished = true;
-      sessionStorage.setItem(key, "1");
-      cleanup();
-    };
-    utterance.onerror = () => { window.speechSynthesis.cancel(); };
+    utterance.onstart = () => { studyHubAIStatusText.textContent = "Syar sedang menyampaikan ucapan alu-aluan..."; };
+    utterance.onend = () => { studyHubAIStatusText.textContent = "Tekan panel ini untuk dengar ucapan alu-aluan semula."; };
+    utterance.onerror = () => { studyHubAIStatusText.textContent = "Audio tidak dapat dimainkan. Cuba tekan sekali lagi."; };
     window.speechSynthesis.speak(utterance);
-  }
-  window.addEventListener("pointerdown", attempt);
-  window.addEventListener("keydown", attempt);
-  window.speechSynthesis.addEventListener("voiceschanged", attempt);
-  attempt();
+  });
 }
 studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAIChatPanel.hidden = false;
