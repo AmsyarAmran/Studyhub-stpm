@@ -56,40 +56,44 @@ export default {
     if (contentLength > MAX_BODY_BYTES) return json({ error: "Permintaan terlalu besar." }, 413, cors);
 
     const authorization = request.headers.get("Authorization") || "";
-    const tokenMatch = authorization.match(/^Bearer\s+(.+)$/i);
-    if (!tokenMatch) return json({ error: "Sila log masuk ke StudyHub." }, 401, cors);
+    const tokenMatch = authorization.match(/^Bearer\\s+(.+)$/i);
+    const guestId = request.headers.get("X-StudyHub-Guest") || "";
+    let user = null;
 
-    let user;
-    try {
-      const authResponse = await fetch(env.SUPABASE_URL.replace(/\/$/, "") + "/auth/v1/user", {
-        headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
-        signal: AbortSignal.timeout(8000)
-      });
-      const authData = await authResponse.json().catch(() => ({}));
-      if (!authResponse.ok) {
-        const reason = String(authData.msg || authData.message || authData.error_description || authData.error || "Tiada butiran").slice(0, 180);
-        return json({ error: "Supabase menolak sesi (HTTP " + authResponse.status + "): " + reason }, 401, cors);
+    if (tokenMatch) {
+      try {
+        const authResponse = await fetch(env.SUPABASE_URL.replace(/\\/$/, "") + "/auth/v1/user", {
+          headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
+          signal: AbortSignal.timeout(8000)
+        });
+        const authData = await authResponse.json().catch(() => ({}));
+        if (!authResponse.ok) {
+          const reason = String(authData.msg || authData.message || authData.error_description || authData.error || "Tiada butiran").slice(0, 180);
+          return json({ error: "Supabase menolak sesi (HTTP " + authResponse.status + "): " + reason }, 401, cors);
+        }
+        user = authData;
+        if (!user || !user.id) return json({ error: "Sesi tidak sah." }, 401, cors);
+      } catch {
+        return json({ error: "Tidak dapat mengesahkan sesi. Cuba lagi sebentar." }, 503, cors);
       }
-      user = authData;
-      if (!user || !user.id) return json({ error: "Sesi tidak sah." }, 401, cors);
-    } catch {
-      return json({ error: "Tidak dapat mengesahkan sesi. Cuba lagi sebentar." }, 503, cors);
-    }
 
-    try {
-      const approvalUrl = env.SUPABASE_URL.replace(/\/$/, "") +
-        "/rest/v1/studyhub_students?select=approved&user_id=eq." + encodeURIComponent(user.id) + "&limit=1";
-      const approvalResponse = await fetch(approvalUrl, {
-        headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
-        signal: AbortSignal.timeout(8000)
-      });
-      if (!approvalResponse.ok) return json({ error: "Status pendaftaran tidak dapat disemak." }, 503, cors);
-      const registrations = await approvalResponse.json();
-      if (!Array.isArray(registrations) || registrations.length === 0 || registrations[0].approved !== true) {
-        return json({ error: "Akses Syar hanya tersedia selepas pendaftaran StudyHub diluluskan." }, 403, cors);
+      try {
+        const approvalUrl = env.SUPABASE_URL.replace(/\\/$/, "") +
+          "/rest/v1/studyhub_students?select=approved&user_id=eq." + encodeURIComponent(user.id) + "&limit=1";
+        const approvalResponse = await fetch(approvalUrl, {
+          headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
+          signal: AbortSignal.timeout(8000)
+        });
+        if (!approvalResponse.ok) return json({ error: "Status pendaftaran tidak dapat disemak." }, 503, cors);
+        const registrations = await approvalResponse.json();
+        if (!Array.isArray(registrations) || registrations.length === 0 || registrations[0].approved !== true) {
+          return json({ error: "Akses Syar hanya tersedia selepas pendaftaran StudyHub diluluskan." }, 403, cors);
+        }
+      } catch {
+        return json({ error: "Tidak dapat menyemak kelulusan akaun. Cuba lagi." }, 503, cors);
       }
-    } catch {
-      return json({ error: "Tidak dapat menyemak kelulusan akaun. Cuba lagi." }, 503, cors);
+    } else if (!/^[A-Za-z0-9_-]{20,80}$/.test(guestId)) {
+      return json({ error: "Sila log masuk atau mulakan sesi tetamu untuk menggunakan Syar." }, 401, cors);
     }
 
     let payload;
@@ -117,6 +121,23 @@ export default {
       return json({ error: "Mesej terakhir mestilah daripada pengguna." }, 400, cors);
     }
 
+    let guestRemaining = null;
+    if (!user) {
+      if (!env.DAILY_QUOTA) return json({ error: "Had mesej tetamu belum dikonfigurasi." }, 503, cors);
+      try {
+        const quotaId = env.DAILY_QUOTA.idFromName("syar-guest-" + guestId);
+        const quotaStub = env.DAILY_QUOTA.get(quotaId);
+        const quotaResponse = await quotaStub.fetch("https://quota.local/guest", { method: "POST" });
+        const quota = await quotaResponse.json();
+        if (!quota.allowed) {
+          return json({ error: "Anda telah menggunakan 10 mesej percuma. Log masuk ke StudyHub untuk terus berbual dengan Syar.", remaining: 0 }, 429, cors);
+        }
+        guestRemaining = quota.remaining;
+      } catch {
+        return json({ error: "Had mesej tetamu tidak dapat disemak. Cuba lagi sebentar." }, 503, cors);
+      }
+    }
+
     try {
       const result = await env.AI.run(env.AI_MODEL || "@cf/zai-org/glm-4.7-flash", {
         messages: [{ role: "system", content: SYAR_SYSTEM_PROMPT }, ...messages],
@@ -130,7 +151,7 @@ export default {
           ? result.response.trim()
           : "";
       if (!reply) return json({ error: "Syar belum dapat menjawab. Cuba lagi sebentar." }, 502, cors);
-      return json({ reply }, 200, cors);
+      return json(user ? { reply } : { reply, remaining: guestRemaining }, 200, cors);
     } catch {
       return json({ error: "Perkhidmatan Syar mengalami gangguan. Cuba lagi sebentar." }, 502, cors);
     }
@@ -142,9 +163,18 @@ export class DailyQuota {
     this.state = state;
     this.sql = state.storage.sql;
     this.sql.exec("CREATE TABLE IF NOT EXISTS daily_usage (day TEXT PRIMARY KEY, count INTEGER NOT NULL)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS guest_usage (id TEXT PRIMARY KEY, count INTEGER NOT NULL)");
   }
 
   async fetch(request) {
+    const url = new URL(request.url);
+    if (url.pathname === "/guest" && request.method === "POST") {
+      const row = this.sql.exec(
+        "INSERT INTO guest_usage (id, count) VALUES ('total', 1) ON CONFLICT(id) DO UPDATE SET count = count + 1 WHERE count < 10 RETURNING count"
+      ).toArray()[0];
+      if (!row) return json({ allowed: false, remaining: 0 });
+      return json({ allowed: true, remaining: Math.max(0, 10 - row.count) });
+    }
     if (request.method !== "POST") return new Response("Not found", { status: 404 });
     const day = new Date().toISOString().slice(0, 10);
     const inserted = this.sql.exec(
@@ -152,10 +182,7 @@ export class DailyQuota {
       day,
       DAILY_LIMIT
     ).toArray()[0];
-
-    if (!inserted) {
-      return json({ allowed: false, remaining: 0 });
-    }
+    if (!inserted) return json({ allowed: false, remaining: 0 });
     return json({ allowed: true, remaining: Math.max(0, DAILY_LIMIT - inserted.count) });
   }
 }
