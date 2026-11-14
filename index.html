@@ -1365,14 +1365,22 @@ function studyHubAISpeakGreeting() {
 studyHubAISpeakGreeting();
 studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 
-// Syar menyapa semula apabila pelajar tidak melakukan aktiviti selama 60 saat.
-const STUDYHUB_SYAR_IDLE_DELAY = 60 * 1000;
+// Syar menyapa dengan lebih mesra apabila pelajar tidak aktif selama 30 saat.
+const STUDYHUB_SYAR_IDLE_DELAY = 30 * 1000;
 let studyHubSYARIdleTimer = null;
 let studyHubSYARIdleUtterance = null;
 
+function studyHubSYARGetMealGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) return "Dah bersarapan ke? Harap pagi awak berjalan lancar!";
+  if (hour >= 11 && hour < 15) return "Awak dah makan tengah hari ke? Jangan lupa rehat sekejap juga!";
+  if (hour >= 15 && hour < 19) return "Dah makan petang ke? Jom sambung belajar bila dah bersedia.";
+  return "Awak dah makan malam ke? Jangan lupa jaga diri dan berehat secukupnya!";
+}
+
 function studyHubSYARSpeakWhenIdle() {
   if (document.hidden) return;
-  const message = "Masih di sini? Jom teruskan pembelajaran. Pilih mana-mana bahagian StudyHub apabila anda sudah bersedia.";
+  const message = studyHubSYARGetMealGreeting();
   studyHubAIStatusText.textContent = "Syar: " + message;
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   window.speechSynthesis.cancel();
