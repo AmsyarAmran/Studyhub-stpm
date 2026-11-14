@@ -48,7 +48,7 @@ export default {
     if (url.pathname !== "/chat") return json({ error: "Laluan tidak ditemui." }, 404, cors);
     if (request.method !== "POST") return json({ error: "Kaedah tidak dibenarkan." }, 405, cors);
     if (!allowedOrigin || origin !== allowedOrigin) return json({ error: "Origin tidak dibenarkan." }, 403, cors);
-    if (!env.SUPABASE_URL || !env.SUPABASE_API_KEY || !env.AI) {
+    if (!env.SUPABASE_URL || !env.SUPABASE_API_KEY || (!env.GEMINI_API_KEY && !env.AI)) {
       return json({ error: "Backend belum dikonfigurasi sepenuhnya." }, 503, cors);
     }
 
@@ -118,17 +118,48 @@ export default {
     }
 
     try {
-      const result = await env.AI.run(env.AI_MODEL || "@cf/google/gemma-4-26b-a4b-it", {
-        messages: [{ role: "system", content: SYAR_SYSTEM_PROMPT }, ...messages],
-        max_tokens: 384,
-        temperature: 0.65,
-        chat_template_kwargs: { enable_thinking: false }
-      });
-      const reply = typeof result?.choices?.[0]?.message?.content === "string"
-        ? result.choices[0].message.content.trim()
-        : typeof result?.response === "string"
-          ? result.response.trim()
-          : "";
+      let reply = "";
+      if (env.GEMINI_API_KEY) {
+        const geminiResponse = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": env.GEMINI_API_KEY
+            },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: SYAR_SYSTEM_PROMPT }] },
+              contents: messages.map((item) => ({
+                role: item.role === "assistant" ? "model" : "user",
+                parts: [{ text: item.content }]
+              })),
+              generationConfig: { maxOutputTokens: 384, temperature: 0.65 }
+            }),
+            signal: AbortSignal.timeout(20000)
+          }
+        );
+        const geminiData = await geminiResponse.json().catch(() => ({}));
+        if (!geminiResponse.ok) {
+          return json({ error: "Gemini tidak dapat menjawab buat masa ini (HTTP " + geminiResponse.status + "). Cuba lagi sebentar." }, 502, cors);
+        }
+        reply = (geminiData?.candidates?.[0]?.content?.parts || [])
+          .map((part) => typeof part.text === "string" ? part.text : "")
+          .join("")
+          .trim();
+      } else {
+        const result = await env.AI.run(env.AI_MODEL || "@cf/google/gemma-4-26b-a4b-it", {
+          messages: [{ role: "system", content: SYAR_SYSTEM_PROMPT }, ...messages],
+          max_tokens: 384,
+          temperature: 0.65,
+          chat_template_kwargs: { enable_thinking: false }
+        });
+        reply = typeof result?.choices?.[0]?.message?.content === "string"
+          ? result.choices[0].message.content.trim()
+          : typeof result?.response === "string"
+            ? result.response.trim()
+            : "";
+      }
       if (!reply) return json({ error: "Syar belum dapat menjawab. Cuba lagi sebentar." }, 502, cors);
       return json({ reply }, 200, cors);
     } catch {
