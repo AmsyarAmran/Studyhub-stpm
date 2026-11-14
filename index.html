@@ -1374,6 +1374,8 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
     await loadPendingStudents();
     await loadAdminQuizQuestions();
   }else if(adminSession){clearStoredSession(ADMIN_SESSION_KEY);}
+  // Pelawat tanpa sesi log masuk juga boleh mendengar ucapan alu-aluan.
+  if(!studentAccessToken) studyHubSYARQueueDashboardWelcome();
 })();
 
 // STUDYHUB SYAR — ucapan alu-aluan dan chat teks/suara.
@@ -1487,7 +1489,7 @@ function studyHubSYARWelcomeMessage() {
 }
 function studyHubSYARQueueDashboardWelcome() {
   // Ucapan hanya untuk pelajar yang telah log masuk dan diluluskan.
-  if (!studentAccessToken || !studentApproved || !("speechSynthesis" in window) ||
+  if ((studentAccessToken && !studentApproved) || !("speechSynthesis" in window) ||
       !("SpeechSynthesisUtterance" in window)) return;
   const key = "studyhub_syar_dashboard_welcome_played_v3";
   if (sessionStorage.getItem(key)) return;
