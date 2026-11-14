@@ -1479,7 +1479,6 @@ async function studyHubSYARSendMessage(rawMessage) {
     sendButton.disabled = false;
   }
 }
-let studyHubSYARWelcomeShown = false;
 function studyHubSYARWelcomeMessage() {
   const name = String(studentDisplayName || "").trim();
   return name
@@ -1489,14 +1488,25 @@ function studyHubSYARWelcomeMessage() {
 studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
-  if (!studyHubSYARWelcomeShown) {
-    const welcome = studyHubSYARWelcomeMessage();
-    studyHubSYARAddChatMessage("assistant",welcome);
-    studyHubSYARWelcomeShown = true;
-    studyHubSYARSpeakReply(welcome);
-  }
   studyHubAITextInput.focus();
 });
+
+// Ucapan alu-aluan dimainkan sekali sahaja apabila tab StudyHub dibuka.
+// Ucapan hanya melalui suara di dashboard dan tidak dimasukkan ke panel chat.
+try {
+  const welcomeSessionKey = "studyhub_syar_dashboard_welcome_played";
+  if (!sessionStorage.getItem(welcomeSessionKey)) {
+    sessionStorage.setItem(welcomeSessionKey,"1");
+    window.addEventListener("load",() => {
+      window.setTimeout(() => studyHubSYARSpeakReply(studyHubSYARWelcomeMessage()),700);
+    },{once:true});
+  }
+} catch (error) {
+  // Jika storan sesi tidak tersedia, ucapan tetap dimainkan sekali pada pemuatan halaman ini.
+  window.addEventListener("load",() => {
+    window.setTimeout(() => studyHubSYARSpeakReply(studyHubSYARWelcomeMessage()),700);
+  },{once:true});
+}
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
@@ -1517,7 +1527,7 @@ studyHubAITextForm.addEventListener("submit",studyHubSYARHandleTextSend);
 document.getElementById("studyHubAISendChat").addEventListener("click",studyHubSYARHandleTextSend);
 // Tamat STUDYHUB SYAR TEXT CHAT
 
-studyHubAIStatusText.textContent = "Assalamualaikum! Selamat datang ke StudyHub.";
+studyHubAIStatusText.textContent = "Syar sedia membantu anda.";
 
 </script>
 </body></html>
