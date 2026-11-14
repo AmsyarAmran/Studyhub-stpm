@@ -599,7 +599,24 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   <span class="ai-status-orb" aria-hidden="true"></span>
   <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Tekan untuk dengar ucapan alu-aluan</small></span>
  </div>
+ <button class="studyhub-chat-launch" id="studyHubAIOpenChat" type="button" aria-expanded="false" aria-controls="studyHubAIChatPanel">Buka chat</button>
 </div>
+
+<section class="ai-chat-panel" id="studyHubAIChatPanel" role="dialog" aria-label="Chat dengan Syar" aria-modal="false" hidden>
+ <div class="ai-chat-head">
+  <div><strong>Sembang dengan Syar</strong><small>Pembantu StudyHub</small></div>
+  <button id="studyHubAICloseChat" type="button" aria-label="Tutup chat">Tutup ✕</button>
+ </div>
+ <p class="ai-chat-note">Tanya apa-apa berkaitan pembelajaran dan penggunaan StudyHub.</p>
+ <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite">
+  <div class="ai-chat-welcome">Assalamualaikum! Saya Syar. Apa yang boleh saya bantu?</div>
+ </div>
+ <p class="ai-chat-progress" id="studyHubAIChatStatus" role="status">Syar sedia membantu kamu.</p>
+ <form id="studyHubAITextForm" class="ai-chat-form">
+  <input id="studyHubAITextInput" type="text" placeholder="Tulis mesej kepada Syar..." autocomplete="off" required>
+  <button id="studyHubAISendChat" type="submit">Hantar</button>
+ </form>
+</section>
 
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
@@ -1678,24 +1695,25 @@ function studyHubSYARQueueDashboardWelcome() {
   });
   studyHubSYARScheduleIdlePrompt();
 }
-document.getElementById("studyHubMascot").addEventListener("click",() => {
+function studyHubSYAROpenChat() {
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
   studyHubAIChatPanel.scrollIntoView({behavior:"smooth",block:"nearest"});
-});
-studyHubAIOpenChat.addEventListener("click",() => {
-  studyHubAIChatPanel.hidden = false;
-  studyHubAIOpenChat.setAttribute("aria-expanded","true");
-  // Jangan fokuskan input secara automatik supaya papan kekunci telefon tidak terbuka sendiri.
-});
-
-// Sapaan automatik Syar bermula selepas status sesi disahkan.
+}
+document.getElementById("studyHubMascot").addEventListener("click", studyHubSYAROpenChat);
+studyHubAIOpenChat.addEventListener("click", studyHubSYAROpenChat);
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
 });
-// Butang bot kecil hanya membuka panel chat Syar.
-// Chat teks telah dibuang; maskot dan sapaan suara dikekalkan.
+studyHubAITextForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const message = studyHubAITextInput.value.trim();
+  if (!message || studyHubSYARChatBusy) return;
+  studyHubAITextInput.value = "";
+  await studyHubSYARSendMessage(message);
+});
+
 </script>
 </body>
 </html>
