@@ -65,8 +65,12 @@ export default {
         headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
         signal: AbortSignal.timeout(8000)
       });
-      if (!authResponse.ok) return json({ error: "Sesi tidak sah atau telah tamat. Sila log masuk semula." }, 401, cors);
-      user = await authResponse.json();
+      const authData = await authResponse.json().catch(() => ({}));
+      if (!authResponse.ok) {
+        const reason = String(authData.msg || authData.message || authData.error_description || authData.error || "Tiada butiran").slice(0, 180);
+        return json({ error: "Supabase menolak sesi (HTTP " + authResponse.status + "): " + reason }, 401, cors);
+      }
+      user = authData;
       if (!user || !user.id) return json({ error: "Sesi tidak sah." }, 401, cors);
     } catch {
       return json({ error: "Tidak dapat mengesahkan sesi. Cuba lagi sebentar." }, 503, cors);
