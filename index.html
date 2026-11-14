@@ -341,38 +341,6 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 @media(max-width:520px){.studyhub-ai-status{left:8px;right:8px;bottom:8px;max-width:none;justify-content:space-between;gap:7px;padding:8px}.studyhub-ai-status .syar-open-chat{padding:7px 8px}.ai-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px)}}
 
 
-/* Paparan chat Syar menyeluruh apabila dibuka */
-.ai-chat-panel:not([hidden]){
- position:fixed!important;
- inset:0!important;
- width:100vw!important;
- height:100vh!important;
- height:100dvh!important;
- max-height:none!important;
- max-width:none!important;
- margin:0!important;
- border-radius:0!important;
- padding:clamp(14px,3vw,26px)!important;
- display:flex!important;
- flex-direction:column!important;
- gap:14px!important;
- z-index:10050!important;
-}
-.ai-chat-panel:not([hidden]) .ai-chat-head{flex:0 0 auto;padding-bottom:10px;border-bottom:1px solid #52618455}
-.ai-chat-panel:not([hidden]) .ai-chat-progress{flex:0 0 auto}
-.ai-chat-panel:not([hidden]) .ai-chat-messages{
- flex:1 1 auto!important;
- min-height:0!important;
- max-height:none!important;
- overflow-y:auto!important;
- padding:10px 3px!important;
-}
-.ai-chat-panel:not([hidden]) .ai-chat-form{
- flex:0 0 auto;
- padding-bottom:env(safe-area-inset-bottom,0px);
-}
-.ai-chat-panel:not([hidden]) .ai-chat-form input{min-height:48px;font-size:16px}
-
 </style>
 </head>
 <body>
