@@ -558,7 +558,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-controls">
- <div class="studyhub-ai-status" id="studyHubAIStatus" role="button" tabindex="0" aria-label="Tekan untuk memainkan atau menghentikan ucapan alu-aluan Syar">
+ <div class="studyhub-ai-status" id="studyHubAIStatus" role="button" tabindex="0" aria-label="Tekan untuk memainkan ucapan alu-aluan Syar">
   <span class="ai-status-orb" aria-hidden="true"></span>
   <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Tekan untuk dengar ucapan alu-aluan</small></span>
  </div>
@@ -1612,23 +1612,18 @@ function studyHubSYARQueueDashboardWelcome() {
   studyHubAIStatus.dataset.welcomeToggleReady = "1";
   studyHubSYARIdleVoiceEnabled = true;
   studyHubAIStatus.style.cursor = "pointer";
-  studyHubAIStatus.setAttribute("title", "Tekan panel ini untuk menghentikan atau memainkan semula ucapan Syar");
+  studyHubAIStatus.setAttribute("title", "Tekan panel ini untuk memainkan ucapan alu-aluan Syar");
   studyHubAIStatusText.textContent = "Syar akan menyapa selepas 15 saat tanpa pertukaran menu.";
   // Hanya pertukaran menu utama menetapkan semula kiraan 15 saat.
   window.addEventListener("studyhub:navigation", () => {
     if (studyHubSYARIdleVoiceEnabled) studyHubSYARScheduleIdlePrompt();
   });
-  studyHubAIStatus.addEventListener("click", event => {
-    if (event.target.closest("#studyHubAIOpenChat")) return;
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      window.speechSynthesis.cancel();
-      studyHubSYARSetSpeaking(false);
-      studyHubSYARIdleVoiceEnabled = false;
-      clearTimeout(studyHubSYARIdleTimer);
-      studyHubAIStatusText.textContent = "Sapaan automatik dihentikan. Tekan untuk aktifkan semula.";
-      return;
-    }
+  studyHubAIStatus.addEventListener("click", () => {
+    // Setiap tekanan memainkan semula ucapan alu-aluan; panel bukan suis hidup/mati.
+    window.speechSynthesis.cancel();
+    studyHubSYARSetSpeaking(false);
     studyHubSYARIdleVoiceEnabled = true;
+    clearTimeout(studyHubSYARIdleTimer);
     const utterance = new SpeechSynthesisUtterance(studyHubSYARWelcomeMessage());
     utterance.lang = "ms-MY";
     utterance.rate = 1;
