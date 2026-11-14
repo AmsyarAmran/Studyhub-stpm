@@ -500,7 +500,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
     <label class="profile-location-consent"><input id="profileLocationConsent" type="checkbox"> <span>Saya setuju berkongsi lokasi dengan admin.</span></label>
     <button class="btn" id="profileShareLocation" type="button" disabled>Setuju dan benarkan lokasi</button>
     <button class="btn" id="profileDeclineLocation" type="button" style="background:#526184;margin:8px 0 0">Saya tidak bersetuju</button>
-    <button class="btn" id="profileRevokeLocation" type="button" hidden style="background:#8b405b;margin-left:6px">Tarik balik persetujuan</button>
+    <button class="btn" id="profileRevokeLocation" type="button" hidden style="background:#8b405b;margin-left:6px">Hentikan perkongsian lokasi</button>
     <p class="location-status" id="profileLocationStatus" role="status" aria-live="polite">Anda belum berkongsi lokasi.</p>
    </div>
    <p class="profile-save-note" id="profileSaveNote" role="status">Perubahan profil disimpan pada peranti ini.</p>
@@ -1488,10 +1488,10 @@ async function revokeStudentLocation(){
  const button=document.getElementById("profileRevokeLocation");button.disabled=true;
  try{
   const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_student_locations?user_id=eq."+encodeURIComponent(studentUserId),{method:"DELETE",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Prefer":"return=minimal"}});
-  if(!response.ok)throw new Error("Persetujuan belum dapat ditarik balik.");
-  status.textContent="Persetujuan ditarik balik. Lokasi anda tidak lagi tersedia kepada admin.";
+  if(!response.ok)throw new Error("Perkongsian lokasi belum dapat dihentikan.");
+  status.textContent="Perkongsian lokasi telah dihentikan. Lokasi anda tidak lagi tersedia kepada admin.";
   await loadOwnStudentLocation();
- }catch(error){status.textContent=error.message||"Tidak berjaya menarik balik persetujuan." ;}
+ }catch(error){status.textContent=error.message||"Tidak berjaya menghentikan perkongsian lokasi." ;}
  finally{button.disabled=false;}
 }
 async function loadAdminStudentLocations(){
