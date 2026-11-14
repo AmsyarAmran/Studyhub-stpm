@@ -589,7 +589,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  <div class="card"><p>STUDYHUB ialah ruang pembelajaran ringkas untuk pelajar STPM. Fokus awal projek ini ialah bahan percubaan Semester 1 bagi Pengajian Am (PAM), Kesusasteraan Melayu Komunikatif (KMK), Seni Visual (SENI) dan Bahasa Melayu (BM).</p></div>
 </section>
 
-<button class="studyhub-mascot" id="studyHubMascot" type="button" aria-label="Sembang dengan Syar, pembantu StudyHub">
+<button class="studyhub-mascot" id="studyHubMascot" type="button" aria-label="Buka chat dengan Syar, pembantu StudyHub" aria-expanded="false" aria-controls="studyHubAIChatPanel">
  <span class="studyhub-mascot-bubble"><strong>Hai, saya Syar!</strong>Perlukan bantuan? Tekan saya 😊</span>
  <span class="studyhub-mascot-avatar" aria-hidden="true">🤖</span>
 </button>
@@ -599,7 +599,6 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   <span class="ai-status-orb" aria-hidden="true"></span>
   <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Tekan untuk dengar ucapan alu-aluan</small></span>
  </div>
- <button class="studyhub-chat-launch" id="studyHubAIOpenChat" type="button" aria-expanded="false" aria-controls="studyHubAIChatPanel">Buka chat</button>
 </div>
 
 <section class="ai-chat-panel" id="studyHubAIChatPanel" role="dialog" aria-label="Chat dengan Syar" aria-modal="false" hidden>
@@ -1444,7 +1443,7 @@ const STUDYHUB_SYAR_CHAT_URL = "https://studyhub-sya.amsyar291008.workers.dev/ch
 const studyHubAIChatPanel = document.getElementById("studyHubAIChatPanel");
 const studyHubAIChatStatus = document.getElementById("studyHubAIChatStatus");
 const studyHubAIMessages = document.getElementById("studyHubAIMessages");
-const studyHubAIOpenChat = document.getElementById("studyHubAIOpenChat");
+const studyHubAIOpenChat = document.getElementById("studyHubMascot");
 const studyHubAITextForm = document.getElementById("studyHubAITextForm");
 const studyHubAITextInput = document.getElementById("studyHubAITextInput");
 let studyHubSYARChatBusy = false;
