@@ -482,7 +482,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   <div class="profile-shell">
    <div class="profile-cover" id="profileCover">
     <div class="profile-avatar" id="profileAvatar">🌟</div>
-    <div class="profile-cover-copy"><div class="eyebrow">STUDYHUB STUDENT</div><h2 id="profileDisplayName">Pelajar</h2><p id="profileStatus">Ahli StudyHub</p></div>
+    <div class="profile-cover-copy"><div class="eyebrow">STUDYHUB STUDENT</div><h2 id="profileDisplayName">Pelajar</h2><p id="profileStatus">Ahli StudyHub</p><p id="profileBioDisplay" style="margin:5px 0 0;color:#f0eaff;font-size:13px;overflow-wrap:anywhere"></p></div>
    </div>
    <div class="profile-options">
     <div class="profile-option"><h3>Gambar profil</h3><div class="avatar-choices" id="profileAvatarChoices"><button class="avatar-choice selected" type="button" data-avatar="🌟">🌟</button><button class="avatar-choice" type="button" data-avatar="📚">📚</button><button class="avatar-choice" type="button" data-avatar="🎓">🎓</button><button class="avatar-choice" type="button" data-avatar="🐼">🐼</button><button class="avatar-choice" type="button" data-avatar="🐱">🐱</button><button class="avatar-choice" type="button" data-avatar="🦊">🦊</button><button class="avatar-choice" type="button" data-avatar="🚀">🚀</button><button class="avatar-choice" type="button" data-avatar="🌙">🌙</button></div>
@@ -1417,6 +1417,7 @@ function applyStudentProfile(){
  avatar.style.borderColor=data.border||"#b8a5ff";
  avatar.innerHTML=data.photo?'<img alt="Gambar profil pelajar" src="'+data.photo+'">':escapeStudentText(data.avatar||"🌟");
  document.getElementById("profileCustomBio").value=data.bio||"";
+ document.getElementById("profileBioDisplay").textContent=data.bio||"";
  document.querySelectorAll("[data-avatar]").forEach(b=>b.classList.toggle("selected",b.dataset.avatar===(data.avatar||"🌟")));
  document.querySelectorAll("[data-bg]").forEach(b=>b.classList.toggle("selected",b.dataset.bg===(data.background||"linear-gradient(125deg,#43358d,#176c86)")));
  document.querySelectorAll("[data-border]").forEach(b=>b.classList.toggle("selected",b.dataset.border===data.border));
@@ -1524,7 +1525,13 @@ function renderStudentProfile(){
  applyStudentProfile();
  loadOwnStudentLocation();
 }
-document.getElementById("profileLocationConsent").addEventListener("change",()=>setLocationShareBusy(false));
+document.getElementById("profileLocationConsent").addEventListener("change",()=>{
+ setLocationShareBusy(false);
+ if(!document.getElementById("profileLocationConsent").checked){
+  const data=readStudentProfile();if(data.locationChoice==="yes"){delete data.locationChoice;saveStudentProfile(data);}
+  updateProfileCompletionStatus();
+ }
+});
 document.getElementById("profileDeclineLocation").addEventListener("click",()=>{
  const data=readStudentProfile();data.locationChoice="no";saveStudentProfile(data);
  document.getElementById("profileLocationConsent").checked=false;
@@ -1548,7 +1555,8 @@ document.getElementById("profileRemovePhoto").addEventListener("click",()=>{
  const data=readStudentProfile();data.photo="";data.avatar=data.avatar||"🌟";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
 });
 document.getElementById("profileCustomBio").addEventListener("input",event=>{
- const data=readStudentProfile();data.bio=event.target.value.slice(0,120);saveStudentProfile(data);updateProfileCompletionStatus();
+ const data=readStudentProfile();data.bio=event.target.value.slice(0,120);saveStudentProfile(data);
+ document.getElementById("profileBioDisplay").textContent=data.bio;updateProfileCompletionStatus();
 });
 document.getElementById("profilePhotoInput").addEventListener("change",event=>{
  const file=event.target.files?.[0];if(!file)return;
