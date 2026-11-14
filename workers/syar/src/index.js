@@ -128,7 +128,11 @@ export default {
         temperature: 0.65,
         chat_template_kwargs: { enable_thinking: false }
       });
-      const reply = typeof result?.response === "string" ? result.response.trim() : "";
+      const reply = typeof result?.choices?.[0]?.message?.content === "string"
+        ? result.choices[0].message.content.trim()
+        : typeof result?.response === "string"
+          ? result.response.trim()
+          : "";
       if (!reply) return json({ error: "Syar belum dapat menjawab. Cuba lagi sebentar." }, 502, cors);
       return json({ reply, remaining: quota.remaining }, 200, cors);
     } catch {
