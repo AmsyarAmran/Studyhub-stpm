@@ -1373,27 +1373,51 @@ function studyHubAIStopSpeech() {
   document.body.classList.remove("ai-speaking");
 }
 
+function studyHubAICleanSpeechText(text) {
+  return String(text)
+    .replace(/[\\p{Extended_Pictographic}\\p{Emoji_Presentation}\\p{Regional_Indicator}\\uFE0F\\u200D\\u20E3\\u{1F3FB}-\\u{1F3FF}]/gu, " ")
+    .replace(/\\s+([,.;:!?])/g, "$1")
+    .replace(/([,.;:!?])(?=\\S)/g, "$1 ")
+    .replace(/\\s{2,}/g, " ")
+    .trim();
+}
+
 function studyHubAISpeak(text, controls) {
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
     studyHubAIProgress.textContent = "Fungsi suara tidak disokong oleh pelayar ini. Cuba Chrome yang terkini.";
     return;
   }
   studyHubAIStopSpeech();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "ms-MY";
+  const voices = window.speechSynthesis.getVoices();
+  const malayVoice = voices.find(voice => /^ms[-_]my$/i.test(voice.lang))
+    || voices.find(voice => /^ms[-_]/i.test(voice.lang));
+  if (!malayVoice) {
+    studyHubAIProgress.textContent = "Suara Bahasa Melayu belum tersedia pada peranti. Sila pilih atau pasang suara Bahasa Melayu dalam tetapan Text-to-speech telefon.";
+    return;
+  }
+  const speechText = studyHubAICleanSpeechText(text);
+  if (!speechText) {
+    studyHubAIProgress.textContent = "Tiada teks untuk dibacakan selepas emoji ditapis.";
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(speechText);
+  utterance.lang = malayVoice.lang || "ms-MY";
+  utterance.voice = malayVoice;
   utterance.rate = 0.95;
   utterance.pitch = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const malayVoice = voices.find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) utterance.voice = malayVoice;
   studyHubAISpeakingUtterance = utterance;
   studyHubAISpeakingControls = controls;
   controls.listen.hidden = true;
   controls.stop.hidden = false;
   document.body.classList.add("ai-speaking");
-  utterance.onend = utterance.onerror = () => {
+  utterance.onend = () => {
     if (studyHubAISpeakingUtterance !== utterance) return;
     studyHubAIStopSpeech();
+  };
+  utterance.onerror = () => {
+    if (studyHubAISpeakingUtterance !== utterance) return;
+    studyHubAIStopSpeech();
+    studyHubAIProgress.textContent = "Suara gagal dimainkan. Sila cuba lagi.";
   };
   window.speechSynthesis.speak(utterance);
 }
