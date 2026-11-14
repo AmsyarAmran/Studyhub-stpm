@@ -118,7 +118,7 @@ export default {
     }
 
     try {
-      const result = await env.AI.run(env.AI_MODEL || "@cf/google/gemma-4-26b-a4b-it", {
+      const result = await env.AI.run(env.AI_MODEL || "@cf/zai-org/glm-4.7-flash", {
         messages: [{ role: "system", content: SYAR_SYSTEM_PROMPT }, ...messages],
         max_tokens: 384,
         temperature: 0.65,
