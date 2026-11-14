@@ -599,20 +599,8 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   <span class="ai-status-orb" aria-hidden="true"></span>
   <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Tekan untuk dengar ucapan alu-aluan</small></span>
  </div>
- <button class="studyhub-chat-launch" id="studyHubAIOpenChat" type="button" aria-expanded="false" aria-controls="studyHubAIChatPanel">💬 Chat</button>
 </div>
-<section class="ai-chat-panel" id="studyHubAIChatPanel" aria-label="Chat dengan Syar" hidden>
- <div class="ai-chat-head">
-  <span><strong>Syar · StudyHub</strong><small>Bertanya apa-apa atau borak santai.</small></span>
-  <button id="studyHubAICloseChat" type="button" aria-label="Tutup chat">Tutup ✕</button>
- </div>
- <div class="ai-chat-progress" id="studyHubAIChatStatus" role="status" aria-live="polite">Sedia untuk berbual.</div>
- <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite"></div>
- <form class="ai-chat-form" id="studyHubAITextForm">
-  <input id="studyHubAITextInput" type="text" maxlength="1000" autocomplete="off" placeholder="Taip mesej kepada Syar..." aria-label="Mesej kepada Syar">
-  <button id="studyHubAISendChat" type="button">Hantar</button>
- </form>
-</section>
+
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
 </main>
@@ -1712,21 +1700,8 @@ function studyHubSYARHandleTextSend(event) {
     event.stopPropagation();
   }
   studyHubAIChatPanel.hidden = false;
-  studyHubAIOpenChat.setAttribute("aria-expanded","true");
-  const message = studyHubAITextInput.value.trim();
-  if (!message) return;
-  studyHubAITextInput.value = "";
-  studyHubSYARSendMessage(message);
-}
-studyHubAITextForm.addEventListener("submit",studyHubSYARHandleTextSend);
-document.getElementById("studyHubAISendChat").addEventListener("click",studyHubSYARHandleTextSend);
-// Tamat STUDYHUB SYAR TEXT CHAT
-
-studyHubAIStatusText.textContent = "Syar sedia membantu anda.";
-
-
-/* KEMAS KINI AUTOMATIK STUDYHUB — semakan berkala tanpa refresh seluruh halaman. */
-
-</script>
-</body></html>
-
+  studyHubAIOpenChat.setAttribute("aria-expanded","trdocument.getElementById("studyHubMascot").addEventListener("click",() => {
+  // Bot kekal sebagai maskot; tekan untuk memainkan sapaan suara Syar.
+  studyHubAIStatus.click();
+});
+// Chat teks telah dibuang; maskot dan sapaan suara dikekalkan.
