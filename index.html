@@ -367,12 +367,16 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 body.ai-speaking .syar-mouth-open{opacity:1;animation:syarTalkMouth .34s ease-in-out infinite alternate}
 body.ai-speaking .syar-mouth-closed{opacity:0}
 body.ai-speaking .syar-eyes{animation:syarTalkEyes 1.8s ease-in-out infinite}
+body.ai-speaking .syar-happy-eyes{animation:syarHappyFace 2.4s ease-in-out infinite}
+body.ai-speaking .studyhub-mascot-avatar{animation:syarTalkBounce .62s ease-in-out infinite alternate}
 body.ai-thinking .studyhub-mascot-avatar{animation:syarThink 1s ease-in-out infinite alternate}
 body.ai-listening .studyhub-mascot-avatar{animation:syarListen 1.1s ease-in-out infinite}
 @keyframes syarMascotFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1.5deg)}}
 @keyframes syarBlink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.08)}}
 @keyframes syarTalkMouth{from{transform:scaleY(.55)}to{transform:scaleY(1.15)}}
 @keyframes syarTalkEyes{0%,100%{transform:translateY(0)}50%{transform:translateY(1.5px)}}
+@keyframes syarHappyFace{0%,34%,100%{opacity:0}42%,66%{opacity:1}}
+@keyframes syarTalkBounce{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-4px) rotate(1deg)}}
 @keyframes syarThink{from{transform:rotate(-3deg)}to{transform:rotate(3deg) translateY(-3px)}}
 @keyframes syarListen{from{transform:rotate(0)}to{transform:rotate(5deg) translateY(-3px)}}
 @media(max-width:520px){
@@ -620,6 +624,9 @@ body.ai-listening .studyhub-mascot-avatar{animation:syarListen 1.1s ease-in-out 
     <ellipse cx="50" cy="75" rx="6" ry="9" fill="#75452f"/><ellipse cx="95" cy="75" rx="6" ry="9" fill="#75452f"/>
     <ellipse cx="51" cy="76" rx="3" ry="5" fill="#171522"/><ellipse cx="96" cy="76" rx="3" ry="5" fill="#171522"/>
     <circle cx="53" cy="70" r="2.5" fill="#fff"/><circle cx="98" cy="70" r="2.5" fill="#fff"/>
+   </g>
+   <g class="syar-happy-eyes" fill="none" stroke="#35232a" stroke-width="3.5" stroke-linecap="round">
+    <path d="M39 74 Q48 63 57 74"/><path d="M84 74 Q94 63 103 74"/>
    </g>
    <path d="M33 87 Q42 91 50 87M91 87Q99 91 107 86" stroke="#ef8f91" stroke-width="3" stroke-linecap="round" opacity=".55"/>
    <path d="M64 88 Q70 91 75 88" fill="none" stroke="#bd7a68" stroke-width="1.8" stroke-linecap="round"/>
