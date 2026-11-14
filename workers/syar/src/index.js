@@ -125,7 +125,8 @@ export default {
       const result = await env.AI.run(env.AI_MODEL || "@cf/google/gemma-4-26b-a4b-it", {
         messages: [{ role: "system", content: SYAR_SYSTEM_PROMPT }, ...messages],
         max_tokens: 384,
-        temperature: 0.65
+        temperature: 0.65,
+        chat_template_kwargs: { enable_thinking: false }
       });
       const reply = typeof result?.response === "string" ? result.response.trim() : "";
       if (!reply) return json({ error: "Syar belum dapat menjawab. Cuba lagi sebentar." }, 502, cors);
