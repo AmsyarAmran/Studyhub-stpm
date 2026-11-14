@@ -1225,7 +1225,7 @@ async function checkStudentRegistration(){
     showStudentSession(row.approved ? "Akaun diluluskan" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Admin StudyHub perlu meluluskan nama paparan anda sebelum anda boleh menjawab kuiz.");
     updateStudentProfile(row);
     updateStudentQuizAccess();
-    if(studentApproved){ await loadStudentQuizSets(); await loadLeaderboardSets(); }
+    if(studentApproved){ studyHubSYARQueueDashboardWelcome(); await loadStudentQuizSets(); await loadLeaderboardSets(); }
   }else{
     studentApproved = false;
     updateStudentQuizAccess();
@@ -1485,34 +1485,25 @@ function studyHubSYARWelcomeMessage() {
     ? "Assalamualaikum " + name + "! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!"
     : "Assalamualaikum! Selamat datang ke StudyHub. Saya Syar, sedia membantu awak. Semoga berjaya belajar hari ini!";
 }
-studyHubAIOpenChat.addEventListener("click",() => {
-  studyHubAIChatPanel.hidden = false;
-  studyHubAIOpenChat.setAttribute("aria-expanded","true");
-  studyHubAITextInput.focus();
-});
-
-// Ucapan dashboard: cuba automatik selepas halaman dibuka.
-(function studyHubSYARDashboardWelcome() {
-  const welcomeSessionKey = "studyhub_syar_dashboard_welcome_played_v2";
-  let started = false;
-  let attempted = false;
-
+function studyHubSYARQueueDashboardWelcome() {
+  // Ucapan hanya untuk pelajar yang telah log masuk dan diluluskan.
+  if (!studentAccessToken || !studentApproved || !("speechSynthesis" in window) ||
+      !("SpeechSynthesisUtterance" in window)) return;
+  const key = "studyhub_syar_dashboard_welcome_played_v3";
+  if (sessionStorage.getItem(key)) return;
+  let finished = false;
   function cleanup() {
-    window.removeEventListener("pointerdown",tryWelcome);
-    window.removeEventListener("keydown",tryWelcome);
-    window.removeEventListener("touchstart",tryWelcome);
-    window.speechSynthesis.removeEventListener("voiceschanged",tryWelcome);
+    window.removeEventListener("pointerdown", attempt);
+    window.removeEventListener("keydown", attempt);
+    window.speechSynthesis.removeEventListener("voiceschanged", attempt);
   }
-
-  function tryWelcome() {
-    if (started || sessionStorage.getItem(welcomeSessionKey)) {
+  function attempt() {
+    if (finished || sessionStorage.getItem(key) || !studentAccessToken || !studentApproved) {
       cleanup();
       return;
     }
     const voices = window.speechSynthesis.getVoices();
-    if (!voices.length || attempted) return;
-
-    attempted = true;
+    if (!voices.length) return;
     const utterance = new SpeechSynthesisUtterance(studyHubSYARWelcomeMessage());
     utterance.lang = "ms-MY";
     utterance.rate = 1;
@@ -1521,23 +1512,25 @@ studyHubAIOpenChat.addEventListener("click",() => {
     const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
     if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
     utterance.onstart = () => {
-      started = true;
-      sessionStorage.setItem(welcomeSessionKey,"1");
+      finished = true;
+      sessionStorage.setItem(key, "1");
       cleanup();
     };
-    utterance.onerror = () => { attempted = false; };
+    utterance.onerror = () => { window.speechSynthesis.cancel(); };
     window.speechSynthesis.speak(utterance);
-    window.setTimeout(() => { if (!started) attempted = false; },1600);
   }
+  window.addEventListener("pointerdown", attempt);
+  window.addEventListener("keydown", attempt);
+  window.speechSynthesis.addEventListener("voiceschanged", attempt);
+  attempt();
+}
+studyHubAIOpenChat.addEventListener("click",() => {
+  studyHubAIChatPanel.hidden = false;
+  studyHubAIOpenChat.setAttribute("aria-expanded","true");
+  studyHubAITextInput.focus();
+});
 
-  if (!sessionStorage.getItem(welcomeSessionKey)) {
-    window.addEventListener("pointerdown",tryWelcome);
-    window.addEventListener("keydown",tryWelcome);
-    window.addEventListener("touchstart",tryWelcome,{passive:true});
-    window.speechSynthesis.addEventListener("voiceschanged",tryWelcome);
-    window.addEventListener("load",() => window.setTimeout(tryWelcome,900),{once:true});
-  }
-})();
+// Ucapan dashboard akan dijadualkan hanya selepas status log masuk disahkan.
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
