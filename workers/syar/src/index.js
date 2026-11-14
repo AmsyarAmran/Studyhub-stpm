@@ -52,11 +52,11 @@ export default {
         return json({ error: "Tetapan notifikasi belum lengkap." }, 503, cors);
       }
       const authorization = request.headers.get("Authorization") || "";
-      const tokenMatch = authorization.match(/^Bearer\\s+(.+)$/i);
+      const tokenMatch = authorization.match(/^Bearer\s+(.+)$/i);
       if (!tokenMatch) return json({ error: "Sesi log masuk diperlukan." }, 401, cors);
       let user;
       try {
-        const authResponse = await fetch(env.SUPABASE_URL.replace(/\\/$/, "") + "/auth/v1/user", {
+        const authResponse = await fetch(env.SUPABASE_URL.replace(/\/$/, "") + "/auth/v1/user", {
           headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
           signal: AbortSignal.timeout(8000)
         });
@@ -68,7 +68,7 @@ export default {
       }
 
       try {
-        const pendingUrl = env.SUPABASE_URL.replace(/\\/$/, "") +
+        const pendingUrl = env.SUPABASE_URL.replace(/\/$/, "") +
           "/rest/v1/studyhub_students?select=approved&user_id=eq." + encodeURIComponent(user.id) + "&limit=1";
         const pendingResponse = await fetch(pendingUrl, {
           headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
@@ -112,7 +112,7 @@ export default {
             include_aliases: { external_id: ["studyhub-admin"] },
             headings: { en: "StudyHub: Permohonan baharu", ms: "StudyHub: Permohonan baharu" },
             contents: { en: "A new account is waiting for approval.", ms: "Ada permohonan akaun baharu yang menunggu kelulusan." },
-            url: "https://amsyar-amran.github.io/Studyhub-stpm/"
+            url: "https://amsyaramran.github.io/Studyhub-stpm/"
           }),
           signal: AbortSignal.timeout(10000)
         });
