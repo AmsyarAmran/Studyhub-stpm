@@ -1634,11 +1634,13 @@ function studyHubAISpeakGreeting() {
 studyHubAISpeakGreeting();
 studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 
-// Syar menyapa apabila pelajar tidak aktif selama 15 saat.
-const STUDYHUB_SYAR_IDLE_DELAY = 15 * 1000;
+// Syar menyapa apabila pelajar tidak aktif selama 20 saat.
+const STUDYHUB_SYAR_IDLE_DELAY = 20 * 1000;
 let studyHubSYARIdleTimer = null;
 let studyHubSYARIdleUtterance = null;
 let studyHubSYARIdleCycle = 0;
+let studyHubSYARIdleTimerToken = 0;
+let studyHubSYARLastIdleMessage = "";
 
 function studyHubSYARGetMealGreeting() {
   const messages = [
@@ -1653,13 +1655,21 @@ function studyHubSYARGetMealGreeting() {
     "Ingat, man jadda wajada. Teruskan usaha!",
     "Cuba tengok bank soalan. Mungkin ada latihan menarik untuk awak!"
   ];
-  return messages[Math.floor(Math.random() * messages.length)];
+  const choices = messages.filter(message => message !== studyHubSYARLastIdleMessage);
+  const selected = choices[Math.floor(Math.random() * choices.length)];
+  studyHubSYARLastIdleMessage = selected;
+  return selected;
 }
 
 function studyHubSYARScheduleNextIdlePrompt(cycle) {
   window.clearTimeout(studyHubSYARIdleTimer);
+  const timerToken = ++studyHubSYARIdleTimerToken;
   if (!document.hidden && cycle === studyHubSYARIdleCycle) {
-    studyHubSYARIdleTimer = window.setTimeout(() => studyHubSYARSpeakWhenIdle(cycle), STUDYHUB_SYAR_IDLE_DELAY);
+    studyHubSYARIdleTimer = window.setTimeout(() => {
+      if (timerToken !== studyHubSYARIdleTimerToken || cycle !== studyHubSYARIdleCycle) return;
+      studyHubSYARIdleTimer = null;
+      studyHubSYARSpeakWhenIdle(cycle);
+    }, STUDYHUB_SYAR_IDLE_DELAY);
   }
 }
 
@@ -1696,6 +1706,8 @@ function studyHubSYARSpeakWhenIdle(cycle = studyHubSYARIdleCycle) {
 
 function studyHubSYARResetIdleTimer(resetCycle = true) {
   window.clearTimeout(studyHubSYARIdleTimer);
+  studyHubSYARIdleTimer = null;
+  studyHubSYARIdleTimerToken++;
   if (resetCycle) studyHubSYARIdleCycle++;
   const previousUtterance = studyHubSYARIdleUtterance;
   studyHubSYARIdleUtterance = null;
@@ -1709,7 +1721,7 @@ function studyHubSYARResetIdleTimer(resetCycle = true) {
   }
 }
 
-// Kiraan 15 saat berulang selagi pelajar kekal pada menu yang sama.
+// Kiraan 20 saat berulang selagi pelajar kekal pada menu yang sama.
 let studyHubSYARHiddenAt = null;
 function studyHubSYARHandleVisibilityChange() {
   if (document.hidden) {
@@ -1739,7 +1751,7 @@ function studyHubSYARHandleVisibilityChange() {
 document.addEventListener("visibilitychange", studyHubSYARHandleVisibilityChange);
 studyHubSYARResetIdleTimer(false);
 window.addEventListener("studyhub:navigation", event => {
-  // Menu baharu memulakan kitaran 15 saat yang baharu.
+  // Menu baharu memulakan kitaran 20 saat yang baharu.
   studyHubSYARResetIdleTimer(true);
   const title = event.detail?.title;
   if (!title) return;
