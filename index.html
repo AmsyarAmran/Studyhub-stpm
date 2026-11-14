@@ -1381,6 +1381,7 @@ studyHubAILoadButton?.addEventListener("click", async () => {
         studyHubAIProgress.textContent = message;
         studyHubAIStatusText.textContent = "Memuatkan model AI...";
       },
+      engineConfig: { context_window_size: 2048 },
       logLevel: "WARN"
     });
     studyHubAIProgress.textContent = "Model berjaya dimuatkan. Awak boleh mula bertanya.";
@@ -1407,7 +1408,7 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
   studyHubAIInput.value = "";
   studyHubAIAddMessage("user", prompt);
   studyHubAIHistory.push({ role: "user", content: prompt });
-  studyHubAIHistory = [studyHubAIHistory[0], ...studyHubAIHistory.slice(1).slice(-8)];
+  studyHubAIHistory = [studyHubAIHistory[0], ...studyHubAIHistory.slice(1).slice(-4)];
   studyHubAIIsBusy = true;
   studyHubAISend.disabled = true;
   studyHubAIStatusText.textContent = "AI sedang berfikir...";
@@ -1415,8 +1416,8 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
   try {
     const result = await studyHubAIEngine.chat.completions.create({
       messages: studyHubAIHistory,
-      temperature: 0.65,
-      max_tokens: 240
+      temperature: 0.55,
+      max_tokens: 128
     });
     const answer = result?.choices?.[0]?.message?.content?.trim() || "Maaf, saya belum dapat menghasilkan jawapan.";
     studyHubAIHistory.push({ role: "assistant", content: answer });
