@@ -1373,8 +1373,8 @@ function studyHubAISpeakGreeting() {
 studyHubAISpeakGreeting();
 studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 
-// Syar menyapa dengan lebih mesra apabila pelajar tidak aktif selama 30 saat.
-const STUDYHUB_SYAR_IDLE_DELAY = 20 * 1000;
+// Syar menyapa apabila pelajar tidak aktif selama 15 saat.
+const STUDYHUB_SYAR_IDLE_DELAY = 15 * 1000;
 let studyHubSYARIdleTimer = null;
 let studyHubSYARIdleUtterance = null;
 let studyHubSYARIdleCycle = 0;
