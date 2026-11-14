@@ -1233,7 +1233,7 @@ async function loadStudentAttemptStatus(){
   return new Set((await response.json()).map(x=>Number(x.set_number)));
 }
 async function loadStudentQuiz(){
-  if(!studentAccessToken || !studentApproved){document.getElementById("studentQuizStatus").textContent="Akaun yang telah diluluskan diperlukan.";return;}
+  if(!studentAccessToken || !studentApproved){document.getElementById("studentQuizStatus").textContent="Log masuk diperlukan untuk menjawab kuiz.";return;}
   const subject=document.getElementById("studentQuizSubject").value;
   const setNumber=Number(document.getElementById("studentQuizSet").value);
   if(!Number.isInteger(setNumber)||setNumber<1)return;
@@ -1378,7 +1378,7 @@ async function checkStudentRegistration(){
     const row = rows[0];
     studentDisplayName = row.display_name || "Pelajar";
     studentApproved = !!row.approved;
-    showStudentSession(row.approved ? "Akaun diluluskan" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Admin StudyHub perlu meluluskan nama paparan anda sebelum anda boleh menjawab kuiz.");
+    showStudentSession(row.approved ? "Akaun aktif" : "Pendaftaran sedang menunggu kelulusan",row.approved ? "Selamat datang, "+row.display_name+"." : "Akaun ini masih menunggu semakan pentadbir.");
     updateStudentProfile(row);
     updateStudentQuizAccess();
     if(studentApproved){ studyHubSYARQueueDashboardWelcome(); await loadStudentQuizSets(); await loadLeaderboardSets(); }
@@ -1407,7 +1407,7 @@ studentForm.addEventListener("submit",async event=>{
   studentMessage.textContent="";
   try{
     if(studentAuthMode==="register"){
-      const registration=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({user_id:studentUserId,display_name:displayName,consent_public:true,approved:false})});
+      const registration=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({user_id:studentUserId,display_name:displayName,consent_public:true,approved:true})});
       if(!registration.ok)throw new Error("Pendaftaran gagal dihantar. Pastikan akaun belum mempunyai permohonan.");
       await checkStudentRegistration();await loadStudents();return;
     }
@@ -1425,7 +1425,7 @@ studentForm.addEventListener("submit",async event=>{
       if(!studentUserId)throw new Error("ID akaun tidak diterima. Cuba log masuk semula.");
       const registration=await fetch(SUPABASE_URL+"/rest/v1/studyhub_students",{
         method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"return=minimal"},
-        body:JSON.stringify({user_id:studentUserId,display_name:displayName,consent_public:true,approved:false})
+        body:JSON.stringify({user_id:studentUserId,display_name:displayName,consent_public:true,approved:true})
       });
       if(!registration.ok)throw new Error("Akaun berjaya dibuat, tetapi pendaftaran nama belum dihantar. Log masuk semula dan hubungi admin jika masalah berterusan.");
       studentForm.reset();await checkStudentRegistration();await loadStudents();
@@ -1524,7 +1524,7 @@ function updateProfileCompletionStatus(){
 function updateStudentProfile(row){
  if(row?.display_name)studentDisplayName=row.display_name;
  document.getElementById("profileDisplayName").textContent=studentDisplayName||"Pelajar";
- document.getElementById("profileStatus").textContent=studentApproved?"Ahli StudyHub · Akaun diluluskan":"Ahli StudyHub · Menunggu kelulusan";
+ document.getElementById("profileStatus").textContent=studentApproved?"Ahli StudyHub":"Ahli StudyHub · Menunggu kelulusan";
  renderStudentProfile();
 }
 async function loadOwnStudentLocation(){
@@ -1548,7 +1548,7 @@ function setLocationShareBusy(busy){
 async function shareStudentLocation(){
  const status=document.getElementById("profileLocationStatus");
  if(!studentAccessToken||!studentUserId){status.textContent="Sila log masuk sebagai pelajar dahulu.";return;}
- if(!studentApproved){status.textContent="Akaun perlu diluluskan sebelum berkongsi lokasi.";return;}
+ if(!studentApproved){status.textContent="Log masuk diperlukan sebelum berkongsi lokasi.";return;}
  if(!document.getElementById("profileLocationConsent").checked){status.textContent="Sila tandakan persetujuan atau pilih tidak bersetuju.";return;}
  const profileData=readStudentProfile();profileData.locationChoice="yes";saveStudentProfile(profileData);updateProfileCompletionStatus();
  if(!navigator.geolocation){status.textContent="Pelayar ini tidak menyokong lokasi. Pilihan persetujuan telah direkodkan; anda masih boleh meneruskan.";return;}
