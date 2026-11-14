@@ -139,19 +139,22 @@ export default {
 export class DailyQuota {
   constructor(state) {
     this.state = state;
+    this.sql = state.storage.sql;
+    this.sql.exec("CREATE TABLE IF NOT EXISTS daily_usage (day TEXT PRIMARY KEY, count INTEGER NOT NULL)");
   }
 
   async fetch(request) {
     if (request.method !== "POST") return new Response("Not found", { status: 404 });
     const day = new Date().toISOString().slice(0, 10);
-    const key = "usage:" + day;
-    const count = await this.state.storage.transaction(async (txn) => {
-      const current = (await txn.get(key)) || 0;
-      if (current >= DAILY_LIMIT) return current;
-      const next = current + 1;
-      await txn.put(key, next);
-      return next;
-    });
-    return json({ allowed: count <= DAILY_LIMIT, remaining: Math.max(0, DAILY_LIMIT - count) });
+    const inserted = this.sql.exec(
+      "INSERT INTO daily_usage (day, count) VALUES (?, 1) ON CONFLICT(day) DO UPDATE SET count = count + 1 WHERE count < ? RETURNING count",
+      day,
+      DAILY_LIMIT
+    ).toArray()[0];
+
+    if (!inserted) {
+      return json({ allowed: false, remaining: 0 });
+    }
+    return json({ allowed: true, remaining: Math.max(0, DAILY_LIMIT - inserted.count) });
   }
 }
