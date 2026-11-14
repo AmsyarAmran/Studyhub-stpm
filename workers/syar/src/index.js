@@ -48,7 +48,7 @@ export default {
     if (url.pathname !== "/chat") return json({ error: "Laluan tidak ditemui." }, 404, cors);
     if (request.method !== "POST") return json({ error: "Kaedah tidak dibenarkan." }, 405, cors);
     if (!allowedOrigin || origin !== allowedOrigin) return json({ error: "Origin tidak dibenarkan." }, 403, cors);
-    if (!env.SUPABASE_URL || !env.SUPABASE_API_KEY || !env.AI || !env.DAILY_QUOTA) {
+    if (!env.SUPABASE_URL || !env.SUPABASE_API_KEY || !env.AI) {
       return json({ error: "Backend belum dikonfigurasi sepenuhnya." }, 503, cors);
     }
 
@@ -118,14 +118,6 @@ export default {
     }
 
     try {
-      const quotaId = env.DAILY_QUOTA.idFromName(user.id);
-      const quotaStub = env.DAILY_QUOTA.get(quotaId);
-      const quotaResponse = await quotaStub.fetch("https://quota.internal/consume", { method: "POST" });
-      const quota = await quotaResponse.json();
-      if (!quota.allowed) {
-        return json({ error: "Kuota harian Syar sudah digunakan. Cuba lagi esok.", remaining: 0 }, 429, cors);
-      }
-
       const result = await env.AI.run(env.AI_MODEL || "@cf/google/gemma-4-26b-a4b-it", {
         messages: [{ role: "system", content: SYAR_SYSTEM_PROMPT }, ...messages],
         max_tokens: 384,
@@ -138,7 +130,7 @@ export default {
           ? result.response.trim()
           : "";
       if (!reply) return json({ error: "Syar belum dapat menjawab. Cuba lagi sebentar." }, 502, cors);
-      return json({ reply, remaining: quota.remaining }, 200, cors);
+      return json({ reply }, 200, cors);
     } catch {
       return json({ error: "Perkhidmatan Syar mengalami gangguan. Cuba lagi sebentar." }, 502, cors);
     }
