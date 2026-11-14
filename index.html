@@ -1424,7 +1424,7 @@ async function loadOwnStudentLocation(){
   if(!response.ok)throw new Error("Status perkongsian belum dapat disemak.");
   const rows=await response.json();
   const active=rows.length>0;
-  status.textContent=active?"Lokasi anda sedang dikongsi dengan admin sahaja. Dikemas kini: "+new Date(rows[0].updated_at||rows[0].consented_at).toLocaleString("ms-MY")+".":"Anda belum berkongsi lokasi.";
+  status.textContent=active?"Lokasi anda selamat dari pelajar lain. Dikemas kini: "+new Date(rows[0].updated_at||rows[0].consented_at).toLocaleString("ms-MY")+".":"Anda belum berkongsi lokasi.";
   revoke.hidden=!active;
  }catch(error){status.textContent=error.message+" Pastikan tetapan pangkalan data telah dipasang." ;revoke.hidden=true;}
 }
