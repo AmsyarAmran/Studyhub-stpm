@@ -1477,6 +1477,7 @@ function studyHubSYARStartRecognition(mode) {
   if (studyHubSYARRecognitionStarting) return;
   studyHubSYARListeningMode = mode;
   studyHubSYARPendingSpeech = "";
+  studyHubSYARResetIdleTimer(true);
   const recognition = new studyHubSpeechRecognition();
   studyHubSYARRecognition = recognition;
   recognition.lang = "ms-MY";
@@ -1664,6 +1665,10 @@ function studyHubSYARScheduleNextIdlePrompt(cycle) {
 
 function studyHubSYARSpeakWhenIdle(cycle = studyHubSYARIdleCycle) {
   if (document.hidden || cycle !== studyHubSYARIdleCycle) return;
+  if (typeof studyHubSYARListeningMode !== "undefined" && studyHubSYARListeningMode !== "off") {
+    studyHubSYARScheduleNextIdlePrompt(cycle);
+    return;
+  }
   const message = studyHubSYARGetMealGreeting();
   studyHubAIStatusText.textContent = "Syar: " + message;
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
