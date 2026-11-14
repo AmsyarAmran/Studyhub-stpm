@@ -515,7 +515,7 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
- <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Syar sedia apabila anda log masuk</small></span>
+ <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Assalamualaikum! Selamat datang ke StudyHub.</small></span>
  <button id="studyHubAILoad" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Mula berbual</button>
  <button id="studyHubAIChatToggle" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Buka chat</button>
 </div>
@@ -527,7 +527,7 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
  <p class="ai-chat-note">Syar menggunakan AI awan. Mesej dihantar kepada penyedia AI untuk diproses dan sejarah chat tidak disimpan oleh StudyHub. Jangan masukkan kata laluan atau maklumat peribadi sensitif. Buat masa ini, chat tersedia untuk pelajar yang log masuk dan akaunnya telah diluluskan.</p>
  <div class="ai-chat-progress" id="studyHubAIProgress" role="status">Belum dimulakan.</div>
  <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite">
-  <div class="ai-chat-welcome">Hai! Syar di sini. Tekan “Mula berbual” dan pastikan akaun StudyHub anda sudah diluluskan. 😄</div>
+  <div class="ai-chat-welcome">Assalamualaikum! Selamat datang ke StudyHub. Saya Syar, pembantu pembelajaran anda. Semoga hari ini penuh ilmu dan kejayaan. 😄</div>
  </div>
  <form class="ai-chat-form" id="studyHubAIForm">
   <textarea id="studyHubAIInput" rows="2" maxlength="1200" placeholder="Tulis soalan di sini..." aria-label="Soalan untuk StudyHub AI"></textarea>
@@ -1427,6 +1427,33 @@ function studyHubAIAddMessage(role, text) {
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
 
+const STUDYHUB_SYAR_GREETING = "Assalamualaikum! Selamat datang ke StudyHub. Saya Syar. Semoga urusan pembelajaran anda dipermudahkan. Ada apa-apa yang saya boleh bantu hari ini?";
+
+function studyHubAISpeakGreeting() {
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    studyHubAIStatusText.textContent = "Selamat datang! Suara tidak disokong oleh pelayar ini.";
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const greeting = new SpeechSynthesisUtterance(STUDYHUB_SYAR_GREETING);
+  greeting.lang = "ms-MY";
+  greeting.rate = 0.95;
+  greeting.pitch = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const malayVoice = voices.find(voice => /^ms(-|_)/i.test(voice.lang));
+  if (malayVoice) greeting.voice = malayVoice;
+  greeting.onstart = () => {
+    studyHubAIStatusText.textContent = "Syar sedang menyapa anda...";
+  };
+  greeting.onend = () => {
+    studyHubAIStatusText.textContent = "Selamat datang! Syar sedia membantu.";
+  };
+  greeting.onerror = () => {
+    studyHubAIStatusText.textContent = "Selamat datang! Tekan Mula berbual untuk cuba suara Syar.";
+  };
+  window.speechSynthesis.speak(greeting);
+}
+
 function studyHubAISetAccessMessage() {
   if (!studentAccessToken) {
     studyHubAIStatusText.textContent = "Sila log masuk dahulu";
@@ -1453,11 +1480,15 @@ document.getElementById("studyHubAIChatClose")?.addEventListener("click", () => 
 studyHubAILoadButton?.addEventListener("click", () => {
   studyHubAIChat.hidden = false;
   studyHubAIChatToggle.textContent = "Tutup chat";
+  studyHubAISpeakGreeting();
   if (!studyHubAISetAccessMessage()) return;
-  studyHubAIStatusText.textContent = "Syar sedia digunakan";
   studyHubAIProgress.textContent = "Sambungan AI awan tersedia. Anda boleh mula berbual.";
   studyHubAIInput.focus();
 });
+
+// Sapa pelawat sebaik sahaja halaman StudyHub dibuka. Sesetengah pelayar
+// menyekat audio automatik; butang Mula berbual akan cuba memainkan sapaan sekali lagi.
+studyHubAISpeakGreeting();
 
 document.getElementById("studyHubAIForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
