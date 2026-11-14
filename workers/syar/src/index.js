@@ -56,13 +56,13 @@ export default {
     if (contentLength > MAX_BODY_BYTES) return json({ error: "Permintaan terlalu besar." }, 413, cors);
 
     const authorization = request.headers.get("Authorization") || "";
-    const tokenMatch = authorization.match(/^Bearer\\s+(.+)$/i);
+    const tokenMatch = authorization.match(/^Bearer\s+(.+)$/i);
     const guestId = request.headers.get("X-StudyHub-Guest") || "";
     let user = null;
 
     if (tokenMatch) {
       try {
-        const authResponse = await fetch(env.SUPABASE_URL.replace(/\\/$/, "") + "/auth/v1/user", {
+        const authResponse = await fetch(env.SUPABASE_URL.replace(/\/$/, "") + "/auth/v1/user", {
           headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
           signal: AbortSignal.timeout(8000)
         });
@@ -78,7 +78,7 @@ export default {
       }
 
       try {
-        const approvalUrl = env.SUPABASE_URL.replace(/\\/$/, "") +
+        const approvalUrl = env.SUPABASE_URL.replace(/\/$/, "") +
           "/rest/v1/studyhub_students?select=approved&user_id=eq." + encodeURIComponent(user.id) + "&limit=1";
         const approvalResponse = await fetch(approvalUrl, {
           headers: { "apikey": env.SUPABASE_API_KEY, "Authorization": "Bearer " + tokenMatch[1] },
