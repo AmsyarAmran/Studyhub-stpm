@@ -251,6 +251,13 @@ body.ai-speaking .ai-aura{
  box-shadow:0 10px 30px #02061766;backdrop-filter:blur(14px);
  pointer-events:auto;
 }
+.syar-mic-toggle{
+ flex:0 0 auto;border:1px solid #52658a;background:#263653;color:#eaf5ff;
+ border-radius:999px;padding:8px 11px;font-size:11px;font-weight:750;cursor:pointer;
+ transition:background .2s ease,border-color .2s ease,transform .2s ease;
+}
+.syar-mic-toggle[aria-pressed="true"]{background:#174c50;border-color:#4dc8b8;color:#d9fffa}
+.syar-mic-toggle:active{transform:scale(.96)}
 .studyhub-ai-status .ai-status-orb{
  width:10px;height:10px;border-radius:50%;background:#8b9ab8;flex:0 0 auto;
  box-shadow:0 0 0 4px #8b9ab822;
@@ -541,18 +548,14 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
  <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Assalamualaikum, selamat datang!</small></span>
- <button class="syar-open-chat" id="studyHubAIOpenChat" type="button" aria-expanded="false">🎙️ Bercakap</button>
+ <button class="syar-mic-toggle" id="studyHubAIAlwaysOn" type="button" aria-pressed="false" aria-label="Hidupkan mikrofon Syar">🎙️ Mic Off</button>
 </div>
-<section class="ai-chat-panel" id="studyHubAIChatPanel" aria-label="Perbualan suara dengan Syar" hidden>
- <div class="ai-chat-head"><span><strong>Syar · Pembantu StudyHub</strong><small>Berbual menggunakan suara</small></span><button id="studyHubAICloseChat" type="button" aria-label="Tutup panel">Tutup ✕</button></div>
- <p class="ai-chat-note">Push to Talk: tekan dan tahan ketika bercakap. Always On: hidupkan untuk mendengar sehingga dimatikan. Gunakan hanya apabila awak bersedia.</p>
- <div class="ai-chat-progress" id="studyHubAIChatStatus" role="status" aria-live="polite">Pilih salah satu mod mikrofon untuk bermula.</div>
- <div class="ai-chat-messages" id="studyHubAIMessages"><div class="ai-chat-welcome">Assalamualaikum! Saya Syar. Apa yang boleh saya bantu?</div></div>
- <div class="ai-chat-controls">
-  <button id="studyHubAIPushToTalk" type="button">🎙️ Push to Talk</button>
-  <button id="studyHubAIAlwaysOn" type="button" aria-pressed="false">Always On: Off</button>
- </div>
- <form class="ai-chat-form" id="studyHubAITextForm"><input id="studyHubAITextInput" type="text" maxlength="1000" placeholder="Atau taip mesej kepada Syar..." autocomplete="off"><button type="submit">Hantar</button></form>
+<section class="ai-chat-panel" id="studyHubAIChatPanel" aria-label="Kawalan suara Syar" hidden>
+ <button id="studyHubAICloseChat" type="button" hidden>Tutup</button>
+ <div class="ai-chat-progress" id="studyHubAIChatStatus" role="status" aria-live="polite">Mikrofon dimatikan.</div>
+ <div class="ai-chat-messages" id="studyHubAIMessages" hidden></div>
+ <button id="studyHubAIPushToTalk" type="button" hidden>Push to Talk</button>
+ <form class="ai-chat-form" id="studyHubAITextForm" hidden><input id="studyHubAITextInput" type="text" maxlength="1000" autocomplete="off"><button type="submit">Hantar</button></form>
 </section>
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
@@ -1395,6 +1398,7 @@ let studyHubSYARChatHistory = [];
 
 function studyHubSYARSetChatStatus(message) {
   if (studyHubAIChatStatus) studyHubAIChatStatus.textContent = message;
+  if (studyHubAIStatusText) studyHubAIStatusText.textContent = message;
 }
 function studyHubSYARAddChatMessage(role, message) {
   const bubble = document.createElement("div");
@@ -1410,8 +1414,9 @@ function studyHubSYARStopRecognition() {
   document.body.classList.remove("ai-listening");
   studyHubAIPushToTalk.classList.remove("active");
   studyHubAIAlwaysOn.classList.remove("active");
-  studyHubAIAlwaysOn.textContent = "Always On: Off";
+  studyHubAIAlwaysOn.textContent = "🎙️ Mic Off";
   studyHubAIAlwaysOn.setAttribute("aria-pressed","false");
+  studyHubAIAlwaysOn.setAttribute("aria-label","Hidupkan mikrofon Syar");
   try { if (studyHubSYARRecognition) studyHubSYARRecognition.stop(); } catch (error) {}
 }
 let studyHubSYARSpeakingReply = false;
@@ -1540,8 +1545,9 @@ function studyHubSYARStartRecognition(mode) {
     if (mode === "push") studyHubAIPushToTalk.classList.add("active");
     if (mode === "always") {
       studyHubAIAlwaysOn.classList.add("active");
-      studyHubAIAlwaysOn.textContent = "Matikan Always On";
+      studyHubAIAlwaysOn.textContent = "🎙️ Mic On";
       studyHubAIAlwaysOn.setAttribute("aria-pressed","true");
+      studyHubAIAlwaysOn.setAttribute("aria-label","Matikan mikrofon Syar");
     }
   };
   recognition.onresult = event => {
@@ -1603,13 +1609,6 @@ function studyHubSYARStartRecognition(mode) {
     studyHubSYARSetChatStatus("Tidak dapat mengaktifkan mikrofon. Cuba tekan semula.");
   }
 }
-studyHubAIOpenChat.addEventListener("click",event => {
-  event.stopPropagation();
-  const opening = studyHubAIChatPanel.hidden;
-  studyHubAIChatPanel.hidden = !opening;
-  studyHubAIOpenChat.setAttribute("aria-expanded",String(opening));
-  if (opening) studyHubSYARSetChatStatus(studyHubSpeechRecognition ? "Pilih Push to Talk atau Always On." : "Pengecaman suara tidak tersedia pada pelayar ini. Awak masih boleh menaip.");
-});
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubSYARStopRecognition();
   studyHubAIChatPanel.hidden = true;
