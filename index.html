@@ -488,7 +488,8 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
- <span><strong>StudyHub AI</strong><small id="studyHubAIStatusText">Sistem suara sedang disediakan</small></span>
+ <span><strong>StudyHub AI</strong><small id="studyHubAIStatusText">AI tempatan belum diuji</small></span>
+ <button id="studyHubAICheck" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Semak peranti</button>
 </div>
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
@@ -1284,6 +1285,32 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
     await loadAdminQuizQuestions();
   }else if(adminSession){clearStoredSession(ADMIN_SESSION_KEY);}
 })();
+
+// Semakan keserasian asas AI tempatan — tidak memuat turun model atau mengaktifkan mikrofon.
+document.getElementById("studyHubAICheck")?.addEventListener("click", async () => {
+  const button = document.getElementById("studyHubAICheck");
+  const status = document.getElementById("studyHubAIStatusText");
+  button.disabled = true;
+  button.textContent = "Memeriksa...";
+  status.textContent = "Menyemak sokongan WebGPU...";
+  try {
+    if (!navigator.gpu) {
+      status.textContent = "WebGPU tidak tersedia pada pelayar ini.";
+      return;
+    }
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) {
+      status.textContent = "Pelayar ada WebGPU, tetapi GPU tidak dapat digunakan.";
+      return;
+    }
+    status.textContent = "WebGPU tersedia. Model kecil perlu diuji dahulu.";
+  } catch (error) {
+    status.textContent = "Semakan gagal. Peranti mungkin tidak menyokong AI tempatan.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Semak semula";
+  }
+});
 
 </script>
 </body></html>
