@@ -715,6 +715,11 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
 
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{
  const pageId=b.dataset.page;
+ // Pelajar tidak boleh membuka Panel Admin; Syar akan memberi peringatan melalui suara.
+ if(pageId==='admin' && studentAccessToken && !adminAccessToken){
+  studyHubSYARSpeakReply("Emm, tak boleh. Hanya Syar yang boleh akses panel ni.");
+  return;
+ }
  const page=document.getElementById(pageId);
  if(!page)return;
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
