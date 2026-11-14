@@ -1460,7 +1460,12 @@ window.addEventListener("studyhub:navigation", event => {
   const title = event.detail?.title;
   if (!title) return;
   if (event.detail?.page === "profile" && !event.detail?.studentLoggedIn) {
-    const message = "Awak perlu log masuk terlebih dahulu. Jika awak log masuk, awak juga boleh akses kuiz dan menjadi sebahagian daripada StudyHub.";
+    const messages = [
+      "Awak perlu log masuk terlebih dahulu. Jika awak log masuk, awak juga boleh akses kuiz dan menjadi sebahagian daripada StudyHub.",
+      "Dah log masuk ke?",
+      "Daftar di bahagian Direktori Pelajar."
+    ];
+    const message = messages[Math.floor(Math.random() * messages.length)];
     studyHubAIStatusText.textContent = "Syar: " + message;
     if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
     window.speechSynthesis.cancel();
