@@ -117,6 +117,15 @@ a:hover{color:white!important;text-decoration:underline}
 @media(max-width:900px){.nav-dashboard{margin-bottom:9px;padding-bottom:8px}.nav-dashboard button{font-size:0;text-align:center;padding:10px 4px}.nav-dashboard button b{font-size:17px;width:auto}}
 
 
+
+/* Perkongsian lokasi: paparan terhad kepada pelajar sendiri dan panel admin. */
+.profile-location-card{margin-top:16px;border:1px solid #42617d;background:linear-gradient(145deg,#14263a,#121d31);border-radius:16px;padding:17px}
+.profile-location-card h3{margin:0 0 8px;font-size:15px}.profile-location-card p{font-size:13px;color:var(--muted)}
+.profile-location-consent{display:flex;gap:9px;align-items:flex-start;margin:12px 0;color:#dce7fb;font-size:13px}
+.profile-location-consent input{margin-top:3px;accent-color:var(--cyan)}
+.location-status{font-size:12px;color:#9de7d3;margin:10px 0 0}
+.location-admin-table a{color:#7ddce8;text-decoration:none}
+
 /* STUDYHUB UI REFRESH — modern dark academic interface */
 :root{
  --bg:#080d1b;--panel:#111a2e;--panel2:#18243d;--text:#f5f7ff;
@@ -483,6 +492,14 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
     <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div></div>
     <div class="profile-option"><h3>Pilihan border avatar</h3><div class="border-choices"><button class="border-choice selected" type="button" data-border="#b8a5ff">Ungu</button><button class="border-choice" type="button" data-border="#53d8e8">Biru</button><button class="border-choice" type="button" data-border="#f472b6">Pink</button><button class="border-choice" type="button" data-border="#fbbf24">Emas</button><button class="border-choice" type="button" data-border="#ffffff">Putih</button></div></div>
    </div>
+   <div class="profile-location-card" id="profileLocationCard">
+    <h3>📍 Perkongsian lokasi dengan admin</h3>
+    <p>Jika anda bersetuju, StudyHub akan mengambil lokasi semasa sekali sahaja apabila anda menekan butang di bawah dan memilih <strong>Allow</strong>. Lokasi ini boleh dilihat oleh admin sahaja, bukan pelajar lain. Tiada penjejakan latar belakang.</p>
+    <label class="profile-location-consent"><input id="profileLocationConsent" type="checkbox"> <span>Saya bersetuju berkongsi lokasi semasa saya dengan admin StudyHub.</span></label>
+    <button class="btn" id="profileShareLocation" type="button" disabled>Benarkan lokasi</button>
+    <button class="btn" id="profileRevokeLocation" type="button" hidden style="background:#8b405b;margin-left:6px">Tarik balik persetujuan</button>
+    <p class="location-status" id="profileLocationStatus" role="status" aria-live="polite">Anda belum berkongsi lokasi.</p>
+   </div>
    <p class="profile-save-note" id="profileSaveNote" role="status">Perubahan profil disimpan pada peranti ini.</p>
   </div>
  </div>
@@ -552,6 +569,8 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   </div>
   <div class="filters"><select id="pendingSort" aria-label="Susun permohonan"><option value="oldest">Paling awal</option><option value="newest">Paling baharu</option></select></div>
   <div class="tablewrap"><table style="min-width:520px"><thead><tr><th>Nama paparan</th><th>Tarikh daftar</th><th>Tindakan</th></tr></thead><tbody id="pendingStudentRows"></tbody></table><div id="pendingEmpty" class="empty" hidden>Tiada permohonan yang menunggu kelulusan.</div></div>
+  <div class="sectionhead"><div><h2>Lokasi pelajar yang bersetuju</h2><div class="muted">Maklumat ini hanya dipaparkan kepada pentadbir yang telah log masuk.</div></div><button class="btn" id="adminLocationRefresh" type="button">Muat semula lokasi</button></div>
+  <div class="tablewrap"><table class="location-admin-table" style="min-width:650px"><thead><tr><th>Nama pelajar</th><th>Koordinat</th><th>Ketepatan</th><th>Masa dikongsi</th><th>Peta</th></tr></thead><tbody id="adminLocationRows"><tr><td colspan="5" class="muted">Memuatkan...</td></tr></tbody></table><div id="adminLocationEmpty" class="empty" hidden>Belum ada pelajar yang bersetuju berkongsi lokasi.</div><p id="adminLocationMessage" class="muted" style="padding:0 14px;font-size:12px" role="status"></p></div>
   <div class="sectionhead"><div><h2>Pengurusan Kuiz Interaktif</h2><div class="muted">Tambah soalan objektif untuk PAM dan BM.</div></div><span class="tag">PAM · BM</span></div>
   <div class="card" style="margin-bottom:16px">
    <h3 id="quizEditorTitle" style="margin-top:0">Tambah soalan baharu</h3>
@@ -1090,6 +1109,7 @@ adminLoginForm.addEventListener("submit",async event=>{
     adminLoginCard.hidden=true;adminDashboard.hidden=false;
     document.getElementById("adminPassword").value="";
     await loadPendingStudents();
+    await loadAdminStudentLocations();
     await loadAdminQuizQuestions();
   }catch(error){adminLoginMessage.textContent=error.message||"Ralat log masuk.";}
   finally{button.disabled=false;button.textContent="Log masuk";}
@@ -1116,10 +1136,11 @@ pendingRows.addEventListener("click",async event=>{
 });
 document.getElementById("adminLogoutButton").addEventListener("click",async()=>{
   if(adminAccessToken){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:adminHeaders()});}catch(error){}}
-  adminAccessToken=null;clearStoredSession(ADMIN_SESSION_KEY);adminDashboard.hidden=true;adminLoginCard.hidden=false;
+  adminAccessToken=null;clearStoredSession(ADMIN_SESSION_KEY);adminDashboard.hidden=true;adminLoginCard.hidden=false;document.getElementById("adminLocationRows").innerHTML="";
   adminLoginMessage.textContent="Anda telah log keluar.";
 });
 
+document.getElementById("adminLocationRefresh").addEventListener("click",loadAdminStudentLocations);
 document.getElementById("studentSearch").addEventListener("input",renderStudents);
 
 
@@ -1394,6 +1415,80 @@ function updateStudentProfile(row){
  document.getElementById("profileStatus").textContent=studentApproved?"Ahli StudyHub · Akaun diluluskan":"Ahli StudyHub · Menunggu kelulusan";
  renderStudentProfile();
 }
+async function loadOwnStudentLocation(){
+ const status=document.getElementById("profileLocationStatus");
+ const revoke=document.getElementById("profileRevokeLocation");
+ if(!studentAccessToken||!studentUserId){status.textContent="Log masuk diperlukan.";revoke.hidden=true;return;}
+ try{
+  const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_student_locations?select=user_id,consented_at,updated_at&user_id=eq."+encodeURIComponent(studentUserId)+"&limit=1",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}});
+  if(!response.ok)throw new Error("Status perkongsian belum dapat disemak.");
+  const rows=await response.json();
+  const active=rows.length>0;
+  status.textContent=active?"Lokasi anda sedang dikongsi dengan admin sahaja. Dikemas kini: "+new Date(rows[0].updated_at||rows[0].consented_at).toLocaleString("ms-MY")+".":"Anda belum berkongsi lokasi.";
+  revoke.hidden=!active;
+ }catch(error){status.textContent=error.message+" Pastikan tetapan pangkalan data telah dipasang." ;revoke.hidden=true;}
+}
+function setLocationShareBusy(busy){
+ const button=document.getElementById("profileShareLocation");
+ button.disabled=busy||!document.getElementById("profileLocationConsent").checked;
+ button.textContent=busy?"Mendapatkan lokasi...":"Benarkan lokasi";
+}
+async function shareStudentLocation(){
+ const status=document.getElementById("profileLocationStatus");
+ if(!studentAccessToken||!studentUserId){status.textContent="Sila log masuk sebagai pelajar dahulu.";return;}
+ if(!studentApproved){status.textContent="Akaun perlu diluluskan sebelum berkongsi lokasi.";return;}
+ if(!document.getElementById("profileLocationConsent").checked){status.textContent="Tandakan persetujuan dahulu.";return;}
+ if(!navigator.geolocation){status.textContent="Pelayar ini tidak menyokong perkongsian lokasi.";return;}
+ setLocationShareBusy(true);status.textContent="Pelayar akan meminta kebenaran lokasi. Pilih Allow jika anda bersetuju.";
+ navigator.geolocation.getCurrentPosition(async position=>{
+  try{
+   const now=new Date().toISOString();
+   const payload={user_id:studentUserId,display_name:studentDisplayName||"Pelajar",latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy_m:Math.round(position.coords.accuracy||0),consented:true,consented_at:now,updated_at:now};
+   const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_student_locations?on_conflict=user_id",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(payload)});
+   if(!response.ok){const detail=await response.text();throw new Error(detail||"Lokasi tidak berjaya disimpan.");}
+   status.textContent="Lokasi berjaya dikongsi dengan admin sahaja.";
+   document.getElementById("profileLocationConsent").checked=false;
+   await loadOwnStudentLocation();
+  }catch(error){status.textContent="Tidak berjaya berkongsi lokasi. "+(error.message||"Sila cuba lagi.");}
+  finally{setLocationShareBusy(false);}
+ },error=>{
+  const message=error.code===1?"Kebenaran lokasi ditolak. Tiada lokasi dikongsi.":error.code===2?"Lokasi tidak dapat dikenal pasti.":error.code===3?"Permintaan lokasi tamat masa.":"Lokasi tidak dapat diperoleh.";
+  status.textContent=message;setLocationShareBusy(false);
+ },{enableHighAccuracy:false,timeout:15000,maximumAge:0});
+}
+async function revokeStudentLocation(){
+ const status=document.getElementById("profileLocationStatus");
+ if(!studentAccessToken||!studentUserId)return;
+ const button=document.getElementById("profileRevokeLocation");button.disabled=true;
+ try{
+  const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_student_locations?user_id=eq."+encodeURIComponent(studentUserId),{method:"DELETE",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken,"Prefer":"return=minimal"}});
+  if(!response.ok)throw new Error("Persetujuan belum dapat ditarik balik.");
+  status.textContent="Persetujuan ditarik balik. Lokasi anda tidak lagi tersedia kepada admin.";
+  await loadOwnStudentLocation();
+ }catch(error){status.textContent=error.message||"Tidak berjaya menarik balik persetujuan." ;}
+ finally{button.disabled=false;}
+}
+async function loadAdminStudentLocations(){
+ const rowsNode=document.getElementById("adminLocationRows");
+ const empty=document.getElementById("adminLocationEmpty");
+ const message=document.getElementById("adminLocationMessage");
+ if(!adminAccessToken){rowsNode.innerHTML='<tr><td colspan="5" class="muted">Log masuk admin diperlukan.</td></tr>';return;}
+ rowsNode.innerHTML='<tr><td colspan="5" class="muted">Memuatkan lokasi yang dikongsi...</td></tr>';empty.hidden=true;message.textContent="";
+ try{
+  const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_student_locations?select=user_id,display_name,latitude,longitude,accuracy_m,consented_at,updated_at&order=updated_at.desc",{headers:adminHeaders()});
+  if(!response.ok)throw new Error("Tidak dapat membaca lokasi. Semak jadual dan polisi RLS Supabase.");
+  const locations=await response.json();
+  rowsNode.innerHTML=locations.map(item=>{
+   const lat=Number(item.latitude),lon=Number(item.longitude);
+   if(!Number.isFinite(lat)||!Number.isFinite(lon))return "";
+   const maps="https://www.google.com/maps?q="+encodeURIComponent(lat+","+lon);
+   const when=new Date(item.updated_at||item.consented_at).toLocaleString("ms-MY");
+   return '<tr><td>'+escapeStudentText(item.display_name||"Pelajar")+'</td><td>'+lat.toFixed(5)+", "+lon.toFixed(5)+'</td><td>'+escapeStudentText(String(item.accuracy_m||"—"))+' m</td><td>'+escapeStudentText(when)+'</td><td><a href="'+maps+'" target="_blank" rel="noopener noreferrer">Buka peta</a></td></tr>';
+  }).join("");
+  empty.hidden=locations.length!==0;
+  if(!locations.length)rowsNode.innerHTML="";
+ }catch(error){rowsNode.innerHTML='<tr><td colspan="5" class="muted">Lokasi belum dapat dimuatkan.</td></tr>';message.textContent=error.message||"Ralat memuatkan lokasi." ;}
+}
 function renderStudentProfile(){
  const signedIn=!!studentAccessToken;
  document.getElementById("profileLoginNotice").hidden=signedIn;
@@ -1402,7 +1497,11 @@ function renderStudentProfile(){
  document.getElementById("profileDisplayName").textContent=studentDisplayName||"Pelajar";
  document.getElementById("profileStatus").textContent=studentApproved?"Ahli StudyHub · Akaun diluluskan":"Ahli StudyHub · Menunggu kelulusan";
  applyStudentProfile();
+ loadOwnStudentLocation();
 }
+document.getElementById("profileLocationConsent").addEventListener("change",()=>setLocationShareBusy(false));
+document.getElementById("profileShareLocation").addEventListener("click",shareStudentLocation);
+document.getElementById("profileRevokeLocation").addEventListener("click",revokeStudentLocation);
 document.getElementById("profileGoDirectory").addEventListener("click",()=>document.querySelector('[data-page="students"]').click());
 document.getElementById("profileAvatarChoices").addEventListener("click",event=>{
  const button=event.target.closest("[data-avatar]");if(!button)return;
@@ -1457,6 +1556,7 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
     adminAccessToken=adminSession.access_token;
     adminLoginCard.hidden=true;adminDashboard.hidden=false;
     await loadPendingStudents();
+    await loadAdminStudentLocations();
     await loadAdminQuizQuestions();
   }else if(adminSession){clearStoredSession(ADMIN_SESSION_KEY);}
   // Pelawat tanpa sesi log masuk juga boleh mendengar ucapan alu-aluan.
