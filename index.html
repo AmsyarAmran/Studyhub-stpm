@@ -1425,9 +1425,13 @@ function studyHubSYARAddChatMessage(role, message) {
   studyHubAIMessages.appendChild(bubble);
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
+function studyHubSYARSetSpeaking(isSpeaking) {
+  document.body.classList.toggle("ai-speaking", !!isSpeaking);
+}
 function studyHubSYARSpeakReply(message) {
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   window.speechSynthesis.cancel();
+  studyHubSYARSetSpeaking(false);
   const utterance = new SpeechSynthesisUtterance(message);
   utterance.lang = "ms-MY";
   utterance.rate = 1;
@@ -1436,7 +1440,12 @@ function studyHubSYARSpeakReply(message) {
   const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
   const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
   if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
-  utterance.onend = () => studyHubSYARScheduleIdlePrompt();
+  utterance.onstart = () => studyHubSYARSetSpeaking(true);
+  utterance.onend = () => {
+    studyHubSYARSetSpeaking(false);
+    studyHubSYARScheduleIdlePrompt();
+  };
+  utterance.onerror = () => studyHubSYARSetSpeaking(false);
   window.speechSynthesis.speak(utterance);
 }
 async function studyHubSYARSendMessage(rawMessage) {
@@ -1578,12 +1587,17 @@ function studyHubSYARScheduleIdlePrompt() {
     const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
     const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
     if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
-    utterance.onstart = () => { studyHubAIStatusText.textContent = "Syar menyapa kamu..."; };
+    utterance.onstart = () => {
+      studyHubSYARSetSpeaking(true);
+      studyHubAIStatusText.textContent = "Syar sedang bercakap...";
+    };
     utterance.onend = () => {
+      studyHubSYARSetSpeaking(false);
       studyHubAIStatusText.textContent = "Syar akan menyapa selepas 15 saat tanpa pertukaran menu.";
       studyHubSYARScheduleIdlePrompt();
     };
     utterance.onerror = () => {
+      studyHubSYARSetSpeaking(false);
       studyHubAIStatusText.textContent = "Syar sedia membantu kamu.";
       studyHubSYARScheduleIdlePrompt();
     };
@@ -1608,6 +1622,7 @@ function studyHubSYARQueueDashboardWelcome() {
     if (event.target.closest("#studyHubAIOpenChat")) return;
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       window.speechSynthesis.cancel();
+      studyHubSYARSetSpeaking(false);
       studyHubSYARIdleVoiceEnabled = false;
       clearTimeout(studyHubSYARIdleTimer);
       studyHubAIStatusText.textContent = "Sapaan automatik dihentikan. Tekan untuk aktifkan semula.";
@@ -1622,12 +1637,17 @@ function studyHubSYARQueueDashboardWelcome() {
     const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
     const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
     if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
-    utterance.onstart = () => { studyHubAIStatusText.textContent = "Syar sedang menyampaikan ucapan alu-aluan..."; };
+    utterance.onstart = () => {
+      studyHubSYARSetSpeaking(true);
+      studyHubAIStatusText.textContent = "Syar sedang menyampaikan ucapan alu-aluan...";
+    };
     utterance.onend = () => {
+      studyHubSYARSetSpeaking(false);
       studyHubAIStatusText.textContent = "Syar akan menyapa selepas 15 saat tanpa pertukaran menu.";
       studyHubSYARScheduleIdlePrompt();
     };
     utterance.onerror = () => {
+      studyHubSYARSetSpeaking(false);
       studyHubAIStatusText.textContent = "Syar sedia membantu kamu.";
       studyHubSYARScheduleIdlePrompt();
     };
