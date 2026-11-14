@@ -1436,6 +1436,22 @@ studyHubSYARResetIdleTimer();
 window.addEventListener("studyhub:navigation", event => {
   const title = event.detail?.title;
   if (!title) return;
+  if (event.detail?.page === "admin") {
+    const message = "Hehe, panel ni hanya Syar je bole akses~";
+    studyHubAIStatusText.textContent = "Syar: " + message;
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "ms-MY";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+    if (malayVoice) utterance.voice = malayVoice;
+    utterance.onstart = () => document.body.classList.add("ai-speaking");
+    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
+    window.speechSynthesis.speak(utterance);
+    return;
+  }
   if (event.detail?.page === "profile" && !event.detail?.studentLoggedIn) {
     const messages = [
       "Awak perlu log masuk terlebih dahulu. Jika awak log masuk, awak juga boleh akses kuiz dan menjadi sebahagian daripada StudyHub.",
