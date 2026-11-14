@@ -1449,7 +1449,22 @@ loadStudents();
 
 /* Profil pelajar — tetapan visual disimpan pada peranti semasa. */
 function profileStorageKey(){return "studyhub_profile_"+(studentUserId||"guest");}
-function readStudentProfile(){try{return JSON.parse(localStorage.getItem(profileStorageKey())||"{}");}catch(error){return {};}}
+function readStudentProfile(){
+ try{
+  const key=profileStorageKey();
+  let raw=localStorage.getItem(key);
+  // Migrasi tetapan yang mungkin dibuat sebelum log masuk daripada profil tetamu.
+  // Data profil akaun sedia ada tidak akan ditimpa.
+  if(!raw && studentUserId){
+   const guestRaw=localStorage.getItem("studyhub_profile_guest");
+   if(guestRaw){
+    localStorage.setItem(key,guestRaw);
+    raw=guestRaw;
+   }
+  }
+  return JSON.parse(raw||"{}");
+ }catch(error){return {};}
+}
 function saveStudentProfile(data){try{localStorage.setItem(profileStorageKey(),JSON.stringify(data));document.getElementById("profileSaveNote").textContent="Perubahan profil berjaya disimpan pada peranti ini.";}catch(error){document.getElementById("profileSaveNote").textContent="Storan peranti penuh. Cuba gambar yang lebih kecil.";}}
 let profileBackgroundObjectUrl="";
 let profileBackgroundLoadToken=0;
