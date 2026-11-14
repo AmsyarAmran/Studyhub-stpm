@@ -1365,6 +1365,50 @@ function studyHubAISpeakGreeting() {
 studyHubAISpeakGreeting();
 studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 
+// Syar menyapa semula apabila pelajar tidak melakukan aktiviti selama 60 saat.
+const STUDYHUB_SYAR_IDLE_DELAY = 60 * 1000;
+let studyHubSYARIdleTimer = null;
+let studyHubSYARIdleUtterance = null;
+
+function studyHubSYARSpeakWhenIdle() {
+  if (document.hidden) return;
+  const message = "Masih di sini? Jom teruskan pembelajaran. Pilih mana-mana bahagian StudyHub apabila anda sudah bersedia.";
+  studyHubAIStatusText.textContent = "Syar: " + message;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(message);
+  studyHubSYARIdleUtterance = utterance;
+  utterance.lang = "ms-MY";
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+  if (malayVoice) utterance.voice = malayVoice;
+  utterance.onstart = () => document.body.classList.add("ai-speaking");
+  utterance.onend = utterance.onerror = () => {
+    document.body.classList.remove("ai-speaking");
+    if (studyHubSYARIdleUtterance === utterance) studyHubSYARIdleUtterance = null;
+  };
+  window.speechSynthesis.speak(utterance);
+}
+
+function studyHubSYARResetIdleTimer() {
+  window.clearTimeout(studyHubSYARIdleTimer);
+  if (studyHubSYARIdleUtterance && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    studyHubSYARIdleUtterance = null;
+    document.body.classList.remove("ai-speaking");
+  }
+  if (!document.hidden) {
+    studyHubSYARIdleTimer = window.setTimeout(studyHubSYARSpeakWhenIdle, STUDYHUB_SYAR_IDLE_DELAY);
+  }
+}
+
+["pointerdown", "keydown", "touchstart", "scroll", "input", "change"].forEach(eventName => {
+  document.addEventListener(eventName, studyHubSYARResetIdleTimer, { passive: true });
+});
+document.addEventListener("visibilitychange", studyHubSYARResetIdleTimer);
+studyHubSYARResetIdleTimer();
+
 let studyHubAILastNavigationPhrase = -1;
 
 function studyHubAISpeakNavigation(pageTitle) {
