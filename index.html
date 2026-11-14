@@ -515,7 +515,7 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite" title="Tekan untuk ulang ucapan Syar" style="cursor:pointer">
  <span class="ai-status-orb" aria-hidden="true"></span>
- <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Assalamualaikum! Selamat datang ke StudyHub.</small></span>
+ <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Assalamualaikum, selamat datang!</small></span>
 </div>
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
@@ -1332,15 +1332,23 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
 // STUDYHUB SYAR — ucapan alu-aluan teks dan suara sahaja.
 const studyHubAIStatus = document.getElementById("studyHubAIStatus");
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
-const STUDYHUB_SYAR_GREETING = "Assalamualaikum! Selamat datang ke StudyHub. Saya Syar. Semoga urusan pembelajaran anda dipermudahkan. Ada apa-apa yang boleh saya bantu?";
+function studyHubSYARGetWelcomeGreeting() {
+  const hour = new Date().getHours();
+  let timeGreeting = "malam";
+  if (hour >= 5 && hour < 11) timeGreeting = "pagi";
+  else if (hour >= 11 && hour < 15) timeGreeting = "tengah hari";
+  else if (hour >= 15 && hour < 19) timeGreeting = "petang";
+  return "Assalamualaikum, selamat " + timeGreeting + ", saya doakan awak berjaya dunia akhirat.";
+}
 
 function studyHubAISpeakGreeting() {
+  const welcomeMessage = studyHubSYARGetWelcomeGreeting();
+  studyHubAIStatusText.textContent = welcomeMessage;
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    studyHubAIStatusText.textContent = "Selamat datang ke StudyHub!";
     return;
   }
   window.speechSynthesis.cancel();
-  const greeting = new SpeechSynthesisUtterance(STUDYHUB_SYAR_GREETING);
+  const greeting = new SpeechSynthesisUtterance(welcomeMessage);
   greeting.lang = "ms-MY";
   greeting.rate = 0.95;
   greeting.pitch = 1;
