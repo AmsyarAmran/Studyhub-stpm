@@ -1416,9 +1416,24 @@ function studyHubSYARStopRecognition() {
 }
 let studyHubSYARSpeakingReply = false;
 let studyHubSYARPausedForReply = false;
+let studyHubSYARCurrentSpokenText = "";
+
+function studyHubSYARIsLikelyVoiceEcho(transcript) {
+  const normalize = value => String(value || "").toLocaleLowerCase("ms-MY")
+    .replace(/[^\\p{L}\\p{N}\\s]/gu," ").replace(/\\s+/g," ").trim();
+  const heard = normalize(transcript);
+  const spoken = normalize(studyHubSYARCurrentSpokenText);
+  if (!heard || !spoken) return false;
+  if (spoken.includes(heard) || heard.includes(spoken)) return true;
+  const heardWords = heard.split(" ").filter(word => word.length > 2);
+  if (heardWords.length < 3) return false;
+  const spokenWords = new Set(spoken.split(" "));
+  const matched = heardWords.filter(word => spokenWords.has(word)).length;
+  return matched / heardWords.length >= 0.75;
+}
 
 function studyHubSYARResumeAlwaysOn() {
-  if (studyHubSYARListeningMode !== "always" || document.hidden || studyHubSYARChatBusy || studyHubSYARSpeakingReply) return;
+  if (studyHubSYARListeningMode !== "always" || document.hidden || studyHubSYARChatBusy) return;
   studyHubSYARPausedForReply = false;
   if (!studyHubSYARRecognitionStarting) {
     window.setTimeout(() => {
@@ -1442,10 +1457,18 @@ function studyHubSYARSpeakReply(message) {
   const voice = studyHubSYARGetPreferredVoice();
   if (voice) speech.voice = voice;
   studyHubSYARSpeakingReply = true;
-  speech.onstart = () => document.body.classList.add("ai-speaking");
+  studyHubSYARCurrentSpokenText = message;
+  speech.onstart = () => {
+    document.body.classList.add("ai-speaking");
+    // Pastikan Always On terus mendengar supaya pelajar boleh mencelah.
+    if (studyHubSYARListeningMode === "always" && !studyHubSYARRecognitionStarting && !studyHubSYARRecognition) {
+      studyHubSYARResumeAlwaysOn();
+    }
+  };
   speech.onend = speech.onerror = () => {
     document.body.classList.remove("ai-speaking");
     studyHubSYARSpeakingReply = false;
+    studyHubSYARCurrentSpokenText = "";
     studyHubSYARResumeAlwaysOn();
   };
   window.speechSynthesis.speak(speech);
@@ -1487,8 +1510,8 @@ async function studyHubSYARSendMessage(rawMessage) {
     studyHubSYARChatBusy = false;
     document.body.classList.remove("ai-thinking");
     sendButton.disabled = false;
-    // Sambung semula Always On selepas ralat rangkaian; jika ada jawapan suara, ia akan disambung selepas audio tamat.
-    if (!studyHubSYARSpeakingReply) studyHubSYARResumeAlwaysOn();
+    // Pastikan Always On kekal aktif ketika Syar bercakap atau selepas ralat rangkaian.
+    studyHubSYARResumeAlwaysOn();
   }
 }
 function studyHubSYARStartRecognition(mode) {
@@ -1528,9 +1551,15 @@ function studyHubSYARStartRecognition(mode) {
       if (!transcript) continue;
       if (mode === "always") {
         if (studyHubSYARChatBusy || studyHubSYARPausedForReply) continue;
-        // Hentikan pendengaran sebelum menghantar soalan supaya suara Syar tidak dirakam semula.
-        studyHubSYARPausedForReply = true;
-        try { recognition.stop(); } catch (error) {}
+        // Abaikan audio Syar yang tertangkap semula oleh mikrofon, tetapi benarkan suara pelajar mencelah.
+        if (studyHubSYARSpeakingReply && studyHubSYARIsLikelyVoiceEcho(transcript)) continue;
+        if (studyHubSYARSpeakingReply) {
+          window.speechSynthesis.cancel();
+          document.body.classList.remove("ai-speaking");
+          studyHubSYARSpeakingReply = false;
+          studyHubSYARCurrentSpokenText = "";
+          studyHubSYARSetChatStatus("Syar berhenti bercakap — mendengar suara awak...");
+        }
         studyHubSYARSendMessage(transcript);
       } else {
         studyHubSYARPendingSpeech += (studyHubSYARPendingSpeech ? " " : "") + transcript;
@@ -1558,10 +1587,10 @@ function studyHubSYARStartRecognition(mode) {
     }
     if (mode === "always" && studyHubSYARListeningMode === "always") {
       document.body.classList.remove("ai-listening");
-      // Jika dihentikan untuk menunggu jawapan Syar, jangan hidupkan mikrofon semula dahulu.
       if (studyHubSYARPausedForReply) return;
+      // Kekalkan pendengaran ketika Syar bercakap supaya pelajar boleh mencelah.
       window.setTimeout(() => {
-        if (studyHubSYARListeningMode === "always" && !document.hidden && !studyHubSYARChatBusy && !studyHubSYARSpeakingReply && !studyHubSYARRecognitionStarting) {
+        if (studyHubSYARListeningMode === "always" && !document.hidden && !studyHubSYARChatBusy && !studyHubSYARRecognitionStarting) {
           studyHubSYARStartRecognition("always");
         }
       },700);
