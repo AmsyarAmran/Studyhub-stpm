@@ -891,6 +891,9 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
  const pageName=b.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\s*/, '');
  document.getElementById('pageTitle').textContent=pageName;
  if(pageId==='profile')renderStudentProfile();
+ // Muat semula kandungan apabila halaman akademik dibuka supaya data terkini dipaparkan tanpa refresh pelayar.
+ if(pageId==='bank')render();
+ if(pageId==='quiz')loadStudentQuizSets();
  // Jambatan peristiwa untuk StudyHub AI mengumumkan navigasi selepas enjin suara disambungkan.
  window.dispatchEvent(new CustomEvent('studyhub:navigation',{detail:{page:pageId,title:pageName,studentLoggedIn:!!studentAccessToken}}));
 }));
