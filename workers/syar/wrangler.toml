@@ -1,4 +1,4 @@
-name = "studyhub-syar"
+name = "studyhub-sya"
 main = "src/index.js"
 compatibility_date = "2026-11-14"
 workers_dev = true
