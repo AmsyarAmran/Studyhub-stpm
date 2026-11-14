@@ -1430,7 +1430,7 @@ document.getElementById("studyHubAIForm")?.addEventListener("submit", async (eve
     }
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      if (response.status === 401) throw new Error("Sesi log masuk telah tamat. Sila log masuk semula.");
+      if (response.status === 401) throw new Error(result.error || "Sesi log masuk telah tamat. Sila log masuk semula.");
       if (response.status === 403) throw new Error(result.error || "Akaun anda belum mendapat kelulusan untuk menggunakan Syar.");
       if (response.status === 429) throw new Error("Kuota harian Syar sudah digunakan. Cuba lagi esok.");
       throw new Error(result.error || ("Server Syar memulangkan ralat HTTP " + response.status + ". Sila cuba lagi."));
