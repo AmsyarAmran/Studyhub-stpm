@@ -1332,6 +1332,30 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
 // STUDYHUB SYAR — ucapan alu-aluan teks dan suara sahaja.
 const studyHubAIStatus = document.getElementById("studyHubAIStatus");
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
+function studyHubSYARSpeak(message, emotion = "warm") {
+  studyHubAIStatusText.textContent = "Syar: " + message;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  window.speechSynthesis.cancel();
+  const settings = {
+    warm: { rate: 0.94, pitch: 1.04 },
+    happy: { rate: 1.02, pitch: 1.12 },
+    caring: { rate: 0.90, pitch: 1.06 },
+    excited: { rate: 1.05, pitch: 1.15 },
+    playful: { rate: 1.00, pitch: 1.10 },
+    calm: { rate: 0.90, pitch: 0.98 }
+  };
+  const tone = settings[emotion] || settings.warm;
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.lang = "ms-MY";
+  utterance.rate = tone.rate;
+  utterance.pitch = tone.pitch;
+  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+  if (malayVoice) utterance.voice = malayVoice;
+  utterance.onstart = () => document.body.classList.add("ai-speaking");
+  utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
+  window.speechSynthesis.speak(utterance);
+}
+
 function studyHubSYARGetWelcomeGreeting() {
   const hour = new Date().getHours();
   let timeGreeting = "malam";
@@ -1342,31 +1366,7 @@ function studyHubSYARGetWelcomeGreeting() {
 }
 
 function studyHubAISpeakGreeting() {
-  const welcomeMessage = studyHubSYARGetWelcomeGreeting();
-  studyHubAIStatusText.textContent = welcomeMessage;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const greeting = new SpeechSynthesisUtterance(welcomeMessage);
-  greeting.lang = "ms-MY";
-  greeting.rate = 0.95;
-  greeting.pitch = 1;
-  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) greeting.voice = malayVoice;
-  greeting.onstart = () => {
-    studyHubAIStatusText.textContent = "Syar sedang menyapa anda...";
-    document.body.classList.add("ai-speaking");
-  };
-  greeting.onend = () => {
-    studyHubAIStatusText.textContent = "Selamat datang! Syar sedia membantu.";
-    document.body.classList.remove("ai-speaking");
-  };
-  greeting.onerror = () => {
-    studyHubAIStatusText.textContent = "Selamat datang! Tekan panel Syar untuk cuba suara.";
-    document.body.classList.remove("ai-speaking");
-  };
-  window.speechSynthesis.speak(greeting);
+  studyHubSYARSpeak(studyHubSYARGetWelcomeGreeting(), "warm");
 }
 
 // Sapaan automatik; tekan panel Syar untuk mengulang jika audio disekat pelayar.
@@ -1380,16 +1380,16 @@ let studyHubSYARIdleUtterance = null;
 
 function studyHubSYARGetMealGreeting() {
   const messages = [
-    "Hai, masih ada di sini? Jom sambung belajar bila awak dah bersedia!",
-    "Dah lama kita senyap. Nak teruskan ulang kaji?",
-    "Jangan lupa, usaha kecil hari ini boleh membawa kejayaan besar nanti!",
-    "Awak tengah fikir soalan ke? Ambil masa, tak perlu tergesa-gesa.",
-    "Jom pilih satu subjek dan buat sedikit latihan!",
-    "Rehat sekejap pun tak mengapa. Pastikan awak selesa sebelum sambung belajar.",
-    "StudyHub sentiasa di sini untuk bantu perjalanan pembelajaran awak!",
-    "Dah bersedia nak belajar semula? Kita mula perlahan-lahan.",
-    "Ingat, man jadda wajada. Teruskan usaha!",
-    "Cuba tengok bank soalan. Mungkin ada latihan menarik untuk awak!"
+    "Hai, awak masih di sini? Syar harap semuanya baik-baik sahaja. Bila dah bersedia, jom sambung belajar!",
+    "Lama kita tak bergerak. Tak mengapa, ambil masa awak. Kita sambung sedikit demi sedikit, ya.",
+    "Syar percaya usaha kecil hari ini boleh menjadi kejayaan besar pada masa depan!",
+    "Sedang fikir jawapan? Tenang, awak tak perlu tergesa-gesa. Cuba lagi, Syar yakin awak boleh!",
+    "Jom! Pilih satu subjek. Syar teruja nak teman awak ulang kaji hari ini!",
+    "Penat? Berehat sekejap pun tak mengapa. Keselesaan awak juga penting.",
+    "Selamat kembali! Seronok melihat awak terus berusaha bersama StudyHub.",
+    "Tak perlu sempurna setiap masa. Yang penting, awak terus mencuba.",
+    "Ingat, man jadda wajada. Syar doakan setiap usaha awak dipermudahkan!",
+    "Ada latihan menarik dalam bank soalan. Jom cuba satu, pasti awak boleh!"
   ];
   return messages[Math.floor(Math.random() * messages.length)];
 }
@@ -1397,22 +1397,8 @@ function studyHubSYARGetMealGreeting() {
 function studyHubSYARSpeakWhenIdle() {
   if (document.hidden) return;
   const message = studyHubSYARGetMealGreeting();
-  studyHubAIStatusText.textContent = "Syar: " + message;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(message);
-  studyHubSYARIdleUtterance = utterance;
-  utterance.lang = "ms-MY";
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) utterance.voice = malayVoice;
-  utterance.onstart = () => document.body.classList.add("ai-speaking");
-  utterance.onend = utterance.onerror = () => {
-    document.body.classList.remove("ai-speaking");
-    if (studyHubSYARIdleUtterance === utterance) studyHubSYARIdleUtterance = null;
-  };
-  window.speechSynthesis.speak(utterance);
+  const caring = ["Berehat sekejap", "Tenang", "Tak perlu sempurna", "ambil masa"];
+  studyHubSYARSpeak(message, caring.some(phrase => message.includes(phrase)) ? "caring" : "happy");
 }
 
 function studyHubSYARResetIdleTimer() {
@@ -1437,31 +1423,19 @@ let studyHubAILastNavigationPhrase = -1;
 
 function studyHubAISpeakNavigation(pageTitle) {
   const phrases = [
-    "Ini bahagian " + pageTitle + ".",
-    "Jom kita tengok " + pageTitle + ".",
-    "Awak cuba tengok bahagian " + pageTitle + " ni.",
-    "Sekarang kita berada di " + pageTitle + ".",
-    "Nah, ini dia " + pageTitle + ".",
-    "Mari kita lihat apa yang ada dalam " + pageTitle + "."
+    "Jom, kita terokai bahagian " + pageTitle + " bersama-sama!",
+    "Nah, ini dia " + pageTitle + "! Harap-harap ada sesuatu yang bermanfaat untuk awak.",
+    "Sekarang kita berada di " + pageTitle + ". Semoga urusan awak dipermudahkan!",
+    "Wah, awak dah sampai ke bahagian " + pageTitle + "!",
+    "Mari kita lihat apa yang menarik dalam " + pageTitle + ".",
+    "Ini bahagian " + pageTitle + ". Syar harap awak suka!"
   ];
   let phraseIndex = Math.floor(Math.random() * phrases.length);
   if (phrases.length > 1 && phraseIndex === studyHubAILastNavigationPhrase) {
     phraseIndex = (phraseIndex + 1 + Math.floor(Math.random() * (phrases.length - 1))) % phrases.length;
   }
   studyHubAILastNavigationPhrase = phraseIndex;
-  const announcement = phrases[phraseIndex];
-  studyHubAIStatusText.textContent = "Syar: " + announcement;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(announcement);
-  utterance.lang = "ms-MY";
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-  if (malayVoice) utterance.voice = malayVoice;
-  utterance.onstart = () => document.body.classList.add("ai-speaking");
-  utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-  window.speechSynthesis.speak(utterance);
+  studyHubSYARSpeak(phrases[phraseIndex], "happy");
 }
 
 window.addEventListener("studyhub:navigation", event => {
@@ -1469,23 +1443,12 @@ window.addEventListener("studyhub:navigation", event => {
   if (!title) return;
   if (event.detail?.page === "profile" && !event.detail?.studentLoggedIn) {
     const messages = [
-      "Awak perlu log masuk terlebih dahulu. Jika awak log masuk, awak juga boleh akses kuiz dan menjadi sebahagian daripada StudyHub.",
-      "Dah log masuk ke?",
-      "Daftar di bahagian Direktori Pelajar."
+      "Eh, awak belum log masuk lagi. Jom daftar atau log masuk dahulu supaya semua ciri StudyHub boleh digunakan!",
+      "Syar tunggu awak log masuk tau. Nanti bolehlah kita terokai lebih banyak kemudahan StudyHub.",
+      "Belum ada akaun? Jangan risau, awak boleh daftar melalui Direktori Pelajar.",
+      "Alamak, profil awak belum boleh dipaparkan. Cuba log masuk dahulu, ya!"
     ];
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
+    studyHubSYARSpeak(messages[Math.floor(Math.random() * messages.length)], "caring");
     return;
   }
   if (event.detail?.page === "profile" && event.detail?.studentLoggedIn) {
@@ -1493,66 +1456,42 @@ window.addEventListener("studyhub:navigation", event => {
     const congratulationsShown = localStorage.getItem(congratulationsKey) === "true";
     const messages = congratulationsShown
       ? [
-          "Tengok-tengoklah profil awak ni.",
-          "Apa kata awak ubah suai profil supaya menjadi lebih cantik?",
-          "Wah, profil awak dah sedia! Jom kemas kini kalau ada perubahan.",
+          "Tengok-tengoklah profil awak ni. Kemas dan lengkap, kan?",
+          "Apa kata awak ubah suai profil supaya lebih mencerminkan diri awak?",
+          "Wah, awak datang lagi! Jom pastikan maklumat profil sentiasa terkini.",
           "Jangan lupa singgah di StudyHub untuk teruskan ulang kaji.",
           "Teruskan usaha awak. Sedikit demi sedikit, lama-lama jadi bukit!",
-          "Semoga StudyHub membantu perjalanan pembelajaran awak.",
+          "Syar harap StudyHub dapat membantu perjalanan pembelajaran awak.",
           "Pastikan maklumat profil awak sentiasa betul dan terkini.",
-          "Dah bersedia untuk cabaran pembelajaran seterusnya?",
+          "Dah bersedia untuk cabaran pembelajaran seterusnya? Syar sokong usaha awak!",
           "Teruskan kumpul ilmu dan bina kejayaan awak!",
           "Gunakan peluang yang ada di StudyHub sebaik mungkin.",
-          "Hebat! Teruskan jadi pelajar yang aktif dan bersemangat.",
-          "Apa kata semak semula profil dan lihat maklumat awak?"
+          "Hebat! Teruskan jadi pelajar yang aktif dan bersemangat!",
+          "Apa kata semak semula profil dan lihat perkembangan awak?"
         ]
       : [
           "Tahniah, awak sudah menjadi sebahagian StudyHub.",
-          "Tengok-tengoklah profil awak ni.",
-          "Apa kata awak ubah suai profil supaya menjadi lebih cantik?",
-          "Wah, profil awak dah sedia! Jom kemas kini kalau ada perubahan.",
+          "Tengok-tengoklah profil awak ni. Kemas dan lengkap, kan?",
+          "Apa kata awak ubah suai profil supaya lebih mencerminkan diri awak?",
+          "Wah, awak dah berjaya jadi sebahagian komuniti StudyHub!",
           "Jangan lupa singgah di StudyHub untuk teruskan ulang kaji.",
           "Teruskan usaha awak. Sedikit demi sedikit, lama-lama jadi bukit!",
-          "Semoga StudyHub membantu perjalanan pembelajaran awak.",
+          "Syar harap StudyHub dapat membantu perjalanan pembelajaran awak.",
           "Pastikan maklumat profil awak sentiasa betul dan terkini.",
-          "Dah bersedia untuk cabaran pembelajaran seterusnya?",
+          "Dah bersedia untuk cabaran pembelajaran seterusnya? Syar sokong usaha awak!",
           "Teruskan kumpul ilmu dan bina kejayaan awak!",
           "Gunakan peluang yang ada di StudyHub sebaik mungkin.",
-          "Hebat! Teruskan jadi pelajar yang aktif dan bersemangat.",
-          "Apa kata semak semula profil dan lihat maklumat awak?"
+          "Hebat! Teruskan jadi pelajar yang aktif dan bersemangat!",
+          "Apa kata semak semula profil dan lihat perkembangan awak?"
         ];
     const message = messages[Math.floor(Math.random() * messages.length)];
-    if (message.startsWith("Tahniah,")) {
-      localStorage.setItem(congratulationsKey, "true");
-    }
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
+    if (message.startsWith("Tahniah,")) localStorage.setItem(congratulationsKey, "true");
+    const emotion = /^(Tahniah|Wah|Hebat)/.test(message) ? "happy" : "warm";
+    studyHubSYARSpeak(message, emotion);
     return;
   }
   if (event.detail?.page === "admin") {
-    const message = "Hehe, sini hanya Syar je bole akses~";
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
-    if (malayVoice) utterance.voice = malayVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
+    studyHubSYARSpeak("Hehe, bahagian ini khas untuk admin sahaja. Jangan tersalah masuk tau!", "playful");
     return;
   }
   studyHubAISpeakNavigation(title);
