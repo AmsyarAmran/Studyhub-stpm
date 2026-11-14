@@ -551,7 +551,6 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  <span class="ai-status-orb" aria-hidden="true"></span>
  <span><strong>Syar · StudyHub</strong><small id="studyHubAIStatusText">Assalamualaikum, selamat datang!</small></span>
  <button class="syar-open-chat" id="studyHubAIOpenChat" type="button" aria-expanded="false" aria-controls="studyHubAIChatPanel">💬 Chat</button>
- <button class="syar-mic-toggle" id="studyHubAIAlwaysOn" type="button" aria-pressed="false" aria-label="Hidupkan mikrofon Syar">🎙️ Mic Off</button>
 </div>
 <section class="ai-chat-panel" id="studyHubAIChatPanel" aria-label="Chat dengan Syar" hidden>
  <div class="ai-chat-head">
@@ -1380,28 +1379,16 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
 // STUDYHUB SYAR — ucapan alu-aluan dan chat teks/suara.
 const studyHubAIStatus = document.getElementById("studyHubAIStatus");
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
-function studyHubSYARGetPreferredVoice() {
-  const voices = window.speechSynthesis.getVoices();
-  const voicesInMalay = voices.filter(voice => /^ms(-|_)/i.test(voice.lang));
-  return voicesInMalay[0] || null;
-}
 
-// STUDYHUB SYAR VOICE CHAT
+// STUDYHUB SYAR TEXT CHAT
 const STUDYHUB_SYAR_CHAT_URL = "https://studyhub-sya.amsyar291008.workers.dev/chat";
 const studyHubAIChatPanel = document.getElementById("studyHubAIChatPanel");
 const studyHubAIChatStatus = document.getElementById("studyHubAIChatStatus");
 const studyHubAIMessages = document.getElementById("studyHubAIMessages");
 const studyHubAIOpenChat = document.getElementById("studyHubAIOpenChat");
-const studyHubAIPushToTalk = document.getElementById("studyHubAIPushToTalk");
-const studyHubAIAlwaysOn = document.getElementById("studyHubAIAlwaysOn");
 const studyHubAITextForm = document.getElementById("studyHubAITextForm");
 const studyHubAITextInput = document.getElementById("studyHubAITextInput");
-const studyHubSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-let studyHubSYARRecognition = null;
-let studyHubSYARListeningMode = "off";
-let studyHubSYARPendingSpeech = "";
 let studyHubSYARChatBusy = false;
-let studyHubSYARRecognitionStarting = false;
 let studyHubSYARChatHistory = [];
 
 function studyHubSYARSetChatStatus(message) {
@@ -1415,81 +1402,6 @@ function studyHubSYARAddChatMessage(role, message) {
   studyHubAIMessages.appendChild(bubble);
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
-function studyHubSYARStopRecognition() {
-  studyHubSYARListeningMode = "off";
-  studyHubSYARPausedForReply = false;
-  studyHubSYARRecognitionStarting = false;
-  document.body.classList.remove("ai-listening");
-  studyHubAIPushToTalk.classList.remove("active");
-  studyHubAIAlwaysOn.classList.remove("active");
-  studyHubAIAlwaysOn.textContent = "🎙️ Mic Off";
-  studyHubAIAlwaysOn.setAttribute("aria-pressed","false");
-  studyHubAIAlwaysOn.setAttribute("aria-label","Hidupkan mikrofon Syar");
-  try { if (studyHubSYARRecognition) studyHubSYARRecognition.stop(); } catch (error) {}
-}
-let studyHubSYARSpeakingReply = false;
-let studyHubSYARPausedForReply = false;
-let studyHubSYARCurrentSpokenText = "";
-
-function studyHubSYARIsLikelyVoiceEcho(transcript) {
-  // Normalisasi Unicode dan ruang mesti betul supaya teks suara Syar boleh dipadankan.
-  const normalize = value => String(value || "").toLocaleLowerCase("ms-MY")
-    .replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
-  const heard = normalize(transcript);
-  const spoken = normalize(studyHubSYARCurrentSpokenText);
-  if (!heard || !spoken) return false;
-  if (spoken.includes(heard)) return true;
-  const heardWords = heard.split(" ").filter(Boolean);
-  const spokenWords = spoken.split(" ").filter(Boolean);
-  // Pengecaman kadangkala memulangkan cebisan pendek daripada audio Syar.
-  if (heardWords.length <= 2) return spokenWords.join(" ").includes(heard);
-  if (heardWords.length >= spokenWords.length && heard.includes(spoken)) return true;
-  const spokenWordSet = new Set(spokenWords);
-  const matched = heardWords.filter(word => spokenWordSet.has(word)).length;
-  return matched / heardWords.length >= 0.7;
-}
-
-function studyHubSYARResumeAlwaysOn() {
-  if (studyHubSYARListeningMode !== "always" || document.hidden || studyHubSYARChatBusy) return;
-  studyHubSYARPausedForReply = false;
-  if (!studyHubSYARRecognitionStarting) {
-    window.setTimeout(() => {
-      if (studyHubSYARListeningMode === "always" && !document.hidden && !studyHubSYARChatBusy && !studyHubSYARSpeakingReply && !studyHubSYARRecognitionStarting) {
-        studyHubSYARStartRecognition("always");
-      }
-    }, 500);
-  }
-}
-
-function studyHubSYARSpeakReply(message) {
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    studyHubSYARResumeAlwaysOn();
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const speech = new SpeechSynthesisUtterance(message);
-  speech.lang = "ms-MY";
-  speech.rate = 0.95;
-  speech.pitch = 1;
-  const voice = studyHubSYARGetPreferredVoice();
-  if (voice) speech.voice = voice;
-  studyHubSYARSpeakingReply = true;
-  studyHubSYARCurrentSpokenText = message;
-  speech.onstart = () => {
-    document.body.classList.add("ai-speaking");
-    // Pastikan Always On terus mendengar supaya pelajar boleh mencelah.
-    if (studyHubSYARListeningMode === "always" && !studyHubSYARRecognitionStarting && !studyHubSYARRecognition) {
-      studyHubSYARResumeAlwaysOn();
-    }
-  };
-  speech.onend = speech.onerror = () => {
-    document.body.classList.remove("ai-speaking");
-    studyHubSYARSpeakingReply = false;
-    studyHubSYARCurrentSpokenText = "";
-    studyHubSYARResumeAlwaysOn();
-  };
-  window.speechSynthesis.speak(speech);
-}
 async function studyHubSYARSendMessage(rawMessage) {
   const message = String(rawMessage || "").trim();
   if (!message || studyHubSYARChatBusy) return;
@@ -1498,13 +1410,12 @@ async function studyHubSYARSendMessage(rawMessage) {
     return;
   }
   studyHubSYARChatBusy = true;
-  studyHubSYARResetIdleTimer(true);
   studyHubSYARAddChatMessage("user",message);
   studyHubSYARChatHistory.push({role:"user",content:message});
   studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
   studyHubSYARSetChatStatus("Syar sedang berfikir...");
   document.body.classList.add("ai-thinking");
-  const sendButton = studyHubAITextForm.querySelector("button");
+  const sendButton = document.getElementById("studyHubAISendChat");
   sendButton.disabled = true;
   try {
     const response = await fetch(STUDYHUB_SYAR_CHAT_URL,{
@@ -1520,105 +1431,12 @@ async function studyHubSYARSendMessage(rawMessage) {
     studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
     studyHubSYARAddChatMessage("assistant",reply);
     studyHubSYARSetChatStatus("Syar sudah membalas.");
-    studyHubSYARSpeakReply(reply);
   } catch (error) {
     studyHubSYARSetChatStatus(error.message || "Sambungan kepada Syar terganggu.");
   } finally {
     studyHubSYARChatBusy = false;
     document.body.classList.remove("ai-thinking");
     sendButton.disabled = false;
-    // Pastikan Always On kekal aktif ketika Syar bercakap atau selepas ralat rangkaian.
-    studyHubSYARResumeAlwaysOn();
-  }
-}
-function studyHubSYARStartRecognition(mode) {
-  if (!studyHubSpeechRecognition) {
-    studyHubSYARSetChatStatus("Pelayar ini tidak menyokong pengecaman suara. Cuba Chrome terkini atau taip mesej.");
-    return;
-  }
-  if (!studentAccessToken || !studentApproved) {
-    studyHubSYARSetChatStatus("Sila log masuk dengan akaun pelajar yang telah diluluskan dahulu.");
-    return;
-  }
-  if (studyHubSYARRecognitionStarting) return;
-  studyHubSYARListeningMode = mode;
-  studyHubSYARPendingSpeech = "";
-  studyHubSYARResetIdleTimer(true);
-  const recognition = new studyHubSpeechRecognition();
-  studyHubSYARRecognition = recognition;
-  recognition.lang = "ms-MY";
-  recognition.continuous = mode === "always";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.onstart = () => {
-    studyHubSYARRecognitionStarting = false;
-    document.body.classList.add("ai-listening");
-    studyHubSYARSetChatStatus(mode === "always" ? "Always On aktif — Syar sedang mendengar. Tekan Always On untuk berhenti." : "Syar sedang mendengar. Lepaskan butang untuk menghantar.");
-    if (mode === "push") studyHubAIPushToTalk.classList.add("active");
-    if (mode === "always") {
-      studyHubAIAlwaysOn.classList.add("active");
-      studyHubAIAlwaysOn.textContent = "🎙️ Mic On";
-      studyHubAIAlwaysOn.setAttribute("aria-pressed","true");
-      studyHubAIAlwaysOn.setAttribute("aria-label","Matikan mikrofon Syar");
-    }
-  };
-  recognition.onresult = event => {
-    for (let i=event.resultIndex;i<event.results.length;i++) {
-      if (!event.results[i].isFinal) continue;
-      const transcript = event.results[i][0]?.transcript?.trim();
-      if (!transcript) continue;
-      if (mode === "always") {
-        if (studyHubSYARChatBusy || studyHubSYARPausedForReply) continue;
-        // Abaikan audio Syar yang tertangkap semula oleh mikrofon, tetapi benarkan suara pelajar mencelah.
-        if (studyHubSYARSpeakingReply && studyHubSYARIsLikelyVoiceEcho(transcript)) continue;
-        if (studyHubSYARSpeakingReply) {
-          window.speechSynthesis.cancel();
-          document.body.classList.remove("ai-speaking");
-          studyHubSYARSpeakingReply = false;
-          studyHubSYARCurrentSpokenText = "";
-          studyHubSYARSetChatStatus("Syar berhenti bercakap — mendengar suara awak...");
-        }
-        studyHubSYARSendMessage(transcript);
-      } else {
-        studyHubSYARPendingSpeech += (studyHubSYARPendingSpeech ? " " : "") + transcript;
-      }
-    }
-  };
-  recognition.onerror = event => {
-    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-      studyHubSYARStopRecognition();
-      studyHubSYARSetChatStatus("Akses mikrofon ditolak. Benarkan kebenaran mikrofon pada pelayar jika mahu menggunakannya.");
-    } else if (event.error !== "no-speech" && event.error !== "aborted") {
-      studyHubSYARSetChatStatus("Mikrofon terganggu ("+event.error+"). Cuba semula.");
-    }
-  };
-  recognition.onend = () => {
-    studyHubSYARRecognitionStarting = false;
-    if (mode === "push" && studyHubSYARListeningMode === "push") {
-      const finalText = studyHubSYARPendingSpeech;
-      studyHubSYARPendingSpeech = "";
-      studyHubSYARListeningMode = "off";
-      document.body.classList.remove("ai-listening");
-      studyHubAIPushToTalk.classList.remove("active");
-      if (finalText) studyHubSYARSendMessage(finalText);
-      else studyHubSYARSetChatStatus("Tiada suara dikesan. Tekan dan tahan untuk cuba lagi.");
-    }
-    if (mode === "always" && studyHubSYARListeningMode === "always") {
-      document.body.classList.remove("ai-listening");
-      if (studyHubSYARPausedForReply) return;
-      // Kekalkan pendengaran ketika Syar bercakap supaya pelajar boleh mencelah.
-      window.setTimeout(() => {
-        if (studyHubSYARListeningMode === "always" && !document.hidden && !studyHubSYARChatBusy && !studyHubSYARRecognitionStarting) {
-          studyHubSYARStartRecognition("always");
-        }
-      },700);
-    }
-  };
-  studyHubSYARRecognitionStarting = true;
-  try { recognition.start(); }
-  catch (error) {
-    studyHubSYARRecognitionStarting = false;
-    studyHubSYARSetChatStatus("Tidak dapat mengaktifkan mikrofon. Cuba tekan semula.");
   }
 }
 studyHubAIOpenChat.addEventListener("click",() => {
@@ -1630,39 +1448,11 @@ document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
 });
-studyHubAIPushToTalk.addEventListener("pointerdown",event => {
-  event.preventDefault();
-  if (studyHubSYARListeningMode === "always") return;
-  studyHubSYARStartRecognition("push");
-});
-["pointerup","pointercancel","pointerleave"].forEach(name => {
-  studyHubAIPushToTalk.addEventListener(name,() => {
-    if (studyHubSYARListeningMode === "push" && studyHubSYARRecognition) {
-      studyHubSYARSetChatStatus("Menghantar suara kepada Syar...");
-      try { studyHubSYARRecognition.stop(); } catch (error) {}
-    }
-  });
-});
-studyHubAIPushToTalk.addEventListener("click",event => {
-  if (event.detail === 0 && studyHubSYARListeningMode !== "push") studyHubSYARStartRecognition("push");
-});
-studyHubAIAlwaysOn.addEventListener("click",() => {
-  if (studyHubSYARListeningMode === "always") {
-    studyHubSYARStopRecognition();
-    studyHubSYARSetChatStatus("Always On dimatikan. Mikrofon tidak lagi digunakan.");
-  } else {
-    if (studyHubSYARListeningMode === "push") {
-      try { if (studyHubSYARRecognition) studyHubSYARRecognition.stop(); } catch (error) {}
-    }
-    studyHubSYARStartRecognition("always");
-  }
-});
 function studyHubSYARHandleTextSend(event) {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  // Pastikan panel kekal terbuka ketika mesej dihantar.
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
   const message = studyHubAITextInput.value.trim();
@@ -1672,266 +1462,9 @@ function studyHubSYARHandleTextSend(event) {
 }
 studyHubAITextForm.addEventListener("submit",studyHubSYARHandleTextSend);
 document.getElementById("studyHubAISendChat").addEventListener("click",studyHubSYARHandleTextSend);
-document.addEventListener("visibilitychange",() => {
-  if (document.hidden && studyHubSYARListeningMode === "always") {
-    studyHubSYARStopRecognition();
-    studyHubSYARSetChatStatus("Always On dihentikan apabila tab ditinggalkan.");
-  }
-});
-// Tamat STUDYHUB SYAR VOICE CHAT
+// Tamat STUDYHUB SYAR TEXT CHAT
 
-function studyHubSYARGetWelcomeGreeting() {
-  const hour = new Date().getHours();
-  let timeGreeting = "malam";
-  if (hour >= 5 && hour < 11) timeGreeting = "pagi";
-  else if (hour >= 11 && hour < 15) timeGreeting = "tengah hari";
-  else if (hour >= 15 && hour < 19) timeGreeting = "petang";
-  return "Assalamualaikum, selamat " + timeGreeting + ", saya doakan awak berjaya dunia akhirat.";
-}
-
-function studyHubAISpeakGreeting() {
-  const welcomeMessage = studyHubSYARGetWelcomeGreeting();
-  studyHubAIStatusText.textContent = welcomeMessage;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const greeting = new SpeechSynthesisUtterance(welcomeMessage);
-  greeting.lang = "ms-MY";
-  greeting.rate = 0.95;
-  greeting.pitch = 1;
-  const preferredVoice = studyHubSYARGetPreferredVoice();
-    if (preferredVoice) greeting.voice = preferredVoice;
-  greeting.onstart = () => {
-    studyHubAIStatusText.textContent = "Syar sedang menyapa anda...";
-    document.body.classList.add("ai-speaking");
-  };
-  greeting.onend = () => {
-    studyHubAIStatusText.textContent = "Selamat datang! Syar sedia membantu.";
-    document.body.classList.remove("ai-speaking");
-  };
-  greeting.onerror = () => {
-    studyHubAIStatusText.textContent = "Selamat datang! Tekan panel Syar untuk cuba suara.";
-    document.body.classList.remove("ai-speaking");
-  };
-  window.speechSynthesis.speak(greeting);
-}
-
-// Sapaan automatik; tekan panel Syar untuk mengulang jika audio disekat pelayar.
-studyHubAISpeakGreeting();
-studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
-
-// Syar menyapa apabila pelajar tidak aktif selama 20 saat.
-const STUDYHUB_SYAR_IDLE_DELAY = 20 * 1000;
-let studyHubSYARIdleTimer = null;
-let studyHubSYARIdleUtterance = null;
-let studyHubSYARIdleCycle = 0;
-let studyHubSYARIdleTimerToken = 0;
-let studyHubSYARLastIdleMessage = "";
-
-function studyHubSYARGetMealGreeting() {
-  const messages = [
-    "Hai, masih ada di sini? Jom sambung belajar bila awak dah bersedia!",
-    "Dah lama kita senyap. Nak teruskan ulang kaji?",
-    "Jangan lupa, usaha kecil hari ini boleh membawa kejayaan besar nanti!",
-    "Awak tengah fikir soalan ke? Ambil masa, tak perlu tergesa-gesa.",
-    "Jom pilih satu subjek dan buat sedikit latihan!",
-    "Rehat sekejap pun tak mengapa. Pastikan awak selesa sebelum sambung belajar.",
-    "StudyHub sentiasa di sini untuk bantu perjalanan pembelajaran awak!",
-    "Dah bersedia nak belajar semula? Kita mula perlahan-lahan.",
-    "Ingat, man jadda wajada. Teruskan usaha!",
-    "Cuba tengok bank soalan. Mungkin ada latihan menarik untuk awak!"
-  ];
-  const choices = messages.filter(message => message !== studyHubSYARLastIdleMessage);
-  const selected = choices[Math.floor(Math.random() * choices.length)];
-  studyHubSYARLastIdleMessage = selected;
-  return selected;
-}
-
-function studyHubSYARScheduleNextIdlePrompt(cycle) {
-  window.clearTimeout(studyHubSYARIdleTimer);
-  const timerToken = ++studyHubSYARIdleTimerToken;
-  if (!document.hidden && cycle === studyHubSYARIdleCycle) {
-    studyHubSYARIdleTimer = window.setTimeout(() => {
-      if (timerToken !== studyHubSYARIdleTimerToken || cycle !== studyHubSYARIdleCycle) return;
-      studyHubSYARIdleTimer = null;
-      studyHubSYARSpeakWhenIdle(cycle);
-    }, STUDYHUB_SYAR_IDLE_DELAY);
-  }
-}
-
-function studyHubSYARSpeakWhenIdle(cycle = studyHubSYARIdleCycle) {
-  if (document.hidden || cycle !== studyHubSYARIdleCycle) return;
-  if (typeof studyHubSYARListeningMode !== "undefined" && studyHubSYARListeningMode !== "off") {
-    studyHubSYARScheduleNextIdlePrompt(cycle);
-    return;
-  }
-  const message = studyHubSYARGetMealGreeting();
-  studyHubAIStatusText.textContent = "Syar: " + message;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    studyHubSYARScheduleNextIdlePrompt(cycle);
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(message);
-  studyHubSYARIdleUtterance = utterance;
-  utterance.lang = "ms-MY";
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  const preferredVoice = studyHubSYARGetPreferredVoice();
-    if (preferredVoice) utterance.voice = preferredVoice;
-  utterance.onstart = () => document.body.classList.add("ai-speaking");
-  utterance.onend = utterance.onerror = () => {
-    document.body.classList.remove("ai-speaking");
-    if (studyHubSYARIdleUtterance === utterance) {
-      studyHubSYARIdleUtterance = null;
-      studyHubSYARScheduleNextIdlePrompt(cycle);
-    }
-  };
-  window.speechSynthesis.speak(utterance);
-}
-
-function studyHubSYARResetIdleTimer(resetCycle = true) {
-  window.clearTimeout(studyHubSYARIdleTimer);
-  studyHubSYARIdleTimer = null;
-  studyHubSYARIdleTimerToken++;
-  if (resetCycle) studyHubSYARIdleCycle++;
-  const previousUtterance = studyHubSYARIdleUtterance;
-  studyHubSYARIdleUtterance = null;
-  if (previousUtterance && "speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
-    document.body.classList.remove("ai-speaking");
-  }
-  if (!document.hidden) {
-    const cycle = studyHubSYARIdleCycle;
-    studyHubSYARIdleTimer = window.setTimeout(() => studyHubSYARSpeakWhenIdle(cycle), STUDYHUB_SYAR_IDLE_DELAY);
-  }
-}
-
-// Kiraan 20 saat berulang selagi pelajar kekal pada menu yang sama.
-let studyHubSYARHiddenAt = null;
-function studyHubSYARHandleVisibilityChange() {
-  if (document.hidden) {
-    studyHubSYARHiddenAt = Date.now();
-    studyHubSYARResetIdleTimer(false);
-    return;
-  }
-  const awayDuration = studyHubSYARHiddenAt === null ? 0 : Date.now() - studyHubSYARHiddenAt;
-  studyHubSYARHiddenAt = null;
-  studyHubSYARResetIdleTimer(false);
-  if (awayDuration >= 20 * 1000) {
-    const message = "Eh, dah kembali? Tadi pergi mana? Ada urusan ke? Hehe~";
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const preferredVoice = studyHubSYARGetPreferredVoice();
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
-  }
-}
-document.addEventListener("visibilitychange", studyHubSYARHandleVisibilityChange);
-studyHubSYARResetIdleTimer(false);
-window.addEventListener("studyhub:navigation", event => {
-  // Menu baharu memulakan kitaran 20 saat yang baharu.
-  studyHubSYARResetIdleTimer(true);
-  const title = event.detail?.title;
-  if (!title) return;
-  if (event.detail?.page === "admin") {
-    const message = "Hehe, panel ni hanya Syar je bole akses~";
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const preferredVoice = studyHubSYARGetPreferredVoice();
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
-    return;
-  }
-  if (event.detail?.page === "profile" && !event.detail?.studentLoggedIn) {
-    const messages = [
-      "Awak perlu log masuk terlebih dahulu. Jika awak log masuk, awak juga boleh akses kuiz dan menjadi sebahagian daripada StudyHub.",
-      "Dah log masuk ke?",
-      "Daftar di bahagian Direktori Pelajar."
-    ];
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const preferredVoice = studyHubSYARGetPreferredVoice();
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
-    return;
-  }
-  if (event.detail?.page === "profile" && event.detail?.studentLoggedIn) {
-    const congratulationsKey = "studyhub_syar_congratulations_" + (studentUserId || "student");
-    const congratulationsShown = localStorage.getItem(congratulationsKey) === "true";
-    const messages = congratulationsShown
-      ? [
-          "Tengok-tengoklah profil awak ni.",
-          "Apa kata awak ubah suai profil supaya menjadi lebih cantik?",
-          "Wah, profil awak dah sedia! Jom kemas kini kalau ada perubahan.",
-          "Jangan lupa singgah di StudyHub untuk teruskan ulang kaji.",
-          "Teruskan usaha awak. Sedikit demi sedikit, lama-lama jadi bukit!",
-          "Semoga StudyHub membantu perjalanan pembelajaran awak.",
-          "Pastikan maklumat profil awak sentiasa betul dan terkini.",
-          "Dah bersedia untuk cabaran pembelajaran seterusnya?",
-          "Teruskan kumpul ilmu dan bina kejayaan awak!",
-          "Gunakan peluang yang ada di StudyHub sebaik mungkin.",
-          "Hebat! Teruskan jadi pelajar yang aktif dan bersemangat.",
-          "Apa kata semak semula profil dan lihat maklumat awak?"
-        ]
-      : [
-          "Tahniah, awak sudah menjadi sebahagian StudyHub.",
-          "Tengok-tengoklah profil awak ni.",
-          "Apa kata awak ubah suai profil supaya menjadi lebih cantik?",
-          "Wah, profil awak dah sedia! Jom kemas kini kalau ada perubahan.",
-          "Jangan lupa singgah di StudyHub untuk teruskan ulang kaji.",
-          "Teruskan usaha awak. Sedikit demi sedikit, lama-lama jadi bukit!",
-          "Semoga StudyHub membantu perjalanan pembelajaran awak.",
-          "Pastikan maklumat profil awak sentiasa betul dan terkini.",
-          "Dah bersedia untuk cabaran pembelajaran seterusnya?",
-          "Teruskan kumpul ilmu dan bina kejayaan awak!",
-          "Gunakan peluang yang ada di StudyHub sebaik mungkin.",
-          "Hebat! Teruskan jadi pelajar yang aktif dan bersemangat.",
-          "Apa kata semak semula profil dan lihat maklumat awak?"
-        ];
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    if (message.startsWith("Tahniah,")) {
-      localStorage.setItem(congratulationsKey, "true");
-    }
-    studyHubAIStatusText.textContent = "Syar: " + message;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.lang = "ms-MY";
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    const preferredVoice = studyHubSYARGetPreferredVoice();
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.onstart = () => document.body.classList.add("ai-speaking");
-    utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
-    window.speechSynthesis.speak(utterance);
-    return;
-  }
-});
-
+studyHubAIStatusText.textContent = "Chat teks Syar sedia membantu.";
 
 </script>
 </body></html>
