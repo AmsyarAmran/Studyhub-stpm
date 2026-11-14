@@ -66,18 +66,40 @@ a:hover{color:white!important;text-decoration:underline}
 @media(max-width:600px){.leaderboard-banner{padding:21px;border-radius:18px}.leaderboard-trophy{font-size:43px}.leaderboard-controls{align-items:stretch}.leaderboard-controls>div{min-width:100%}.leaderboard-refresh{width:100%}.leaderboard-podium{gap:7px}.podium-card{padding:15px 6px}.podium-card.first{min-height:170px}.podium-card.second{min-height:155px}.podium-card.third{min-height:140px}.podium-name{font-size:12px}.podium-score{font-size:19px}.podium-medal{font-size:25px}.leaderboard-list-card{padding:12px}.leaderboard-list-head{align-items:flex-start}.leaderboard-live{font-size:9px}}
 
 
-/* Tema merah khas untuk keseluruhan halaman Panel Admin */
-#admin.page.active{background:linear-gradient(145deg,#35131f 0%,#241522 52%,#171528 100%);border:1px solid #713044;border-radius:22px;padding:22px;box-shadow:0 16px 38px #08081655}
-#admin .card,#admin .tablewrap{background:linear-gradient(145deg,#301a2a,#211827);border-color:#653047}
-#admin .tag{background:#5a2338;color:#ffd5df}
-#admin .sectionhead h2{color:#ffd5df}
-#admin .muted,#admin label{color:#d6b4c1}
-#admin .btn{background:linear-gradient(100deg,#c52f50,#8f2444);box-shadow:0 5px 16px #7f1d3a33}
-#admin .btn:hover{box-shadow:0 8px 22px #b4234844}
-#admin input,#admin select,#admin textarea{background:#291a2a!important;border-color:#754057!important}
-#admin th{color:#e5aabd}
-#admin td,#admin th{border-bottom-color:#593044}
-#admin tbody tr:hover{background:#492238}
+/* Admin panel refresh: dashboard moden, kemas dan responsif */
+#admin.page.active{background:linear-gradient(145deg,#101a31 0%,#121d35 55%,#151a30 100%);border:1px solid #344567;border-radius:24px;padding:clamp(14px,2.5vw,28px);box-shadow:0 18px 48px #050b1b66}
+#admin .sectionhead{scroll-margin-top:24px}
+#admin .sectionhead h2{color:#eef4ff;font-size:19px;letter-spacing:-.3px}
+#admin .muted,#admin label{color:#aebbd5}
+#admin .card,#admin .tablewrap{background:linear-gradient(145deg,#1b2944,#17233b);border:1px solid #344765;border-radius:17px;box-shadow:0 8px 22px #07112635}
+#admin .tag{background:#203c5d;color:#aeeaff;border:1px solid #376184;padding:7px 11px}
+#admin .btn{background:linear-gradient(110deg,#3979d8,#5368d9);box-shadow:0 5px 16px #3269c044;transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+#admin .btn:hover{transform:translateY(-2px);filter:brightness(1.1);box-shadow:0 9px 22px #3269c066}
+#admin input,#admin select,#admin textarea{background:#111d33!important;border:1px solid #3a5275!important;color:#f3f7ff!important;border-radius:11px!important}
+#admin input:focus,#admin select:focus,#admin textarea:focus{outline:2px solid #60a5fa;outline-offset:1px}
+#admin th{color:#9fb9df;background:#1b2a45}
+#admin td,#admin th{border-bottom-color:#30435f}
+#admin tbody tr:hover{background:#243957}
+#admin .admin-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:23px clamp(17px,3vw,30px);margin:0 0 18px;border:1px solid #3c5d86;border-radius:20px;background:radial-gradient(circle at 90% 10%,#4264a755,transparent 34%),linear-gradient(115deg,#1c3960,#202b54 65%,#27315c);box-shadow:0 12px 30px #07112655}
+#admin .admin-hero h2{font-size:clamp(22px,3vw,30px);margin:4px 0 6px;color:#fff;letter-spacing:-.7px}
+#admin .admin-hero p{margin:0;color:#c5d5ef;font-size:13px}
+#admin .admin-hero-mark{width:62px;height:62px;display:grid;place-items:center;flex:none;border-radius:18px;background:#ffffff16;border:1px solid #ffffff2c;font-size:29px}
+#admin .admin-quick-nav{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 18px}
+#admin .admin-quick-nav a{color:#c8dcff;text-decoration:none;font-size:12px;font-weight:750;padding:9px 13px;border-radius:999px;border:1px solid #3a5275;background:#1a2943;transition:background .18s ease,border-color .18s ease}
+#admin .admin-quick-nav a:hover{background:#29466c;border-color:#6aa4e8}
+#admin .admin-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:0 0 18px}
+#admin .admin-stats .card{position:relative;overflow:hidden;padding:18px 19px}
+#admin .admin-stats .card:after{content:"";position:absolute;width:76px;height:76px;border-radius:50%;right:-24px;top:-26px;background:#70aaff13}
+#admin .admin-stats small{font-size:11px;letter-spacing:.35px;color:#aebbd5}
+#admin .admin-stats .stat{font-size:31px;color:#f4f8ff;margin-top:9px}
+#admin .admin-section{margin:22px 0 12px}
+#admin .admin-section .sectionhead{margin:0 0 12px}
+#admin .admin-section .tablewrap{overflow:hidden}
+#admin .admin-login-card{max-width:520px;padding:24px}
+#admin .admin-login-card h3{color:#f2f6ff}
+#admin .admin-logout-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 15px;padding:11px 13px;border-radius:14px;border:1px solid #344765;background:#17243b}
+#admin .empty{color:#aebbd5}
+@media(max-width:650px){#admin .admin-hero{padding:18px}#admin .admin-hero-mark{width:48px;height:48px;font-size:23px}#admin .admin-stats{grid-template-columns:1fr 1fr}#admin .admin-stats .card:first-child{grid-column:1/-1}#admin .admin-stats .stat{font-size:27px}#admin .admin-quick-nav{gap:7px}#admin .admin-quick-nav a{font-size:11px;padding:8px 10px}#admin .admin-logout-row{align-items:flex-start}}
 #admin .notice{border-color:#8b405b;color:#e5c0cc}
 
 /* Profil pelajar */
@@ -592,8 +614,8 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  </div>
 </section>
 <section id="admin" class="page">
- <div class="sectionhead"><div><h2>Panel Admin StudyHub</h2><div class="muted">Urus pendaftaran pelajar yang menunggu kelulusan.</div></div><span class="tag">Akses pentadbir sahaja</span></div>
- <div class="card" id="adminLoginCard" style="max-width:520px">
+ <div class="admin-hero"><div><div class="eyebrow">STUDYHUB CONTROL CENTER</div><h2>Panel Pentadbir</h2><p>Pusat kawalan untuk mengurus komuniti, perkongsian lokasi dan kandungan kuiz.</p><span class="tag" style="display:inline-block;margin-top:12px">Akses pentadbir sahaja</span></div><div class="admin-hero-mark" aria-hidden="true">⚙️</div></div>
+ <div class="card admin-login-card" id="adminLoginCard">
   <h3 style="margin-top:0">Log masuk pentadbir</h3>
   <form id="adminLoginForm">
    <label for="adminEmail" class="muted" style="display:block;margin-bottom:6px">E-mel admin</label>
@@ -605,17 +627,20 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   </form>
  </div>
  <div id="adminDashboard" hidden>
-  <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+  <div class="admin-quick-nav"><a href="#adminPendingSection">👥 Pelajar</a><a href="#adminLocationSection">📍 Lokasi</a><a href="#adminQuizSection">📝 Pengurusan kuiz</a><a href="#adminQuizListSection">📚 Senarai soalan</a></div>
+  <div class="admin-logout-row"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
+  <div class="admin-stats">
    <div class="card"><small>Jumlah pelajar</small><div class="stat" id="adminTotalCount">0</div></div>
    <div class="card"><small>Menunggu kelulusan</small><div class="stat" id="adminPendingCount">0</div></div>
    <div class="card"><small>Telah diluluskan</small><div class="stat" id="adminApprovedCount">0</div></div>
   </div>
-  <div class="filters"><select id="pendingSort" aria-label="Susun permohonan"><option value="oldest">Paling awal</option><option value="newest">Paling baharu</option></select></div>
+  <div class="admin-section" id="adminPendingSection"><div class="sectionhead"><div><h2>👥 Pengurusan pelajar</h2><div class="muted">Semak dan urus status pendaftaran pelajar.</div></div></div><div class="filters"><select id="pendingSort" aria-label="Susun permohonan"><option value="oldest">Paling awal</option><option value="newest">Paling baharu</option></select></div>
   <div class="tablewrap"><table style="min-width:520px"><thead><tr><th>Nama paparan</th><th>Tarikh daftar</th><th>Tindakan</th></tr></thead><tbody id="pendingStudentRows"></tbody></table><div id="pendingEmpty" class="empty" hidden>Tiada permohonan yang menunggu kelulusan.</div></div>
-  <div class="sectionhead"><div><h2>Lokasi pelajar yang bersetuju</h2><div class="muted">Maklumat ini hanya dipaparkan kepada pentadbir yang telah log masuk.</div></div><button class="btn" id="adminLocationRefresh" type="button">Muat semula lokasi</button></div>
+  </div>
+  <div class="admin-section" id="adminLocationSection"><div class="sectionhead"><div><h2>📍 Lokasi pelajar yang bersetuju</h2><div class="muted">Maklumat ini hanya dipaparkan kepada pentadbir yang telah log masuk.</div></div><button class="btn" id="adminLocationRefresh" type="button">Muat semula lokasi</button></div>
   <div class="tablewrap"><table class="location-admin-table" style="min-width:650px"><thead><tr><th>Nama pelajar</th><th>Koordinat</th><th>Ketepatan</th><th>Masa dikongsi</th><th>Peta</th></tr></thead><tbody id="adminLocationRows"><tr><td colspan="5" class="muted">Memuatkan...</td></tr></tbody></table><div id="adminLocationEmpty" class="empty" hidden>Belum ada pelajar yang bersetuju berkongsi lokasi.</div><p id="adminLocationMessage" class="muted" style="padding:0 14px;font-size:12px" role="status"></p></div>
-  <div class="sectionhead"><div><h2>Pengurusan Kuiz Interaktif</h2><div class="muted">Tambah soalan objektif untuk PAM dan BM.</div></div><span class="tag">PAM · BM</span></div>
+  </div>
+  <div class="admin-section" id="adminQuizSection"><div class="sectionhead"><div><h2>📝 Pengurusan Kuiz Interaktif</h2><div class="muted">Tambah soalan objektif untuk PAM dan BM.</div></div><span class="tag">PAM · BM</span></div>
   <div class="card" style="margin-bottom:16px">
    <h3 id="quizEditorTitle" style="margin-top:0">Tambah soalan baharu</h3>
    <form id="quizQuestionForm">
@@ -640,10 +665,11 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
     <p id="quizAdminMessage" class="muted" role="status" aria-live="polite" style="font-size:13px;margin-bottom:0"></p>
    </form>
   </div>
-  <div class="sectionhead"><h2>Senarai soalan kuiz</h2><button class="btn" id="quizRefreshButton" type="button">Muat semula</button></div>
+  </div>
+  <div class="admin-section" id="adminQuizListSection"><div class="sectionhead"><h2>📚 Senarai soalan kuiz</h2><button class="btn" id="quizRefreshButton" type="button">Muat semula</button></div>
   <div class="filters"><select id="quizAdminFilter"><option value="">Semua subjek</option><option value="PAM">PAM</option><option value="BM">BM</option></select><select id="quizAdminSetFilter" aria-label="Tapis nombor set"><option value="">Semua set</option></select></div>
   <div class="tablewrap"><table style="min-width:600px"><thead><tr><th>Subjek</th><th>Set</th><th>Soalan</th><th>Jawapan</th><th>Tindakan</th></tr></thead><tbody id="adminQuizRows"></tbody></table><div id="adminQuizEmpty" class="empty" hidden>Belum ada soalan kuiz. Tambahkan soalan pertama di atas.</div></div>
-  <p id="adminActionMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p>
+  <p id="adminActionMessage" class="muted" role="status" aria-live="polite" style="font-size:13px"></p></div>
  </div>
  
 </section>
