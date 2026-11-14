@@ -214,6 +214,60 @@ footer{border-top:1px solid #293957;padding-top:18px;line-height:1.8}
  .filters select,.filters input{min-width:0;flex:1 1 135px;width:100%}
 }
 
+
+/* STUDYHUB AI — asas visual dan jambatan integrasi suara */
+.ai-aura{
+ position:fixed;inset:0;z-index:9997;pointer-events:none;opacity:0;
+ border:2px solid transparent;
+ transition:opacity .25s ease;
+}
+body.ai-listening .ai-aura{
+ opacity:.42;
+ box-shadow:inset 0 0 34px 5px #3988ff35;
+ border-color:#3988ff24;
+}
+body.ai-thinking .ai-aura{
+ opacity:.7;
+ box-shadow:inset 0 0 55px 8px #9b7cff42;
+ border-color:#9b7cff38;
+}
+body.ai-speaking .ai-aura{
+ opacity:1;
+ border-color:#62c9ff8c;
+ box-shadow:inset 0 0 70px 12px #3988ff52,inset 0 0 150px 20px #8c69ff25;
+ animation:studyHubAuraPulse 1.8s ease-in-out infinite;
+}
+@keyframes studyHubAuraPulse{
+ 0%,100%{filter:brightness(.88)}
+ 50%{filter:brightness(1.35)}
+}
+.studyhub-ai-status{
+ position:fixed;right:18px;bottom:18px;z-index:9998;
+ display:flex;align-items:center;gap:10px;
+ max-width:min(330px,calc(100vw - 112px));
+ padding:10px 14px;border:1px solid #425477;border-radius:15px;
+ background:#111a2eef;color:#f4f7ff;
+ box-shadow:0 10px 30px #02061766;backdrop-filter:blur(14px);
+ pointer-events:none;
+}
+.studyhub-ai-status .ai-status-orb{
+ width:10px;height:10px;border-radius:50%;background:#8b9ab8;flex:0 0 auto;
+ box-shadow:0 0 0 4px #8b9ab822;
+}
+.studyhub-ai-status strong{display:block;font-size:12px;line-height:1.3}
+.studyhub-ai-status small{display:block;color:#aab8d2;font-size:10px;line-height:1.4;margin-top:2px}
+body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shadow:0 0 0 4px #54a9ff25,0 0 13px #54a9ff}
+body.ai-thinking .studyhub-ai-status .ai-status-orb{background:#a58bff;box-shadow:0 0 0 4px #a58bff25,0 0 13px #a58bff}
+body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shadow:0 0 0 4px #5de2cf25,0 0 16px #5de2cf}
+@media(max-width:520px){
+ .studyhub-ai-status{right:10px;bottom:10px;padding:8px 11px;max-width:calc(100vw - 100px)}
+ .studyhub-ai-status strong{font-size:11px}
+ .studyhub-ai-status small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.ai-speaking .ai-aura{animation:none}
+}
+
 </style>
 </head>
 <body>
@@ -430,6 +484,13 @@ footer{border-top:1px solid #293957;padding-top:18px;line-height:1.8}
  <div class="sectionhead"><h2>Tentang STUDYHUB</h2></div>
  <div class="card"><p>STUDYHUB ialah ruang pembelajaran ringkas untuk pelajar STPM. Fokus awal projek ini ialah bahan percubaan Semester 1 bagi Pengajian Am (PAM), Kesusasteraan Melayu Komunikatif (KMK), Seni Visual (SENI) dan Bahasa Melayu (BM).</p></div>
 </section>
+
+<div class="ai-aura" aria-hidden="true"></div>
+<div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
+ <span class="ai-status-orb" aria-hidden="true"></span>
+ <span><strong>StudyHub AI</strong><small id="studyHubAIStatusText">Sistem suara sedang disediakan</small></span>
+</div>
+
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
 </main>
 </div>
@@ -565,7 +626,20 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
  card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSubject();}});
 });
 
-document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('pageTitle').textContent=b.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\s*/, '');if(b.dataset.page==='profile')renderStudentProfile()}));
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{
+ const pageId=b.dataset.page;
+ const page=document.getElementById(pageId);
+ if(!page)return;
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ page.classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');
+ const pageName=b.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\s*/, '');
+ document.getElementById('pageTitle').textContent=pageName;
+ if(pageId==='profile')renderStudentProfile();
+ // Jambatan peristiwa untuk StudyHub AI mengumumkan navigasi selepas enjin suara disambungkan.
+ window.dispatchEvent(new CustomEvent('studyhub:navigation',{detail:{page:pageId,title:pageName}}));
+}));
 
 
 // Konfigurasi Supabase untuk fungsi akademik StudyHub.
@@ -1213,3 +1287,4 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
 
 </script>
 </body></html>
+
