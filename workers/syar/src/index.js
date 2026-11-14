@@ -23,7 +23,7 @@ function corsHeaders(origin, allowedOrigin) {
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Authorization, Content-Type",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type, X-StudyHub-Guest",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin"
   };
