@@ -1365,6 +1365,28 @@ function studyHubAISpeakGreeting() {
 studyHubAISpeakGreeting();
 studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 
+function studyHubAISpeakNavigation(pageTitle) {
+  const announcement = "Anda kini berada di halaman " + pageTitle + ".";
+  studyHubAIStatusText.textContent = "Syar: " + announcement;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(announcement);
+  utterance.lang = "ms-MY";
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  const malayVoice = window.speechSynthesis.getVoices().find(voice => /^ms(-|_)/i.test(voice.lang));
+  if (malayVoice) utterance.voice = malayVoice;
+  utterance.onstart = () => document.body.classList.add("ai-speaking");
+  utterance.onend = utterance.onerror = () => document.body.classList.remove("ai-speaking");
+  window.speechSynthesis.speak(utterance);
+}
+
+window.addEventListener("studyhub:navigation", event => {
+  const title = event.detail?.title;
+  if (title) studyHubAISpeakNavigation(title);
+});
+
+
 </script>
 </body></html>
 
