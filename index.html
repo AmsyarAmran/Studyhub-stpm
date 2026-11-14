@@ -562,7 +562,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite"></div>
  <form class="ai-chat-form" id="studyHubAITextForm">
   <input id="studyHubAITextInput" type="text" maxlength="1000" autocomplete="off" placeholder="Taip mesej kepada Syar..." aria-label="Mesej kepada Syar">
-  <button type="submit">Hantar</button>
+  <button id="studyHubAISendChat" type="button">Hantar</button>
  </form>
 </section>
 
@@ -1657,13 +1657,21 @@ studyHubAIAlwaysOn.addEventListener("click",() => {
     studyHubSYARStartRecognition("always");
   }
 });
-studyHubAITextForm.addEventListener("submit",event => {
-  event.preventDefault();
+function studyHubSYARHandleTextSend(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  // Pastikan panel kekal terbuka ketika mesej dihantar.
+  studyHubAIChatPanel.hidden = false;
+  studyHubAIOpenChat.setAttribute("aria-expanded","true");
   const message = studyHubAITextInput.value.trim();
   if (!message) return;
   studyHubAITextInput.value = "";
   studyHubSYARSendMessage(message);
-});
+}
+studyHubAITextForm.addEventListener("submit",studyHubSYARHandleTextSend);
+document.getElementById("studyHubAISendChat").addEventListener("click",studyHubSYARHandleTextSend);
 document.addEventListener("visibilitychange",() => {
   if (document.hidden && studyHubSYARListeningMode === "always") {
     studyHubSYARStopRecognition();
