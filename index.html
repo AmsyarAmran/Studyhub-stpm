@@ -1511,12 +1511,53 @@ let studyHubSYARIdleTimer = null;
 function studyHubSYARRandomIdleMessage() {
   const hour = new Date().getHours();
   const messages = hour >= 5 && hour < 12
-    ? ["Dah bersarapan ke pagi ni?", "Jangan lupa minum air sebelum mula belajar ya.", "Apa sasaran belajar kamu pagi ni?"]
+    ? [
+        "Dah bersarapan ke pagi ni?",
+        "Jangan lupa minum air sebelum mula belajar ya.",
+        "Apa sasaran belajar kamu pagi ni?",
+        "Semangat! Setiap usaha kecil hari ini membawa kamu lebih dekat kepada kejayaan.",
+        "Mulakan pagi dengan Bismillah. Insya-Allah urusan belajar dipermudahkan.",
+        "Jangan takut pada soalan yang susah. Cuba satu demi satu, kamu pasti boleh belajar.",
+        "Ingat, kejayaan bermula dengan langkah pertama. Teruskan usaha!",
+        "Gunakan masa pagi dengan baik. Ilmu yang dicari hari ini sangat bermakna.",
+        "Man jadda wajada — sesiapa yang berusaha, insya-Allah akan berjaya."
+      ]
     : hour >= 12 && hour < 15
-      ? ["Dah makan tengah hari ke?", "Jangan lupa berehat sekejap dan minum air.", "Macam mana pembelajaran kamu setakat ni?"]
+      ? [
+          "Dah makan tengah hari ke?",
+          "Jangan lupa berehat sekejap dan minum air.",
+          "Macam mana pembelajaran kamu setakat ni?",
+          "Teruskan usaha walaupun penat. Sedikit demi sedikit, lama-lama menjadi bukit.",
+          "Jangan bandingkan perjalanan kamu dengan orang lain. Fokus pada kemajuan sendiri.",
+          "Satu soalan yang kamu faham hari ini ialah satu langkah ke hadapan.",
+          "Kamu tak perlu sempurna, cuma perlu terus mencuba dan memperbaiki diri.",
+          "Rehat seketika, kemudian sambung semula dengan semangat baharu.",
+          "Percaya pada usaha sendiri. Kamu mampu mencapai lebih daripada yang disangka."
+        ]
       : hour >= 15 && hour < 19
-        ? ["Dah makan atau minum petang ke?", "Jangan lupa rehat sebentar selepas belajar.", "Apa yang kamu sedang ulang kaji petang ni?"]
-        : ["Dah makan malam ke?", "Jangan lupa berehat selepas ulang kaji ya.", "Bagaimana hari pembelajaran kamu hari ni?"];
+        ? [
+            "Dah makan atau minum petang ke?",
+            "Jangan lupa rehat sebentar selepas belajar.",
+            "Apa yang kamu sedang ulang kaji petang ni?",
+            "Jangan mengalah! Kesukaran hari ini boleh menjadi kekuatan kamu esok.",
+            "Teruskan melangkah. Setiap minit yang digunakan untuk belajar ada nilainya.",
+            "Kalau tersilap, jangan kecewa. Kesilapan ialah peluang untuk belajar.",
+            "Fokus pada satu perkara dahulu. Kamu boleh lakukannya!",
+            "Usaha yang konsisten lebih baik daripada belajar bersungguh-sungguh pada saat akhir.",
+            "Semoga setiap ilmu yang kamu pelajari menjadi manfaat dan membawa kejayaan."
+          ]
+        : [
+            "Dah makan malam ke?",
+            "Jangan lupa berehat selepas ulang kaji ya.",
+            "Bagaimana hari pembelajaran kamu hari ni?",
+            "Walaupun sedikit, usaha kamu hari ini tetap bermakna. Syabas kerana terus mencuba!",
+            "Sebelum tidur, hargai setiap perkara baharu yang kamu pelajari hari ini.",
+            "Jangan risau jika belum menguasai semuanya. Esok masih ada peluang untuk mencuba lagi.",
+            "Terus berdoa dan berusaha. Semoga Allah permudahkan perjalanan menuntut ilmu kamu.",
+            "Rehat yang cukup juga penting supaya esok kamu lebih bersedia.",
+            "Ingat tujuan kamu belajar. Jangan biarkan rasa penat memadamkan impian kamu.",
+            "Semoga hari esok lebih baik daripada hari ini. Teruskan berusaha!"
+          ];
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
