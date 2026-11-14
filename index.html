@@ -1390,6 +1390,15 @@ const studyHubAITextForm = document.getElementById("studyHubAITextForm");
 const studyHubAITextInput = document.getElementById("studyHubAITextInput");
 let studyHubSYARChatBusy = false;
 let studyHubSYARChatHistory = [];
+let studyHubSYARGuestRemaining = null;
+function studyHubSYARGetGuestId() {
+  let id = localStorage.getItem("studyhub_syar_guest_id");
+  if (!id) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : "guest-" + Date.now() + "-" + Math.random().toString(36).slice(2));
+    localStorage.setItem("studyhub_syar_guest_id", id);
+  }
+  return id;
+}
 
 function studyHubSYARSetChatStatus(message) {
   if (studyHubAIChatStatus) studyHubAIChatStatus.textContent = message;
@@ -1418,8 +1427,12 @@ function studyHubSYARSpeakReply(message) {
 async function studyHubSYARSendMessage(rawMessage) {
   const message = String(rawMessage || "").trim();
   if (!message || studyHubSYARChatBusy) return;
-  if (!studentAccessToken || !studentApproved) {
-    studyHubSYARSetChatStatus("Sila log masuk dengan akaun pelajar yang telah diluluskan untuk bercakap dengan Syar.");
+  if (studentAccessToken && !studentApproved) {
+    studyHubSYARSetChatStatus("Akaun anda masih menunggu kelulusan. Sesi tetamu tidak tersedia untuk akaun ini.");
+    return;
+  }
+  if (!studentAccessToken && studyHubSYARGuestRemaining === 0) {
+    studyHubSYARSetChatStatus("Anda telah menggunakan 10 mesej percuma. Log masuk untuk terus berbual dengan Syar.");
     return;
   }
   studyHubSYARChatBusy = true;
@@ -1431,9 +1444,15 @@ async function studyHubSYARSendMessage(rawMessage) {
   const sendButton = document.getElementById("studyHubAISendChat");
   sendButton.disabled = true;
   try {
+    const requestHeaders = {"Content-Type":"application/json"};
+    if (studentAccessToken && studentApproved) {
+      requestHeaders.Authorization = "Bearer " + studentAccessToken;
+    } else {
+      requestHeaders["X-StudyHub-Guest"] = studyHubSYARGetGuestId();
+    }
     const response = await fetch(STUDYHUB_SYAR_CHAT_URL,{
       method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+studentAccessToken},
+      headers:requestHeaders,
       body:JSON.stringify({messages:studyHubSYARChatHistory})
     });
     const result = await response.json().catch(()=>({}));
@@ -1444,7 +1463,14 @@ async function studyHubSYARSendMessage(rawMessage) {
     studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
     studyHubSYARAddChatMessage("assistant",reply);
     studyHubSYARSpeakReply(reply);
-    studyHubSYARSetChatStatus("Syar sudah membalas.");
+    if (!studentAccessToken) {
+      studyHubSYARGuestRemaining = Number.isFinite(Number(result.remaining)) ? Number(result.remaining) : null;
+      studyHubSYARSetChatStatus(studyHubSYARGuestRemaining === 0
+        ? "Syar sudah membalas. Anda telah menggunakan 10 mesej percuma. Log masuk untuk teruskan."
+        : "Syar sudah membalas. Baki mesej percuma: " + studyHubSYARGuestRemaining + "/10.");
+    } else {
+      studyHubSYARSetChatStatus("Syar sudah membalas.");
+    }
   } catch (error) {
     studyHubSYARSetChatStatus(error.message || "Sambungan kepada Syar terganggu.");
   } finally {
