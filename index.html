@@ -83,7 +83,8 @@ a:hover{color:white!important;text-decoration:underline}
 /* Profil pelajar */
 .profile-shell{border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--panel);margin:12px 0 20px}
 .profile-cover{min-height:185px;border-radius:18px;padding:22px;display:flex;align-items:end;gap:18px;background:linear-gradient(125deg,#43358d,#176c86);border:1px solid #ffffff25;position:relative;overflow:hidden}
-.profile-cover:after{content:"";position:absolute;width:230px;height:230px;border:1px solid #ffffff30;border-radius:50%;right:-50px;top:-120px;box-shadow:0 0 0 28px #ffffff0b,0 0 0 58px #ffffff08}
+.profile-cover:after{content:"";position:absolute;width:230px;height:230px;border:1px solid #ffffff30;border-radius:50%;right:-50px;top:-120px;box-shadow:0 0 0 28px #ffffff0b,0 0 0 58px #ffffff08;pointer-events:none}
+.profile-cover-wallpaper{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.78;pointer-events:none}
 .profile-avatar{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;font-size:48px;background:#111a32;border:5px solid #b8a5ff;box-shadow:0 8px 25px #05081666;overflow:hidden;flex-shrink:0;z-index:1}
 .profile-avatar img{width:100%;height:100%;object-fit:cover}
 .profile-cover-copy{z-index:1;min-width:0}.profile-cover-copy h2{margin:0;font-size:24px;overflow-wrap:anywhere}.profile-cover-copy p{margin:4px 0 0;color:#e4e9ff;font-size:13px}
@@ -481,6 +482,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  <div id="profileWorkspace" hidden>
   <div class="profile-shell">
    <div class="profile-cover" id="profileCover">
+    <video class="profile-cover-wallpaper" id="profileCoverVideo" muted loop playsinline autoplay hidden></video>
     <div class="profile-avatar" id="profileAvatar">🌟</div>
     <div class="profile-cover-copy"><div class="eyebrow">STUDYHUB STUDENT</div><h2 id="profileDisplayName">Pelajar</h2><p id="profileStatus">Ahli StudyHub</p><p id="profileBioDisplay" style="margin:5px 0 0;color:#f0eaff;font-size:13px;overflow-wrap:anywhere"></p></div>
    </div>
@@ -489,7 +491,7 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
      <label class="profile-upload">📷 Muat naik gambar<input id="profilePhotoInput" type="file" accept="image/*"></label>
      <button class="btn" id="profileRemovePhoto" type="button" style="background:#526184;margin:10px 0 0">Guna avatar</button>
     </div>
-    <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div></div>
+    <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div><label class="profile-upload">🖼️ Muat naik gambar sendiri<input id="profileBackgroundImageInput" type="file" accept="image/*"></label><label class="profile-upload" style="margin-left:6px">🎞️ Live wallpaper<input id="profileBackgroundVideoInput" type="file" accept="video/mp4,video/webm"></label><button class="btn" id="profileResetBackground" type="button" style="background:#526184;margin:10px 0 0">Guna background warna</button><p class="muted" style="font-size:11px;margin:7px 0 0">GIF animasi disokong untuk gambar. Live wallpaper menyokong video MP4 atau WebM sehingga 10 MB.</p></div>
     <div class="profile-option"><h3>Pilihan border avatar</h3><div class="border-choices"><button class="border-choice" type="button" data-border="#b8a5ff">Ungu</button><button class="border-choice" type="button" data-border="#53d8e8">Biru</button><button class="border-choice" type="button" data-border="#f472b6">Pink</button><button class="border-choice" type="button" data-border="#fbbf24">Emas</button><button class="border-choice" type="button" data-border="#ffffff">Putih</button></div></div>
     <div class="profile-option"><h3>Custom Bio</h3><textarea id="profileCustomBio" maxlength="120" rows="3" placeholder="Tulis bio ringkas tentang diri anda (maksimum 120 aksara)." style="width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:10px;resize:vertical"></textarea><p class="muted" style="font-size:11px;margin:6px 0 0">Jangan masukkan nombor telefon, alamat atau maklumat peribadi.</p></div>
    </div>
@@ -1411,9 +1413,54 @@ loadStudents();
 function profileStorageKey(){return "studyhub_profile_"+(studentUserId||"guest");}
 function readStudentProfile(){try{return JSON.parse(localStorage.getItem(profileStorageKey())||"{}");}catch(error){return {};}}
 function saveStudentProfile(data){try{localStorage.setItem(profileStorageKey(),JSON.stringify(data));document.getElementById("profileSaveNote").textContent="Perubahan profil berjaya disimpan pada peranti ini.";}catch(error){document.getElementById("profileSaveNote").textContent="Storan peranti penuh. Cuba gambar yang lebih kecil.";}}
+let profileBackgroundObjectUrl="";
+let profileBackgroundLoadToken=0;
+function openProfileMediaDb(){
+ return new Promise((resolve,reject)=>{
+  if(!window.indexedDB){reject(new Error("Storan media tidak disokong oleh pelayar ini."));return;}
+  const request=indexedDB.open("studyhub_profile_media",1);
+  request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("backgrounds"))request.result.createObjectStore("backgrounds");};
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error||new Error("Tidak dapat membuka storan media."));
+ });
+}
+async function saveProfileBackgroundBlob(blob){
+ const db=await openProfileMediaDb(),key=profileStorageKey();
+ await new Promise((resolve,reject)=>{const tx=db.transaction("backgrounds","readwrite");tx.objectStore("backgrounds").put(blob,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});
+ db.close();
+}
+async function readProfileBackgroundBlob(){
+ const db=await openProfileMediaDb(),key=profileStorageKey();
+ const blob=await new Promise((resolve,reject)=>{const tx=db.transaction("backgrounds","readonly"),req=tx.objectStore("backgrounds").get(key);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);});
+ db.close();return blob;
+}
+async function deleteProfileBackgroundBlob(){
+ try{const db=await openProfileMediaDb(),key=profileStorageKey();await new Promise((resolve,reject)=>{const tx=db.transaction("backgrounds","readwrite");tx.objectStore("backgrounds").delete(key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}catch(error){}
+}
+async function applyProfileBackgroundMedia(data,cover){
+ const token=++profileBackgroundLoadToken,video=document.getElementById("profileCoverVideo");
+ if(profileBackgroundObjectUrl){URL.revokeObjectURL(profileBackgroundObjectUrl);profileBackgroundObjectUrl="";}
+ video.pause();video.removeAttribute("src");video.hidden=true;
+ cover.style.background=data.background||"linear-gradient(125deg,#43358d,#176c86)";
+ cover.style.backgroundImage="";cover.style.backgroundSize="";cover.style.backgroundPosition="";
+ if(!data.backgroundMediaType)return;
+ try{
+  const blob=await readProfileBackgroundBlob();
+  if(token!==profileBackgroundLoadToken||!blob)return;
+  profileBackgroundObjectUrl=URL.createObjectURL(blob);
+  if(data.backgroundMediaType==="video"){
+   cover.style.background="linear-gradient(125deg,#18223d,#263b59)";
+   video.src=profileBackgroundObjectUrl;video.hidden=false;video.load();
+   const playResult=video.play();if(playResult&&playResult.catch)playResult.catch(()=>{});
+  }else{
+   cover.style.backgroundImage='linear-gradient(90deg,rgba(12,18,38,.48),rgba(12,18,38,.12)),url("'+profileBackgroundObjectUrl+'")';
+   cover.style.backgroundSize="cover";cover.style.backgroundPosition="center";
+  }
+ }catch(error){document.getElementById("profileSaveNote").textContent="Background media tidak dapat dimuatkan pada peranti ini.";}
+}
 function applyStudentProfile(){
  const data=readStudentProfile(),avatar=document.getElementById("profileAvatar"),cover=document.getElementById("profileCover");
- cover.style.background=data.background||"linear-gradient(125deg,#43358d,#176c86)";
+ applyProfileBackgroundMedia(data,cover);
  avatar.style.borderColor=data.border||"#b8a5ff";
  avatar.innerHTML=data.photo?'<img alt="Gambar profil pelajar" src="'+data.photo+'">':escapeStudentText(data.avatar||"🌟");
  document.getElementById("profileCustomBio").value=data.bio||"";
@@ -1545,9 +1592,27 @@ document.getElementById("profileAvatarChoices").addEventListener("click",event=>
  const button=event.target.closest("[data-avatar]");if(!button)return;
  const data=readStudentProfile();data.avatar=button.dataset.avatar;data.photo="";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
 });
-document.querySelectorAll("[data-bg]").forEach(button=>button.addEventListener("click",()=>{
- const data=readStudentProfile();data.background=button.dataset.bg;data.backgroundChosen=true;saveStudentProfile(data);applyStudentProfile();
+document.querySelectorAll("[data-bg]").forEach(button=>button.addEventListener("click",async()=>{
+ const data=readStudentProfile();data.background=button.dataset.bg;delete data.backgroundMediaType;data.backgroundChosen=true;await deleteProfileBackgroundBlob();saveStudentProfile(data);applyStudentProfile();
 }));
+async function handleProfileBackgroundUpload(event,type){
+ const file=event.target.files?.[0];if(!file)return;
+ const note=document.getElementById("profileSaveNote");
+ const allowed=type==="video"?["video/mp4","video/webm"].includes(file.type):file.type.startsWith("image/");
+ if(!allowed){note.textContent=type==="video"?"Pilih video MP4 atau WebM.":"Pilih fail gambar yang sah.";event.target.value="";return;}
+ if(file.size>10*1024*1024){note.textContent="Fail background mestilah tidak melebihi 10 MB.";event.target.value="";return;}
+ try{
+  await saveProfileBackgroundBlob(file);
+  const data=readStudentProfile();data.backgroundMediaType=type;data.backgroundChosen=true;saveStudentProfile(data);applyStudentProfile();
+  note.textContent=type==="video"?"Live wallpaper berjaya dipasang pada profil ini.":"Gambar background berjaya dipasang pada profil ini.";
+ }catch(error){note.textContent=error.message||"Tidak dapat menyimpan background. Cuba fail yang lebih kecil.";}
+ event.target.value="";
+}
+document.getElementById("profileBackgroundImageInput").addEventListener("change",event=>handleProfileBackgroundUpload(event,"image"));
+document.getElementById("profileBackgroundVideoInput").addEventListener("change",event=>handleProfileBackgroundUpload(event,"video"));
+document.getElementById("profileResetBackground").addEventListener("click",async()=>{
+ const data=readStudentProfile();delete data.backgroundMediaType;data.background=data.background||"linear-gradient(125deg,#43358d,#176c86)";data.backgroundChosen=true;await deleteProfileBackgroundBlob();saveStudentProfile(data);applyStudentProfile();
+});
 document.querySelectorAll("[data-border]").forEach(button=>button.addEventListener("click",()=>{
  const data=readStudentProfile();data.border=button.dataset.border;data.borderChosen=true;saveStudentProfile(data);applyStudentProfile();
 }));
