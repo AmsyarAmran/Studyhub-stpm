@@ -1491,22 +1491,53 @@ studyHubAIOpenChat.addEventListener("click",() => {
   studyHubAITextInput.focus();
 });
 
-// Ucapan alu-aluan dimainkan sekali sahaja apabila tab StudyHub dibuka.
-// Ucapan hanya melalui suara di dashboard dan tidak dimasukkan ke panel chat.
-try {
+// Ucapan dashboard: cuba automatik selepas halaman dibuka.
+(function studyHubSYARDashboardWelcome() {
   const welcomeSessionKey = "studyhub_syar_dashboard_welcome_played";
-  if (!sessionStorage.getItem(welcomeSessionKey)) {
-    sessionStorage.setItem(welcomeSessionKey,"1");
-    window.addEventListener("load",() => {
-      window.setTimeout(() => studyHubSYARSpeakReply(studyHubSYARWelcomeMessage()),700);
-    },{once:true});
+  let started = false;
+  let attempted = false;
+
+  function cleanup() {
+    window.removeEventListener("pointerdown",tryWelcome);
+    window.removeEventListener("keydown",tryWelcome);
+    window.removeEventListener("touchstart",tryWelcome);
+    window.speechSynthesis.removeEventListener("voiceschanged",tryWelcome);
   }
-} catch (error) {
-  // Jika storan sesi tidak tersedia, ucapan tetap dimainkan sekali pada pemuatan halaman ini.
-  window.addEventListener("load",() => {
-    window.setTimeout(() => studyHubSYARSpeakReply(studyHubSYARWelcomeMessage()),700);
-  },{once:true});
-}
+
+  function tryWelcome() {
+    if (started || sessionStorage.getItem(welcomeSessionKey)) {
+      cleanup();
+      return;
+    }
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length || attempted) return;
+
+    attempted = true;
+    const utterance = new SpeechSynthesisUtterance(studyHubSYARWelcomeMessage());
+    utterance.lang = "ms-MY";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
+    const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
+    if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
+    utterance.onstart = () => {
+      started = true;
+      sessionStorage.setItem(welcomeSessionKey,"1");
+      cleanup();
+    };
+    utterance.onerror = () => { attempted = false; };
+    window.speechSynthesis.speak(utterance);
+    window.setTimeout(() => { if (!started) attempted = false; },1600);
+  }
+
+  if (!sessionStorage.getItem(welcomeSessionKey)) {
+    window.addEventListener("pointerdown",tryWelcome);
+    window.addEventListener("keydown",tryWelcome);
+    window.addEventListener("touchstart",tryWelcome,{passive:true});
+    window.speechSynthesis.addEventListener("voiceschanged",tryWelcome);
+    window.addEventListener("load",() => window.setTimeout(tryWelcome,900),{once:true});
+  }
+})();
 document.getElementById("studyHubAICloseChat").addEventListener("click",() => {
   studyHubAIChatPanel.hidden = true;
   studyHubAIOpenChat.setAttribute("aria-expanded","false");
