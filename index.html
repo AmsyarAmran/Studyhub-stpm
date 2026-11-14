@@ -1365,8 +1365,23 @@ function studyHubAISpeakGreeting() {
 studyHubAISpeakGreeting();
 studyHubAIStatus?.addEventListener("click", studyHubAISpeakGreeting);
 
+let studyHubAILastNavigationPhrase = -1;
+
 function studyHubAISpeakNavigation(pageTitle) {
-  const announcement = "Anda kini berada di halaman " + pageTitle + ".";
+  const phrases = [
+    "Ini bahagian " + pageTitle + ".",
+    "Jom kita tengok " + pageTitle + ".",
+    "Awak cuba tengok bahagian " + pageTitle + " ni.",
+    "Sekarang kita berada di " + pageTitle + ".",
+    "Nah, ini dia " + pageTitle + ".",
+    "Mari kita lihat apa yang ada dalam " + pageTitle + "."
+  ];
+  let phraseIndex = Math.floor(Math.random() * phrases.length);
+  if (phrases.length > 1 && phraseIndex === studyHubAILastNavigationPhrase) {
+    phraseIndex = (phraseIndex + 1 + Math.floor(Math.random() * (phrases.length - 1))) % phrases.length;
+  }
+  studyHubAILastNavigationPhrase = phraseIndex;
+  const announcement = phrases[phraseIndex];
   studyHubAIStatusText.textContent = "Syar: " + announcement;
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   window.speechSynthesis.cancel();
