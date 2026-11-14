@@ -875,7 +875,7 @@ document.querySelectorAll('[data-subject]').forEach(card=>{
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{
  let pageId=b.dataset.page;
  // Bank Soalan dan Kuiz hanya dibuka selepas profil lengkap dan keputusan lokasi dibuat.
- if(["bank","quiz"].includes(pageId) && (!studentAccessToken || !isStudentProfileComplete())){
+ if(pageId==="quiz" && (!studentAccessToken || !isStudentProfileComplete())){
    pageId="profile";
    const note=document.getElementById("profileCompletionStatus");
    if(note)note.textContent=studentAccessToken?"Lengkapkan profil dahulu untuk membuka Bank Soalan dan Kuiz.":"Log masuk dan lengkapkan profil dahulu untuk membuka Bank Soalan dan Kuiz.";
