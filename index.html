@@ -265,6 +265,28 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
  .studyhub-ai-status strong{font-size:11px}
  .studyhub-ai-status small{font-size:9px}
 }
+.ai-chat-panel{
+ position:fixed;right:14px;bottom:82px;z-index:9999;width:min(390px,calc(100vw - 28px));
+ max-height:min(72vh,620px);display:flex;flex-direction:column;gap:10px;
+ padding:14px;background:#111a2ef5;border:1px solid #526184;border-radius:18px;
+ box-shadow:0 18px 55px #020617aa;color:#f4f7ff;backdrop-filter:blur(18px)
+}
+.ai-chat-panel[hidden]{display:none!important}
+.ai-chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ai-chat-head strong,.ai-chat-head small{display:block}.ai-chat-head small{font-size:11px;color:#aab8d2}
+.ai-chat-head button{border:0;background:#263553;color:white;border-radius:9px;padding:7px 10px;cursor:pointer}
+.ai-chat-note{font-size:11px;line-height:1.45;color:#b8c5df;margin:0}
+.ai-chat-progress{font-size:11px;color:#9fe6dc;background:#1b2b40;border-radius:9px;padding:8px 10px}
+.ai-chat-messages{display:flex;flex-direction:column;gap:9px;overflow:auto;min-height:100px;max-height:36vh;padding:3px}
+.ai-chat-welcome{font-size:12px;color:#aab8d2;padding:10px}
+.ai-chat-message{max-width:92%;padding:9px 11px;border-radius:12px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ai-chat-message.user{align-self:flex-end;background:#354879}
+.ai-chat-message.assistant{align-self:flex-start;background:#202c45}
+.ai-chat-form{display:flex;gap:8px;align-items:stretch}
+.ai-chat-form textarea{flex:1;min-width:0;resize:vertical;max-height:100px;background:#0d1528;color:white;border:1px solid #425477;border-radius:10px;padding:9px;font:inherit;font-size:13px}
+.ai-chat-form button{border:0;border-radius:10px;background:linear-gradient(100deg,#8173ef,#399acb);color:white;padding:0 12px;font-weight:750}
+.ai-chat-form button:disabled{opacity:.45}
+@media(max-width:520px){.studyhub-ai-status{left:8px;right:8px;bottom:8px;max-width:none;justify-content:center;gap:7px;padding:8px}.studyhub-ai-status button{padding:7px 8px!important}.ai-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px)}}
 @media(prefers-reduced-motion:reduce){
  body.ai-speaking .ai-aura{animation:none}
 }
@@ -489,9 +511,25 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-status" id="studyHubAIStatus" role="status" aria-live="polite">
  <span class="ai-status-orb" aria-hidden="true"></span>
- <span><strong>StudyHub AI</strong><small id="studyHubAIStatusText">AI tempatan belum diuji</small></span>
- <button id="studyHubAICheck" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Semak peranti</button>
+ <span><strong>StudyHub AI</strong><small id="studyHubAIStatusText">Model tempatan belum dimuatkan</small></span>
+ <button id="studyHubAILoad" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Muatkan AI</button>
+ <button id="studyHubAIChatToggle" type="button" style="border:1px solid #61739b;background:#253454;color:#f4f6ff;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Buka chat</button>
 </div>
+<section class="ai-chat-panel" id="studyHubAIChat" aria-label="Chat StudyHub AI" hidden>
+ <div class="ai-chat-head">
+  <div><strong>StudyHub AI</strong><small>Model berjalan pada peranti ini</small></div>
+  <button id="studyHubAIChatClose" type="button" aria-label="Tutup chat">✕</button>
+ </div>
+ <p class="ai-chat-note">Muat turun model diperlukan sekali sahaja. Gunakan Wi-Fi dan pastikan ruang storan mencukupi. Soalan diproses pada peranti selepas model dimuatkan.</p>
+ <div class="ai-chat-progress" id="studyHubAIProgress" role="status">Belum dimulakan.</div>
+ <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite">
+  <div class="ai-chat-welcome">Hai! Muatkan model dahulu untuk mula berbual dengan StudyHub AI.</div>
+ </div>
+ <form class="ai-chat-form" id="studyHubAIForm">
+  <textarea id="studyHubAIInput" rows="2" maxlength="1200" placeholder="Tulis soalan di sini..." aria-label="Soalan untuk StudyHub AI"></textarea>
+  <button id="studyHubAISend" type="submit" disabled>Hantar</button>
+ </form>
+</section>
 
 <footer>STUDYHUB STPM · Dibina untuk pembelajaran · Pastikan semua bahan dikongsi dengan kebenaran yang sesuai.</footer>
 </main>
@@ -1287,29 +1325,111 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
   }else if(adminSession){clearStoredSession(ADMIN_SESSION_KEY);}
 })();
 
-// Semakan keserasian asas AI tempatan — tidak memuat turun model atau mengaktifkan mikrofon.
-document.getElementById("studyHubAICheck")?.addEventListener("click", async () => {
-  const button = document.getElementById("studyHubAICheck");
-  const status = document.getElementById("studyHubAIStatusText");
-  button.disabled = true;
-  button.textContent = "Memeriksa...";
-  status.textContent = "Menyemak sokongan WebGPU...";
+// STUDYHUB AI tempatan: WebLLM + model ringan Qwen2.5 0.5B.
+const studyHubAIModelId = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
+let studyHubAIEngine = null;
+let studyHubAIIsBusy = false;
+let studyHubAIHistory = [
+  { role: "system", content: "Anda ialah StudyHub AI, pembantu pembelajaran STPM yang mesra dan ringkas. Jawab dalam Bahasa Melayu kecuali diminta bahasa lain. Terangkan langkah demi langkah, jangan mereka fakta; nyatakan jika tidak pasti. Bantu pembelajaran PAM, BM, KMK dan Seni Visual." }
+];
+const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
+const studyHubAIProgress = document.getElementById("studyHubAIProgress");
+const studyHubAILoadButton = document.getElementById("studyHubAILoad");
+const studyHubAIChat = document.getElementById("studyHubAIChat");
+const studyHubAIChatToggle = document.getElementById("studyHubAIChatToggle");
+const studyHubAIMessages = document.getElementById("studyHubAIMessages");
+const studyHubAIInput = document.getElementById("studyHubAIInput");
+const studyHubAISend = document.getElementById("studyHubAISend");
+
+function studyHubAIAddMessage(role, text) {
+  const welcome = studyHubAIMessages.querySelector(".ai-chat-welcome");
+  if (welcome) welcome.remove();
+  const item = document.createElement("div");
+  item.className = "ai-chat-message " + (role === "user" ? "user" : "assistant");
+  item.textContent = text;
+  studyHubAIMessages.appendChild(item);
+  studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
+}
+
+studyHubAIChatToggle?.addEventListener("click", () => {
+  studyHubAIChat.hidden = !studyHubAIChat.hidden;
+  studyHubAIChatToggle.textContent = studyHubAIChat.hidden ? "Buka chat" : "Tutup chat";
+});
+document.getElementById("studyHubAIChatClose")?.addEventListener("click", () => {
+  studyHubAIChat.hidden = true;
+  studyHubAIChatToggle.textContent = "Buka chat";
+});
+
+studyHubAILoadButton?.addEventListener("click", async () => {
+  if (studyHubAIEngine || studyHubAIIsBusy) return;
+  studyHubAIIsBusy = true;
+  studyHubAILoadButton.disabled = true;
+  studyHubAILoadButton.textContent = "Memuatkan...";
+  studyHubAIChat.hidden = false;
+  studyHubAIChatToggle.textContent = "Tutup chat";
+  studyHubAIProgress.textContent = "Memeriksa WebGPU...";
+  studyHubAIStatusText.textContent = "Menyediakan enjin AI...";
   try {
-    if (!navigator.gpu) {
-      status.textContent = "WebGPU tidak tersedia pada pelayar ini.";
-      return;
-    }
+    if (!navigator.gpu) throw new Error("WebGPU tidak tersedia dalam pelayar ini.");
     const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) {
-      status.textContent = "Pelayar ada WebGPU, tetapi GPU tidak dapat digunakan.";
-      return;
-    }
-    status.textContent = "WebGPU tersedia. Model kecil perlu diuji dahulu.";
+    if (!adapter) throw new Error("GPU tidak dapat digunakan oleh pelayar ini.");
+    studyHubAIProgress.textContent = "Memuatkan enjin WebLLM. Selepas ini model akan dimuat turun.";
+    const webllm = await import("https://esm.run/@mlc-ai/web-llm");
+    studyHubAIEngine = await webllm.CreateMLCEngine(studyHubAIModelId, {
+      initProgressCallback: (report) => {
+        const message = report?.text || "Sedang memuatkan model...";
+        studyHubAIProgress.textContent = message;
+        studyHubAIStatusText.textContent = "Memuatkan model AI...";
+      },
+      logLevel: "WARN"
+    });
+    studyHubAIProgress.textContent = "Model berjaya dimuatkan. Awak boleh mula bertanya.";
+    studyHubAIStatusText.textContent = "AI tempatan sedia digunakan";
+    studyHubAILoadButton.textContent = "AI sedia";
+    studyHubAISend.disabled = false;
+    studyHubAIInput.focus();
   } catch (error) {
-    status.textContent = "Semakan gagal. Peranti mungkin tidak menyokong AI tempatan.";
+    console.error("StudyHub AI load error:", error);
+    const message = error?.message || "Ralat tidak diketahui.";
+    studyHubAIProgress.textContent = "Tidak berjaya memuatkan AI: " + message;
+    studyHubAIStatusText.textContent = "Pemuatan AI gagal";
+    studyHubAILoadButton.disabled = false;
+    studyHubAILoadButton.textContent = "Cuba lagi";
   } finally {
-    button.disabled = false;
-    button.textContent = "Semak semula";
+    studyHubAIIsBusy = false;
+  }
+});
+
+document.getElementById("studyHubAIForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const prompt = studyHubAIInput.value.trim();
+  if (!prompt || !studyHubAIEngine || studyHubAIIsBusy) return;
+  studyHubAIInput.value = "";
+  studyHubAIAddMessage("user", prompt);
+  studyHubAIHistory.push({ role: "user", content: prompt });
+  studyHubAIHistory = [studyHubAIHistory[0], ...studyHubAIHistory.slice(-8)];
+  studyHubAIIsBusy = true;
+  studyHubAISend.disabled = true;
+  studyHubAIStatusText.textContent = "AI sedang berfikir...";
+  document.body.classList.add("ai-thinking");
+  try {
+    const result = await studyHubAIEngine.chat.completions.create({
+      messages: studyHubAIHistory,
+      temperature: 0.65,
+      max_tokens: 240
+    });
+    const answer = result?.choices?.[0]?.message?.content?.trim() || "Maaf, saya belum dapat menghasilkan jawapan.";
+    studyHubAIHistory.push({ role: "assistant", content: answer });
+    studyHubAIAddMessage("assistant", answer);
+    studyHubAIStatusText.textContent = "AI tempatan sedia digunakan";
+  } catch (error) {
+    console.error("StudyHub AI response error:", error);
+    studyHubAIAddMessage("assistant", "Maaf, berlaku ralat semasa menjawab. Cuba hantar soalan sekali lagi.");
+    studyHubAIStatusText.textContent = "Ralat semasa menjawab";
+  } finally {
+    document.body.classList.remove("ai-thinking");
+    studyHubAIIsBusy = false;
+    studyHubAISend.disabled = !studyHubAIEngine;
   }
 });
 
