@@ -462,8 +462,10 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
 </style>
 </head>
 <body>
+<button id="studyHubNavToggle" class="nav-toggle" type="button" aria-label="Buka menu navigasi" aria-controls="studyHubSidebar" aria-expanded="false"><span></span><span></span><span></span></button>
+<button id="studyHubNavBackdrop" class="nav-backdrop" type="button" aria-label="Tutup menu navigasi" hidden></button>
 <div class="app">
-<aside class="side">
+<aside class="side" id="studyHubSidebar">
  <div class="brand">STUDY<span>HUB</span></div>
  <div class="navlabel">Navigasi</div>
  <nav class="nav nav-dashboard">
@@ -773,6 +775,80 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#7b78e8!import
 }
 @supports not (height: 100dvh) {
   .ai-chat-panel { max-height: calc(100vh - 32px); }
+}
+
+
+/* NAVIGASI HAMBURGER + MOTION LEBIH RINGAN */
+html { scroll-behavior:smooth; -webkit-overflow-scrolling:touch; }
+body { scroll-behavior:smooth; }
+.side { z-index:12000; overflow-y:auto; overscroll-behavior:contain; }
+.nav-toggle,.nav-backdrop { display:none; }
+main { animation:mainFadeIn .24s ease both; }
+@keyframes mainFadeIn { from {opacity:.94} to {opacity:1} }
+.page.active { animation:pageFadeIn .2s ease both; }
+@keyframes pageFadeIn { from {opacity:.88} to {opacity:1} }
+.hero { transition:box-shadow .22s ease,border-color .22s ease; }
+.hero:hover { transform:none; }
+.hero:before { animation:none; }
+.hero .orb { animation:orbFloatSoft 5s ease-in-out infinite; }
+@keyframes orbFloatSoft { 0%,100% {transform:translateY(0)} 50% {transform:translateY(-3px)} }
+.card,.subject { transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease; }
+.card:hover,.subject:hover,.subject:hover { transform:translateY(-2px); }
+.subject:hover { box-shadow:0 8px 18px #05081644; }
+.grid>.card,.subjects>.subject { animation:cardFadeIn .28s ease both; }
+@keyframes cardFadeIn { from {opacity:.92} to {opacity:1} }
+.nav-group:hover { transform:none; }
+.nav button:hover { transform:translateX(2px); }
+body.nav-menu-open { overflow:hidden; }
+@media(max-width:900px) {
+  .nav-toggle {
+    display:flex; position:fixed; top:max(12px,env(safe-area-inset-top)); left:max(12px,env(safe-area-inset-left));
+    z-index:12003; width:46px; height:46px; padding:0; border:1px solid #566487;
+    border-radius:13px; background:#17233cf2; color:#fff; align-items:center; justify-content:center;
+    flex-direction:column; gap:5px; box-shadow:0 7px 22px #02061766; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav-toggle span { display:block; width:21px; height:2px; border-radius:2px; background:#eaf5ff; transition:transform .22s ease,opacity .18s ease; }
+  body.nav-menu-open .nav-toggle span:first-child { transform:translateY(7px) rotate(45deg); }
+  body.nav-menu-open .nav-toggle span:nth-child(2) { opacity:0; }
+  body.nav-menu-open .nav-toggle span:last-child { transform:translateY(-7px) rotate(-45deg); }
+  .nav-backdrop:not([hidden]) {
+    display:block; position:fixed; inset:0; z-index:11998; width:100%; height:100%;
+    border:0; background:#020617a8; opacity:1; backdrop-filter:blur(2px);
+  }
+  .side {
+    width:min(300px,86vw); height:100dvh; height:100vh; padding:calc(70px + env(safe-area-inset-top)) 16px 24px;
+    position:fixed; inset:0 auto 0 0; z-index:12000; overflow-y:auto;
+    transform:translateX(-105%); transition:transform .28s cubic-bezier(.22,.7,.25,1);
+    box-shadow:16px 0 38px #02061766; backdrop-filter:none;
+  }
+  body.nav-menu-open .side { transform:translateX(0); }
+  .brand { font-size:20px!important; margin:4px 10px 26px!important; }
+  .brand:after { content:none!important; }
+  .navlabel { display:block; }
+  .nav-groups { gap:9px; }
+  .nav-group>summary { justify-content:flex-start; padding:12px; }
+  .group-name,.group-chevron { display:inline; }
+  .group-chevron { margin-left:auto; }
+  .group-icon { width:20px; font-size:16px; }
+  .nav-group .nav button { font-size:13px; text-align:left; padding:9px 10px; }
+  .nav-group .nav button b { font-size:inherit; width:23px; }
+  .nav-dashboard button { font-size:14px; text-align:left; padding:12px; }
+  .nav-dashboard button b { font-size:14px; width:27px; }
+  main { margin-left:0; width:100%; padding-top:76px; }
+  .page.active { animation:pageFadeIn .18s ease both; }
+  .grid>.card,.subjects>.subject { animation:none; }
+  .hero .orb { animation:none; }
+}
+@media(max-width:520px) {
+  .side { width:min(290px,88vw); }
+  main { padding-top:76px; }
+  .card:hover,.subject:hover,.hero:hover,.nav button:hover { transform:none; }
+  .nav button:active,.btn:active { transform:scale(.985); }
+}
+@media(prefers-reduced-motion:reduce) {
+  html,body { scroll-behavior:auto!important; }
+  .side,.nav-toggle span,.page.active,.hero .orb { transition:none!important; animation:none!important; }
 }
 
 </style>
@@ -2261,6 +2337,34 @@ studyHubAITextForm.addEventListener("submit", async event => {
   viewport.addEventListener("scroll", updateStudyHubViewport, {passive:true});
   window.addEventListener("orientationchange", updateStudyHubViewport, {passive:true});
   updateStudyHubViewport();
+})();
+</script>
+
+
+<script>
+/* Menu hamburger responsif untuk telefon dan tablet. */
+(function () {
+  const toggle = document.getElementById("studyHubNavToggle");
+  const backdrop = document.getElementById("studyHubNavBackdrop");
+  const sidebar = document.getElementById("studyHubSidebar");
+  if (!toggle || !backdrop || !sidebar) return;
+  const mobileNav = window.matchMedia("(max-width: 900px)");
+  function setMenuOpen(open) {
+    const shouldOpen = !!open && mobileNav.matches;
+    document.body.classList.toggle("nav-menu-open", shouldOpen);
+    toggle.setAttribute("aria-expanded", String(shouldOpen));
+    toggle.setAttribute("aria-label", shouldOpen ? "Tutup menu navigasi" : "Buka menu navigasi");
+    backdrop.hidden = !shouldOpen;
+  }
+  toggle.addEventListener("click", () => setMenuOpen(!document.body.classList.contains("nav-menu-open")));
+  backdrop.addEventListener("click", () => setMenuOpen(false));
+  sidebar.querySelectorAll("[data-page]").forEach(button => button.addEventListener("click", () => setMenuOpen(false)));
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") setMenuOpen(false);
+  });
+  mobileNav.addEventListener("change", event => {
+    if (!event.matches) setMenuOpen(false);
+  });
 })();
 </script>
 
