@@ -1869,10 +1869,36 @@ function studyHubSYARSetChatStatus(message) {
   if (studyHubAIChatStatus) studyHubAIChatStatus.textContent = message;
   if (studyHubAIStatusText) studyHubAIStatusText.textContent = message;
 }
+function studyHubSYAREscapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[char]);
+}
+function studyHubSYARFormatChatText(message) {
+  // Paparkan format Markdown asas tanpa mendedahkan lambang pemformatan.
+  return studyHubSYAREscapeHTML(message)
+    .replace(/\\*\\*(.+?)\\*\\*/gs, "<strong>$1</strong>")
+    .replace(/\\*(?!\\s)(.+?)(?<!\\s)\\*/gs, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\\n/g, "<br>");
+}
+function studyHubSYARCleanForSpeech(message) {
+  return String(message || "")
+    .replace(/\\*\\*(.+?)\\*\\*/gs, "$1")
+    .replace(/\\*(?!\\s)(.+?)(?<!\\s)\\*/gs, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/^\\s{0,3}#{1,6}\\s+/gm, "")
+    .replace(/^\\s*[-•]\\s+/gm, "")
+    .replace(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g, "$1")
+    .replace(/https?:\\/\\/\\S+/g, "")
+    .replace(/[ \\t]+/g, " ")
+    .replace(/\\n{3,}/g, "\\n\\n")
+    .trim();
+}
 function studyHubSYARAddChatMessage(role, message) {
   const bubble = document.createElement("div");
   bubble.className = "ai-chat-message " + role;
-  bubble.textContent = message;
+  bubble.innerHTML = studyHubSYARFormatChatText(message);
   studyHubAIMessages.appendChild(bubble);
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
@@ -1884,7 +1910,7 @@ function studyHubSYARSpeakReply(message) {
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   window.speechSynthesis.cancel();
   studyHubSYARSetSpeaking(false);
-  const utterance = new SpeechSynthesisUtterance(message);
+  const utterance = new SpeechSynthesisUtterance(studyHubSYARCleanForSpeech(message));
   utterance.lang = "ms-MY";
   utterance.rate = 1;
   utterance.pitch = 1;
