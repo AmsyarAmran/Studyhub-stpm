@@ -1131,7 +1131,7 @@ function renderStudents(){
     const date = student.created_at
       ? new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"short",year:"numeric"})
       : "—";
-    return "<tr><td>"+(index+1)+"</td><td><button type=\"button\" class=\"student-profile-link\" data-public-student=\""+index+"\">"+escapeStudentText(student.display_name)+"</button></td><td>"+date+"</td></tr>";
+    return "<tr><td>"+(index+1)+"</td><td><button type=\"button\" class=\"student-profile-link\" data-public-student=\""+approvedStudents.indexOf(student)+"\">"+escapeStudentText(student.display_name)+"</button></td><td>"+date+"</td></tr>";
   }).join("");
   document.getElementById("studentCount").textContent = approvedStudents.length+" pelajar";
   document.getElementById("studentEmpty").hidden = filtered.length !== 0;
