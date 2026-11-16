@@ -2369,5 +2369,99 @@ studyHubAITextForm.addEventListener("submit", async event => {
 })();
 </script>
 
+
+<style id="studyhub-motion-system-2">
+/* STUDYHUB MOTION SYSTEM 2.0 — gerakan konsisten, ringan dan mesra peranti */
+:root {
+  --sh-motion-fast: 160ms;
+  --sh-motion-normal: 240ms;
+  --sh-motion-slow: 360ms;
+  --sh-motion-ease: cubic-bezier(.2,.72,.25,1);
+}
+html { scroll-behavior:smooth; }
+button, a, input, select, textarea, summary {
+  -webkit-tap-highlight-color:transparent;
+}
+button, a, summary, .card, .subject, .day, .tag {
+  transition-duration:var(--sh-motion-normal);
+  transition-timing-function:var(--sh-motion-ease);
+}
+button:focus-visible, a:focus-visible, summary:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline:2px solid var(--cyan,#53d8e8);
+  outline-offset:3px;
+}
+@media (hover:hover) and (pointer:fine) {
+  .card:hover, .subject:hover, .day:hover { transform:translateY(-2px); }
+  .nav button:hover { transform:translateX(2px); }
+}
+button:active, .btn:active, .nav button:active {
+  transform:scale(.985);
+}
+.nav-toggle { transition:background var(--sh-motion-normal) var(--sh-motion-ease),box-shadow var(--sh-motion-normal) var(--sh-motion-ease); }
+.nav-backdrop:not([hidden]) { animation:shBackdropIn var(--sh-motion-normal) ease both; }
+@keyframes shBackdropIn { from {opacity:0} to {opacity:1} }
+.toast, .notification, .alert, [role="alert"] {
+  animation:shToastIn var(--sh-motion-normal) var(--sh-motion-ease) both;
+}
+@keyframes shToastIn {
+  from {opacity:0;transform:translateY(8px)}
+  to {opacity:1;transform:translateY(0)}
+}
+/* Scroll reveal hanya menggunakan opacity dan anjakan kecil. */
+.sh-motion-reveal {
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity 420ms var(--sh-motion-ease),transform 420ms var(--sh-motion-ease);
+}
+.sh-motion-reveal.sh-motion-visible { opacity:1;transform:translateY(0); }
+@media(max-width:900px) {
+  .sh-motion-reveal { transform:translateY(5px);transition-duration:340ms; }
+  body:before { animation:none!important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto!important; }
+  *,*::before,*::after {
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+  .sh-motion-reveal { opacity:1!important;transform:none!important; }
+}
+</style>
+<script id="studyhub-motion-system-2-init">
+/* Pemerhati scroll ringan; kandungan dinamik turut disokong. */
+(function () {
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) return;
+  const targets = ".hero,.card,.subject,.leaderboard-banner,.notice";
+  const reveal = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("sh-motion-visible");
+      reveal.unobserve(entry.target);
+    });
+  }, {threshold:0.08, rootMargin:"0px 0px -24px 0px"});
+  function observe(root) {
+    if (!root || root.nodeType !== 1) return;
+    if (root.matches && root.matches(targets) && !root.classList.contains("sh-motion-reveal")) {
+      root.classList.add("sh-motion-reveal");
+      reveal.observe(root);
+    }
+    if (root.querySelectorAll) {
+      root.querySelectorAll(targets + ":not(.sh-motion-reveal)").forEach((element) => {
+        element.classList.add("sh-motion-reveal");
+        reveal.observe(element);
+      });
+    }
+  }
+  observe(document.body);
+  const changes = new MutationObserver((records) => {
+    records.forEach((record) => record.addedNodes.forEach(observe));
+  });
+  changes.observe(document.body, {childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>
