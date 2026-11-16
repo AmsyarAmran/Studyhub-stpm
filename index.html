@@ -430,9 +430,23 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
  border:2px solid #b9d5ff;background:linear-gradient(145deg,#e9f2ff,#c9ddff);
  box-shadow:0 0 0 3px #ffffff70,0 8px 24px #315ca855;
 }
-.studyhub-mascot-avatar svg{width:100%;height:100%;display:block;overflow:hidden}
-.studyhub-mascot-avatar svg .syar-eyes{transform-origin:center;animation:syarBlink 5.2s infinite}
-@keyframes syarBlink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.08)}}
+.studyhub-mascot-avatar{
+ background-image:url("data:image/jpeg;base64,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");
+ background-repeat:no-repeat;background-size:700% 100%;background-position:0% center;
+}
+body.ai-happy .studyhub-mascot-avatar{background-position:16.6667% center}
+body.ai-speaking .studyhub-mascot-avatar{background-position:33.3333% center}
+body.ai-thinking .studyhub-mascot-avatar{background-position:50% center}
+body.ai-listening .studyhub-mascot-avatar{background-position:66.6667% center}
+body.ai-surprised .studyhub-mascot-avatar{background-position:83.3333% center}
+body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
+.ai-chat-message.assistant{position:relative;margin-left:38px}
+.ai-chat-message.assistant::before{
+ content:"";position:absolute;left:-38px;top:2px;width:30px;height:30px;border-radius:50%;
+ border:1px solid #b9d5ff;background-image:url("data:image/jpeg;base64,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");
+ background-size:700% 100%;background-position:0% center;background-repeat:no-repeat;
+ box-shadow:0 2px 8px #0003;
+}
 .studyhub-mascot:hover .studyhub-mascot-avatar{transform:rotate(-9deg) scale(1.08)}
 .studyhub-mascot-avatar{transition:transform .2s ease}
 @keyframes syarMascotFloat{
@@ -630,29 +644,11 @@ body.ai-listening .studyhub-ai-status .ai-status-orb{background:#54a9ff;box-shad
   </form>
  </div>
  <div id="adminDashboard" hidden>
-  <style>#adminPendingSection{display:none!important}
-
-/* SYAR EXPRESSIVE FACE — enam ekspresi automatik */
-.syar-listen-eyes,.syar-surprise-eyes,.syar-headphones,.syar-hearts{display:none}
-.syar-eyes{transform-origin:70px 75px;transition:transform .2s ease,opacity .2s ease}
-.syar-mouth-closed,.syar-mouth-open{transition:opacity .15s ease,transform .15s ease;transform-origin:70px 98px}
-body.ai-speaking .syar-mouth-closed{opacity:0}
-body.ai-speaking .syar-mouth-open{opacity:1;animation:syarTalkMouth .22s ease-in-out infinite alternate}
-.syar-mouth-open{opacity:0}
-@keyframes syarTalkMouth{from{transform:scaleY(.65)}to{transform:scaleY(1.2)}}
-body.ai-thinking .syar-eyes{transform:translate(-3px,3px) scale(.88)}
-body.ai-thinking .syar-mouth-closed{transform:translate(4px,-1px) rotate(-12deg)}
-body.ai-listening .syar-eyes{display:none}
-body.ai-listening .syar-listen-eyes,body.ai-listening .syar-headphones{display:block}
-body.ai-surprised .syar-eyes{display:none}
-body.ai-surprised .syar-surprise-eyes{display:block}
-body.ai-surprised .syar-mouth-closed{opacity:0}
-body.ai-surprised .syar-mouth-open{opacity:1;transform:scale(1.3)}
-body.ai-shy .syar-eyes{transform:scaleY(.55) translateY(10px)}
-body.ai-shy .syar-hearts{display:block}
-body.ai-shy .syar-mouth-closed{transform:scale(.75)}
-.studyhub-mascot-avatar svg{width:100%;height:100%;overflow:visible}
-@media(prefers-reduced-motion:reduce){.syar-mouth-open{animation:none!important}}
+  <style>
+#adminPendingSection{display:none!important}
+/* Syar menggunakan sprite imej JPG, bukan SVG */
+.studyhub-mascot-avatar{transition:transform .2s ease,background-position .22s ease}
+@media(prefers-reduced-motion:reduce){.studyhub-mascot-avatar{transition:none}}
 </style>
   <div class="admin-quick-nav"><a href="#adminLocationSection">📍 Lokasi</a><a href="#adminQuizSection">📝 Pengurusan kuiz</a><a href="#adminQuizListSection">📚 Senarai soalan</a></div>
   <div class="admin-logout-row"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
@@ -707,49 +703,7 @@ body.ai-shy .syar-mouth-closed{transform:scale(.75)}
 
 <button class="studyhub-mascot" id="studyHubMascot" type="button" aria-label="Buka chat dengan Syar, pembantu StudyHub" aria-expanded="false" aria-controls="studyHubAIChatPanel">
  <span class="studyhub-mascot-bubble"><strong>Hai, saya Syar!</strong>Perlukan bantuan? Tekan saya 😊</span>
- <span class="studyhub-mascot-avatar" aria-hidden="true">
-  <svg viewBox="0 0 160 160" role="img" aria-label="Syar, maskot chibi berhoodie biru">
-   <defs>
-    <linearGradient id="syarHoodie" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#315caa"/><stop offset=".55" stop-color="#18366e"/><stop offset="1" stop-color="#0c1b3d"/></linearGradient>
-    <linearGradient id="syarHair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#75534a"/><stop offset=".38" stop-color="#49332f"/><stop offset="1" stop-color="#171522"/></linearGradient>
-    <radialGradient id="syarSkin" cx=".5" cy=".32" r=".75"><stop offset="0" stop-color="#ffe0ce"/><stop offset="1" stop-color="#f2ad9c"/></radialGradient>
-    <radialGradient id="syarIris"><stop offset="0" stop-color="#a66a45"/><stop offset=".7" stop-color="#58382f"/><stop offset="1" stop-color="#241b20"/></radialGradient>
-   </defs>
-   <!-- bahu dan hoodie biru gelap -->
-   <path d="M10 160 Q13 119 40 108 Q55 101 80 101 Q106 101 121 109 Q148 120 151 160Z" fill="url(#syarHoodie)" stroke="#101b39" stroke-width="3"/>
-   <path d="M48 112 Q63 129 80 132 Q98 128 112 111 L124 160H36Z" fill="#e8efff"/>
-   <path d="M31 132 Q46 118 58 120M129 132 Q114 118 102 120" fill="none" stroke="#537fc7" stroke-width="4" stroke-linecap="round"/>
-   <path d="M58 96 L55 116 Q80 139 105 116 L102 96Z" fill="url(#syarSkin)"/>
-   <!-- telinga dan muka -->
-   <ellipse cx="34" cy="73" rx="10" ry="16" fill="#f2b4a2"/>
-   <ellipse cx="126" cy="73" rx="10" ry="16" fill="#f2b4a2"/>
-   <path d="M35 54 Q38 21 80 19 Q122 20 125 58 L119 91 Q109 113 80 117 Q50 113 40 91Z" fill="url(#syarSkin)" stroke="#9b655b" stroke-width="1.5"/>
-   <!-- rambut tebal berlapis, sedikit kusut -->
-   <path d="M29 78 Q15 55 27 31 Q34 18 51 15 Q60 0 80 10 Q99 -1 115 17 Q139 25 133 58 Q139 70 126 88 L116 69 Q108 56 96 52 Q83 66 69 55 Q55 69 42 62 L37 87Z" fill="url(#syarHair)" stroke="#211b25" stroke-width="3" stroke-linejoin="round"/>
-   <path d="M30 57 Q23 29 47 18 Q44 37 62 42 Q59 21 77 12 Q74 34 91 39 Q92 19 110 21 Q105 38 122 47 Q112 47 103 58 Q91 48 82 57 Q67 45 56 61 Q43 52 30 67Z" fill="#49312f"/>
-   <path d="M38 46 Q31 24 49 12 Q50 34 65 39 Q62 17 79 7 Q79 29 91 36 Q100 17 116 22 Q108 38 128 50 Q111 43 102 62 Q92 51 82 63 Q70 51 59 67 Q47 56 36 70Z" fill="none" stroke="#876257" stroke-width="3" stroke-linecap="round" opacity=".72"/>
-   <path d="M31 70 Q18 58 25 43 Q30 54 41 54M115 30 Q130 33 132 49 Q122 43 114 48M67 19 Q71 2 85 5 Q81 17 88 28" fill="#39292b" stroke="#211b25" stroke-width="2" stroke-linejoin="round"/>
-   <!-- kening dan mata anime besar -->
-   <path d="M43 66 Q55 57 67 65M91 65 Q104 57 117 66" fill="none" stroke="#49302d" stroke-width="4" stroke-linecap="round"/>
-   <g class="syar-eyes syar-blink">
-    <ellipse cx="56" cy="78" rx="12" ry="15" fill="#fffdfb"/><ellipse cx="104" cy="78" rx="12" ry="15" fill="#fffdfb"/>
-    <ellipse cx="58" cy="80" rx="8.5" ry="12" fill="url(#syarIris)"/><ellipse cx="106" cy="80" rx="8.5" ry="12" fill="url(#syarIris)"/>
-    <ellipse cx="59" cy="82" rx="4.8" ry="8" fill="#171522"/><ellipse cx="107" cy="82" rx="4.8" ry="8" fill="#171522"/>
-    <circle cx="62" cy="73" r="4" fill="#fff"/><circle cx="110" cy="73" r="4" fill="#fff"/>
-    <circle cx="53" cy="86" r="2" fill="#fff" opacity=".8"/><circle cx="101" cy="86" r="2" fill="#fff" opacity=".8"/>
-   </g>
-   <g class="syar-listen-eyes" fill="none" stroke="#573b38" stroke-width="4" stroke-linecap="round"><path d="M44 80 Q56 89 68 80"/><path d="M92 80 Q104 89 116 80"/></g>
-   <g class="syar-surprise-eyes"><ellipse cx="56" cy="78" rx="13" ry="17" fill="#fff"/><ellipse cx="104" cy="78" rx="13" ry="17" fill="#fff"/><circle cx="57" cy="80" r="6" fill="#34232a"/><circle cx="105" cy="80" r="6" fill="#34232a"/></g>
-   <g class="syar-headphones" fill="none" stroke="#c5d2eb" stroke-width="7"><path d="M27 82 V64 Q27 13 80 13 Q133 13 133 64 V82"/><rect x="17" y="72" width="17" height="31" rx="7" fill="#7187ad"/><rect x="126" y="72" width="17" height="31" rx="7" fill="#7187ad"/></g>
-   <!-- pipi merah jambu -->
-   <ellipse cx="43" cy="94" rx="10" ry="5" fill="#ed8e9d" opacity=".48"/><ellipse cx="117" cy="94" rx="10" ry="5" fill="#ed8e9d" opacity=".48"/>
-   <g class="syar-hearts" fill="#f18aa8"><path d="M124 35 C116 25 103 38 124 52 C145 38 132 25 124 35Z"/><path d="M25 103 C19 96 10 105 25 115 C40 105 31 96 25 103Z"/></g>
-   <path d="M76 91 Q80 94 84 91" fill="none" stroke="#c17e70" stroke-width="2" stroke-linecap="round"/>
-   <path class="syar-mouth-closed" d="M68 102 Q80 108 92 101" fill="none" stroke="#a34859" stroke-width="3.5" stroke-linecap="round"/>
-   <ellipse class="syar-mouth-open" cx="80" cy="103" rx="9" ry="7" fill="#9b354d" stroke="#7e293e" stroke-width="1.5"/>
-   <path d="M64 116 Q80 123 96 115" fill="none" stroke="#df8d91" stroke-width="2" opacity=".55"/>
-  </svg>
- </span>
+ <span class="studyhub-mascot-avatar" role="img" aria-label="Syar, maskot chibi StudyHub"></span>
 </button>
 <div class="ai-aura" aria-hidden="true"></div>
 <div class="studyhub-ai-controls">
