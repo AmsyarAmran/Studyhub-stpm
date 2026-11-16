@@ -543,7 +543,6 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
     <div id="studentRegistrationFields">
      <label for="displayName" class="muted" style="display:block;margin-bottom:6px">Nama paparan</label>
      <input id="displayName" name="displayName" maxlength="24" minlength="2" autocomplete="nickname" placeholder="Contoh: PelajarSTPM27" style="width:100%;max-width:420px;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;margin-bottom:12px">
-     <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted);margin-bottom:14px"><input id="publicConsent" type="checkbox" style="margin-top:4px"> Saya bersetuju nama paparan ini dipaparkan secara umum dalam Direktori Pelajar StudyHub.</label>
     </div>
     <button class="btn" id="studentSubmit" type="submit">Daftar akaun</button>
     <p id="studentMessage" class="muted" role="status" aria-live="polite" style="margin:12px 0 0;font-size:13px"></p>
@@ -1632,7 +1631,6 @@ function setStudentAuthMode(mode){
   document.getElementById("studentPassword").disabled = registering;
   document.getElementById("studentRegistrationFields").hidden = !signup;
   document.getElementById("displayName").required = signup;
-  document.getElementById("publicConsent").required = signup;
   document.getElementById("studentSubmit").textContent = registering ? "Hantar pendaftaran" : signup ? "Daftar akaun" : "Log masuk";
   document.getElementById("studentSignupMode").style.background = signup ? "" : "#526184";
   document.getElementById("studentLoginMode").style.background = signup ? "#526184" : "";
@@ -1665,7 +1663,7 @@ async function checkStudentRegistration(){
     showStudentSession("Akaun berjaya log masuk","Lengkapkan pendaftaran nama paparan anda di bawah.");
     document.getElementById("studentAuthPanel").hidden = false;
     setStudentAuthMode("register");
-    studentMessage.textContent = "Lengkapkan nama paparan dan persetujuan untuk menghantar pendaftaran.";
+    studentMessage.textContent = "Lengkapkan nama paparan untuk menyertai Direktori Pelajar awam.";
   }
 }
 document.getElementById("studentSignupMode").addEventListener("click",()=>setStudentAuthMode("signup"));
@@ -1678,7 +1676,6 @@ studentForm.addEventListener("submit",async event=>{
   const displayName=document.getElementById("displayName").value.trim();
   if(studentAuthMode==="signup" || studentAuthMode==="register"){
     if(displayName.length<2||displayName.length>24){studentMessage.textContent="Nama paparan mestilah antara 2 hingga 24 aksara.";return;}
-    if(!document.getElementById("publicConsent").checked){studentMessage.textContent="Sila berikan persetujuan sebelum menghantar nama.";return;}
   }
   submit.disabled=true;submit.textContent=studentAuthMode==="register"?"Menghantar...":studentAuthMode==="signup"?"Mendaftar...":"Log masuk...";
   studentMessage.textContent="";
