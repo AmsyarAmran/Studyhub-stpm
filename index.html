@@ -33,7 +33,7 @@ tbody tr{animation:rowIn .25s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 a{transition:color .2s,opacity .2s}
 a:hover{color:white!important;text-decoration:underline}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 
 @media(max-width:900px){.side{width:76px;padding:18px 9px}.brand{font-size:0;margin:5px 8px 28px}.brand:after{content:"SH";font-size:19px;color:var(--cyan)}.navlabel{display:none}.nav-groups{gap:8px}.nav-group>summary{justify-content:center;padding:10px 4px}.group-name,.group-chevron{display:none}.group-icon{width:auto;font-size:18px}.nav-group .nav button{font-size:0;text-align:center;padding:10px 4px}.nav-group .nav button b{font-size:17px;width:auto}main{margin-left:76px;width:calc(100% - 76px)}.grid{grid-template-columns:repeat(2,1fr)}.subjects{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){main{padding:22px 14px 45px}.top{align-items:flex-start}.pill{display:none}.hero{padding:20px}.hero .orb{width:60px;height:60px;font-size:25px}.grid{gap:9px}.card{padding:13px}.stat{font-size:22px}.subjects{gap:9px}.subject{padding:13px}}
@@ -381,9 +381,7 @@ body.ai-speaking .studyhub-ai-status .ai-status-orb{background:#5de2cf;box-shado
 .ai-chat-form button{border:0;border-radius:10px;background:linear-gradient(100deg,#8173ef,#399acb);color:white;padding:0 12px;font-weight:750}
 .ai-chat-form button:disabled{opacity:.45}
 @media(max-width:520px){.studyhub-ai-status{left:8px;right:8px;bottom:8px;max-width:none;justify-content:center;gap:7px;padding:8px}.studyhub-ai-status button{padding:7px 8px!important}.ai-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px)}}
-@media(prefers-reduced-motion:reduce){
- body.ai-speaking .ai-aura{animation:none}
-}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 
 
 /* STUDYHUB SYAR VOICE CHAT */
@@ -458,7 +456,7 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
  .studyhub-mascot-bubble{max-width:142px;padding:7px 9px;font-size:10px}
  .studyhub-mascot-avatar{width:48px;height:48px;border-radius:50%;font-size:26px}
 }
-@media(prefers-reduced-motion:reduce){.studyhub-mascot{animation:none}}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 </style>
 </head>
 <body>
@@ -686,7 +684,7 @@ body.ai-thinking .ai-chat-message.assistant::before{background-position:50% cent
 body.ai-listening .ai-chat-message.assistant::before{background-position:66.6667% center!important}
 body.ai-surprised .ai-chat-message.assistant::before{background-position:83.3333% center!important}
 body.ai-shy .ai-chat-message.assistant::before{background-position:100% center!important}
-@media(prefers-reduced-motion:reduce){.studyhub-mascot-avatar{transition:none!important}}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 
 /* STUDYHUB PREMIUM DYNAMIC MOTION */
 :root{scroll-behavior:smooth}
@@ -734,10 +732,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#7b78e8!import
 .pill,.tag{transition:transform .25s,filter .25s}
 .pill:hover,.tag:hover{transform:translateY(-2px);filter:brightness(1.18)}
 .studyhub-mascot{filter:drop-shadow(0 8px 20px #05081655)}
-@media(prefers-reduced-motion:reduce){
- body:before,main,.page.active,.hero:before,.hero .orb,.card,.subject,.grid>.card,.subjects>.subject{animation:none!important}
- .hero,.nav-group,.nav-dashboard button,.nav button,.btn,.card,.subject,.tablewrap{transition:none!important}
-}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 
 /* PENYESUAIAN SAFARI iOS, IPAD DAN PAPARAN KEYBOARD */
 @supports (padding: max(0px)) {
@@ -837,9 +832,10 @@ body.nav-menu-open { overflow:hidden; }
   .nav-dashboard button b { font-size:14px; width:27px; }
   main { margin-left:0; width:100%; padding-top:76px; }
   .page.active { animation:pageFadeIn .18s ease both; }
-  .grid>.card,.subjects>.subject { animation:none; }
-  .hero .orb { animation:none; }
-  body:before { animation:none; }
+  .grid>.card,.subjects>.subject { animation:pageFadeIn .42s ease both; }
+  .grid>.card:nth-child(2n),.subjects>.subject:nth-child(2n) { animation-delay:70ms; }
+  .hero .orb { animation:orbFloat 5s ease-in-out infinite; }
+  body:before { animation:studyHubAmbientSweep 24s linear infinite; }
 }
 @media(max-width:520px) {
   .side { width:min(290px,88vw); }
@@ -847,10 +843,7 @@ body.nav-menu-open { overflow:hidden; }
   .card:hover,.subject:hover,.hero:hover,.nav button:hover { transform:none; }
   .nav button:active,.btn:active { transform:scale(.985); }
 }
-@media(prefers-reduced-motion:reduce) {
-  html,body { scroll-behavior:auto!important; }
-  .side,.nav-toggle span,.page.active,.hero .orb { transition:none!important; animation:none!important; }
-}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 
 </style>
   <div class="admin-quick-nav"><a href="#adminLocationSection">📍 Lokasi</a><a href="#adminQuizSection">📝 Pengurusan kuiz</a><a href="#adminQuizListSection">📚 Senarai soalan</a></div>
@@ -2416,25 +2409,15 @@ button:active, .btn:active, .nav button:active {
 }
 .sh-motion-reveal.sh-motion-visible { opacity:1;transform:translateY(0); }
 @media(max-width:900px) {
-  .sh-motion-reveal { transform:translateY(5px);transition-duration:340ms; }
-  body:before { animation:none!important; }
+  .sh-motion-reveal { transform:translateY(7px);transition-duration:420ms; }
+  body:before { animation-duration:24s; }
 }
-@media(prefers-reduced-motion:reduce) {
-  html { scroll-behavior:auto!important; }
-  *,*::before,*::after {
-    animation-duration:.01ms!important;
-    animation-iteration-count:1!important;
-    transition-duration:.01ms!important;
-    scroll-behavior:auto!important;
-  }
-  .sh-motion-reveal { opacity:1!important;transform:none!important; }
-}
+/* Reduced-motion override removed: StudyHub motion remains enabled. */
 </style>
 <script id="studyhub-motion-system-2-init">
 /* Pemerhati scroll ringan; kandungan dinamik turut disokong. */
 (function () {
-  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion || !("IntersectionObserver" in window)) return;
+  if (!("IntersectionObserver" in window)) return;
   const targets = ".hero,.card,.subject,.leaderboard-banner,.notice";
   const reveal = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
