@@ -646,9 +646,30 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
  <div id="adminDashboard" hidden>
   <style>
 #adminPendingSection{display:none!important}
-/* Syar menggunakan sprite imej JPG, bukan SVG */
-.studyhub-mascot-avatar{transition:transform .2s ease,background-position .22s ease}
-@media(prefers-reduced-motion:reduce){.studyhub-mascot-avatar{transition:none}}
+/* Syar: ekspresi imej bertukar serta-merta, tanpa animasi slide atau bingkai */
+.studyhub-mascot-avatar{
+ width:82px;height:82px;display:block;flex:0 0 82px;overflow:hidden;
+ border:0!important;border-radius:0!important;outline:0!important;
+ background-color:transparent!important;box-shadow:none!important;
+ background-repeat:no-repeat!important;background-size:700% 100%!important;
+ background-position:16.6667% center!important;transition:none!important;
+}
+body.ai-happy .studyhub-mascot-avatar{background-position:16.6667% center!important}
+body.ai-speaking .studyhub-mascot-avatar{background-position:33.3333% center!important}
+body.ai-thinking .studyhub-mascot-avatar{background-position:50% center!important}
+body.ai-listening .studyhub-mascot-avatar{background-position:66.6667% center!important}
+body.ai-surprised .studyhub-mascot-avatar{background-position:83.3333% center!important}
+body.ai-shy .studyhub-mascot-avatar{background-position:100% center!important}
+.ai-chat-message.assistant::before{
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ background-position:16.6667% center!important;
+}
+body.ai-speaking .ai-chat-message.assistant::before{background-position:33.3333% center!important}
+body.ai-thinking .ai-chat-message.assistant::before{background-position:50% center!important}
+body.ai-listening .ai-chat-message.assistant::before{background-position:66.6667% center!important}
+body.ai-surprised .ai-chat-message.assistant::before{background-position:83.3333% center!important}
+body.ai-shy .ai-chat-message.assistant::before{background-position:100% center!important}
+@media(prefers-reduced-motion:reduce){.studyhub-mascot-avatar{transition:none!important}}
 </style>
   <div class="admin-quick-nav"><a href="#adminLocationSection">📍 Lokasi</a><a href="#adminQuizSection">📝 Pengurusan kuiz</a><a href="#adminQuizListSection">📚 Senarai soalan</a></div>
   <div class="admin-logout-row"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
