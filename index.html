@@ -660,6 +660,20 @@ body.ai-thinking .studyhub-mascot-avatar{background-position:50% center!importan
 body.ai-listening .studyhub-mascot-avatar{background-position:66.6667% center!important}
 body.ai-surprised .studyhub-mascot-avatar{background-position:83.3333% center!important}
 body.ai-shy .studyhub-mascot-avatar{background-position:100% center!important}
+
+/* Pergerakan Syar hanya ketika suara sedang dimainkan */
+@keyframes syarSpeakingMotion{
+  0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  25%{transform:translate3d(-1px,-3px,0) rotate(-2deg) scale(1.015)}
+  50%{transform:translate3d(0,-5px,0) rotate(1.5deg) scale(1.025)}
+  75%{transform:translate3d(1px,-2px,0) rotate(-1deg) scale(1.01)}
+}
+body.ai-speaking .studyhub-mascot-avatar{
+  animation:syarSpeakingMotion .52s ease-in-out infinite;
+  transform-origin:50% 85%;
+  will-change:transform;
+}
+body:not(.ai-speaking) .studyhub-mascot-avatar{animation:none}
 .ai-chat-message.assistant::before{
  border:0!important;border-radius:0!important;box-shadow:none!important;
  background-position:16.6667% center!important;
