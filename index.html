@@ -2324,6 +2324,9 @@ function studyHubSYARAddChatMessage(role, message) {
 function studyHubSYARSetReplyExpression(message) {
   const text = String(message || "").toLowerCase();
   const states = [
+    ["ai-angry", /(?:dilarang|bahaya|jangan lakukan|salah guna|tidak dibenarkan)/],
+    ["ai-crying", /(?:menangis|kehilangan|sangat sedih|takziah)/],
+    ["ai-embarrassed", /(?:malu|segan|tersipu|terlupa)/],
     ["ai-love", /(?:terima kasih|sama-sama|bangga|tahniah|syabas|hebat|awak berjaya|saya hargai)/],
     ["ai-worried", /(?:jangan risau|bimbang|berhati-hati|keselamatan|sukar|masalah)/],
     ["ai-sad", /(?:maaf|kesilapan|tersilap|kecewa|sedih|kehilangan)/],
@@ -2333,7 +2336,7 @@ function studyHubSYARSetReplyExpression(message) {
     ["ai-surprised", /(?:wah|wow|eh\b|oh\b|mengejutkan|terkejut)/],
     ["ai-happy", /(?:bagus|baik sekali|cemerlang|menarik|seronok|gembira|berjaya)/]
   ];
-  const classes = ["ai-love","ai-worried","ai-sad","ai-mischievous","ai-wink","ai-cool","ai-surprised","ai-happy"];
+  const classes = ["ai-angry","ai-crying","ai-embarrassed","ai-love","ai-worried","ai-sad","ai-mischievous","ai-wink","ai-cool","ai-surprised","ai-happy"];
   document.body.classList.remove(...classes);
   if (studyHubSYARSetReplyExpression.timer) window.clearTimeout(studyHubSYARSetReplyExpression.timer);
   const match = states.find(([, pattern]) => pattern.test(text));
@@ -2344,7 +2347,7 @@ function studyHubSYARSetReplyExpression(message) {
 }
 function studyHubSYARSetSpeaking(isSpeaking) {
   document.body.classList.toggle("ai-speaking", !!isSpeaking);
-  if (isSpeaking) document.body.classList.remove("ai-surprised","ai-shy","ai-love","ai-worried","ai-sad","ai-mischievous","ai-wink","ai-cool","ai-happy");
+  if (isSpeaking) document.body.classList.remove("ai-surprised","ai-shy","ai-angry","ai-crying","ai-embarrassed","ai-love","ai-worried","ai-sad","ai-mischievous","ai-wink","ai-cool","ai-happy");
 }
 function studyHubSYARApplySoftFemaleVoice(utterance) {
   utterance.lang = "ms-MY";
