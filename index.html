@@ -1188,7 +1188,7 @@ function openPublicStudentProfile(student){
  document.getElementById("publicProfileBio").textContent=String(profile.bio||"Bio belum ditambah.").slice(0,240);
  const panel=document.getElementById("publicStudentProfile");panel.hidden=false;document.body.style.overflow="hidden";
 }
-function closePublicStudentProfile(){document.getElementById("publicStudentProfile").hidden=true;document.body.style.overflow="";}
+function closePublicStudentProfile(){const video=document.getElementById("publicProfileWallpaperVideo");video.pause();document.getElementById("publicStudentProfile").hidden=true;document.body.style.overflow="";}
 studentRows.addEventListener("click",event=>{const button=event.target.closest("[data-public-student]");if(!button)return;const student=approvedStudents[Number(button.dataset.publicStudent)];openPublicStudentProfile(student);});
 document.getElementById("publicProfileClose").addEventListener("click",closePublicStudentProfile);
 document.getElementById("publicStudentProfile").addEventListener("click",event=>{if(event.target.id==="publicStudentProfile")closePublicStudentProfile();});
@@ -1697,6 +1697,51 @@ function showStudentSession(status,message){
   document.getElementById("studentAccountStatus").textContent = status;
   document.getElementById("studentAccountMessage").textContent = message;
 }
+async function loadOwnPublicStudentProfile(){
+ if(!studentAccessToken||!studentUserId)return false;
+ try{
+  const response=await fetch(SUPABASE_URL+"/rest/v1/studyhub_public_profiles?select=display_name,avatar,border_color,border_style,background_style,bio,avatar_url,background_url,background_media_type&user_id=eq."+encodeURIComponent(studentUserId)+"&limit=1",{
+   headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}
+  });
+  if(!response.ok)throw new Error("Tidak dapat memuatkan profil awam sendiri.");
+  const rows=await response.json();
+  if(!rows.length){
+   await syncPublicStudentProfile(readStudentProfile());
+   return false;
+  }
+  const row=rows[0],local=readStudentProfile();
+  const data={
+   ...local,
+   avatar:row.avatar||local.avatar||"🌟",
+   border:row.border_color||local.border||"#b8a5ff",
+   borderStyle:row.border_style||"",
+   background:row.background_style||local.background||"linear-gradient(125deg,#43358d,#176c86)",
+   bio:row.bio||"",
+   photoUrl:row.avatar_url||"",
+   backgroundUrl:row.background_url||"",
+   backgroundMediaType:row.background_media_type||""
+  };
+  if(local.photo)data.photo=local.photo;
+  if(local.backgroundMediaType){
+   const localBlob=await readProfileBackgroundBlob().catch(()=>null);
+   if(localBlob)data.backgroundMediaType=local.backgroundMediaType;
+  }
+  if(local.avatarChosen&&!local.photo&&!local.photoUrl)data.photoUrl="";
+  if(local.backgroundChosen&&!local.backgroundMediaType&&!local.backgroundUrl){
+   data.backgroundUrl="";data.backgroundMediaType="";
+  }
+  try{localStorage.setItem(profileStorageKey(),JSON.stringify(data));}catch(error){}
+  applyStudentProfile();
+  if(data.photo||data.backgroundMediaType&&await readProfileBackgroundBlob().catch(()=>null)){
+   await syncPublicStudentProfile(data);
+  }
+  return true;
+ }catch(error){
+  const note=document.getElementById("profileSaveNote");
+  if(note)note.textContent="Profil awam belum dapat dimuatkan. Tetapan setempat masih tersedia.";
+  return false;
+ }
+}
 async function checkStudentRegistration(){
   const response = await fetch(SUPABASE_URL+"/rest/v1/studyhub_students?select=id,display_name,approved,created_at&user_id=eq."+encodeURIComponent(studentUserId),{
     headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+studentAccessToken}
@@ -1711,7 +1756,7 @@ async function checkStudentRegistration(){
     updateStudentProfile(row);
     updateStudentQuizAccess();
     if(studentApproved){
-      syncPublicStudentProfile(readStudentProfile());
+      await loadOwnPublicStudentProfile();
       studyHubSYARQueueDashboardWelcome();
       await loadStudentQuizSets();
       await loadLeaderboardSets();
