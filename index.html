@@ -2005,18 +2005,25 @@ function studyHubSYARSetSpeaking(isSpeaking) {
   document.body.classList.toggle("ai-speaking", !!isSpeaking);
   if (isSpeaking) document.body.classList.remove("ai-surprised","ai-shy");
 }
+function studyHubSYARApplySoftFemaleVoice(utterance) {
+  utterance.lang = "ms-MY";
+  utterance.rate = 0.92;
+  utterance.pitch = 1.08;
+  const voices = window.speechSynthesis.getVoices();
+  const femaleNameHints = /female|woman|zira|samantha|karen|susan|moira|tessa|ava|allison|siri|joelle|amelie|helena|luciana|catherine|serena|veena|victoria|nicky|maya|amira|aisyah|nur/i;
+  const malayVoices = voices.filter(voice => /^ms([-_]|$)/i.test(voice.lang));
+  const indonesianVoices = voices.filter(voice => /^id([-_]|$)/i.test(voice.lang));
+  const localLanguageVoices = malayVoices.length ? malayVoices : indonesianVoices;
+  const preferredFemale = localLanguageVoices.find(voice => femaleNameHints.test(voice.name));
+  const chosenVoice = preferredFemale || localLanguageVoices.find(voice => voice.default) || localLanguageVoices[0];
+  if (chosenVoice) utterance.voice = chosenVoice;
+}
 function studyHubSYARSpeakReply(message) {
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   window.speechSynthesis.cancel();
   studyHubSYARSetSpeaking(false);
   const utterance = new SpeechSynthesisUtterance(studyHubSYARCleanForSpeech(message));
-  utterance.lang = "ms-MY";
-  utterance.rate = 1;
-  utterance.pitch = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
-  const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
-  if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
+  studyHubSYARApplySoftFemaleVoice(utterance);
   utterance.onstart = () => studyHubSYARSetSpeaking(true);
   utterance.onend = () => {
     studyHubSYARSetSpeaking(false);
@@ -2159,13 +2166,7 @@ function studyHubSYARScheduleIdlePrompt() {
       return;
     }
     const utterance = new SpeechSynthesisUtterance(studyHubSYARRandomIdleMessage());
-    utterance.lang = "ms-MY";
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
-    const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
-    if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
+    studyHubSYARApplySoftFemaleVoice(utterance);
     utterance.onstart = () => {
       studyHubSYARSetSpeaking(true);
       studyHubAIStatusText.textContent = "Syar sedang bercakap...";
@@ -2204,13 +2205,7 @@ function studyHubSYARQueueDashboardWelcome() {
     studyHubSYARIdleVoiceEnabled = true;
     clearTimeout(studyHubSYARIdleTimer);
     const utterance = new SpeechSynthesisUtterance(studyHubSYARWelcomeMessage());
-    utterance.lang = "ms-MY";
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const malayVoice = voices.find(voice => /^ms([-_]|$)/i.test(voice.lang));
-    const indonesianVoice = voices.find(voice => /^id([-_]|$)/i.test(voice.lang));
-    if (malayVoice || indonesianVoice) utterance.voice = malayVoice || indonesianVoice;
+    studyHubSYARApplySoftFemaleVoice(utterance);
     utterance.onstart = () => {
       studyHubSYARSetSpeaking(true);
       studyHubAIStatusText.textContent = "Syar sedang menyampaikan ucapan alu-aluan...";
