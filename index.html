@@ -571,7 +571,7 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
      <label class="profile-upload">📷 Muat naik gambar<input id="profilePhotoInput" type="file" accept="image/*"></label>
      <button class="btn" id="profileRemovePhoto" type="button" style="background:#526184;margin:10px 0 0">Guna avatar</button>
     </div>
-    <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div><label class="profile-upload">🖼️ Muat naik gambar sendiri<input id="profileBackgroundImageInput" type="file" accept="image/*"></label><label class="profile-upload" style="margin-left:6px">🎞️ Live wallpaper<input id="profileBackgroundVideoInput" type="file" accept="video/mp4,video/webm"></label><button class="btn" id="profileResetBackground" type="button" style="background:#526184;margin:10px 0 0">Guna background warna</button><p class="muted" style="font-size:11px;margin:7px 0 0">GIF animasi disokong untuk gambar. Live wallpaper menyokong video MP4 atau WebM sehingga 10 MB.</p></div>
+    <div class="profile-option"><h3>Background profil</h3><div class="profile-swatches"><button class="profile-swatch selected" type="button" data-bg="linear-gradient(125deg,#43358d,#176c86)" style="background:linear-gradient(125deg,#43358d,#176c86)" aria-label="Ungu biru"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#8b2456,#d66b74)" style="background:linear-gradient(125deg,#8b2456,#d66b74)" aria-label="Merah jambu"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#14532d,#0f766e)" style="background:linear-gradient(125deg,#14532d,#0f766e)" aria-label="Hijau"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#92400e,#d97706)" style="background:linear-gradient(125deg,#92400e,#d97706)" aria-label="Emas"></button><button class="profile-swatch" type="button" data-bg="linear-gradient(125deg,#334155,#64748b)" style="background:linear-gradient(125deg,#334155,#64748b)" aria-label="Kelabu"></button></div><label class="profile-upload">🖼️ Muat naik gambar sendiri<input id="profileBackgroundImageInput" type="file" accept="image/*"></label><label class="profile-upload" style="margin-left:6px">🎞️ Live wallpaper<input id="profileBackgroundVideoInput" type="file" accept="video/mp4,video/webm"></label><button class="btn" id="profileResetBackground" type="button" style="background:#526184;margin:10px 0 0">Guna background warna</button><p class="muted" style="font-size:11px;margin:7px 0 0">GIF animasi disokong untuk gambar. Live wallpaper menyokong video MP4 atau WebM sehingga 20 MB.</p></div>
     <div class="profile-option"><h3>Cosmetics bingkai avatar</h3><p class="muted" style="font-size:11px;margin:-5px 0 10px">Pilih gaya bingkai untuk menyerlahkan avatar anda.</p><div class="border-choices"><button class="border-choice" type="button" data-border-style="neon" data-border="#67e8f9"><span class="border-preview"></span>Neon</button><button class="border-choice" type="button" data-border-style="gold" data-border="#facc15"><span class="border-preview"></span>Emas</button><button class="border-choice" type="button" data-border-style="silver" data-border="#e2e8f0"><span class="border-preview"></span>Perak</button><button class="border-choice" type="button" data-border-style="rose" data-border="#f9a8d4"><span class="border-preview"></span>Rose</button><button class="border-choice" type="button" data-border-style="nature" data-border="#86efac"><span class="border-preview"></span>Nature</button><button class="border-choice" type="button" data-border-style="fire" data-border="#fb923c"><span class="border-preview"></span>Fire</button><button class="border-choice" type="button" data-border-style="star" data-border="#c4b5fd"><span class="border-preview"></span>Star</button><button class="border-choice" type="button" data-border-style="holo" data-border="#67e8f9"><span class="border-preview"></span>Holographic</button></div></div>
     <div class="profile-option"><h3>Custom Bio</h3><textarea id="profileCustomBio" maxlength="120" rows="3" placeholder="Tulis bio ringkas tentang diri anda (maksimum 120 aksara)." style="width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);color:white;border-radius:10px;padding:10px;resize:vertical"></textarea><p class="muted" style="font-size:11px;margin:6px 0 0">Jangan masukkan nombor telefon, alamat atau maklumat peribadi.</p></div>
    </div>
@@ -1995,15 +1995,17 @@ async function applyProfileBackgroundMedia(data,cover){
  cover.style.backgroundImage="";cover.style.backgroundSize="";cover.style.backgroundPosition="";
  if(!data.backgroundMediaType)return;
  try{
-  const blob=await readProfileBackgroundBlob();
-  if(token!==profileBackgroundLoadToken||!blob)return;
-  profileBackgroundObjectUrl=URL.createObjectURL(blob);
+  const blob=await readProfileBackgroundBlob().catch(()=>null);
+  if(token!==profileBackgroundLoadToken)return;
+  const remotePrefix=SUPABASE_URL+"/storage/v1/object/public/studyhub-profile-media/"+(studentUserId||"")+"/background";
+  const mediaSource=blob?(profileBackgroundObjectUrl=URL.createObjectURL(blob)):(typeof data.backgroundUrl==="string"&&data.backgroundUrl.startsWith(remotePrefix)?data.backgroundUrl:"");
+  if(!mediaSource)return;
   if(data.backgroundMediaType==="video"){
    cover.style.background="linear-gradient(125deg,#18223d,#263b59)";
-   video.src=profileBackgroundObjectUrl;video.hidden=false;video.load();
+   video.src=mediaSource;video.hidden=false;video.load();
    const playResult=video.play();if(playResult&&playResult.catch)playResult.catch(()=>{});
   }else{
-   cover.style.backgroundImage='linear-gradient(90deg,rgba(12,18,38,.48),rgba(12,18,38,.12)),url("'+profileBackgroundObjectUrl+'")';
+   cover.style.backgroundImage='linear-gradient(90deg,rgba(12,18,38,.48),rgba(12,18,38,.12)),url("'+mediaSource+'")';
    cover.style.backgroundSize="cover";cover.style.backgroundPosition="center";
   }
  }catch(error){document.getElementById("profileSaveNote").textContent="Background media tidak dapat dimuatkan pada peranti ini.";}
@@ -2147,7 +2149,7 @@ document.getElementById("profileRevokeLocation").addEventListener("click",revoke
 document.getElementById("profileGoDirectory").addEventListener("click",()=>document.querySelector('[data-page="students"]').click());
 document.getElementById("profileAvatarChoices").addEventListener("click",event=>{
  const button=event.target.closest("[data-avatar]");if(!button)return;
- const data=readStudentProfile();data.avatar=button.dataset.avatar;data.photo="";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
+ const data=readStudentProfile();data.avatar=button.dataset.avatar;data.photo="";data.photoUrl="";data.avatarChosen=true;saveStudentProfile(data);applyStudentProfile();
 });
 document.querySelectorAll("[data-bg]").forEach(button=>button.addEventListener("click",async()=>{
  const data=readStudentProfile();data.background=button.dataset.bg;delete data.backgroundMediaType;data.backgroundChosen=true;await deleteProfileBackgroundBlob();saveStudentProfile(data);applyStudentProfile();
