@@ -817,7 +817,7 @@ body.nav-menu-open { overflow:hidden; }
     border:0; background:#020617a8; opacity:1; backdrop-filter:blur(2px);
   }
   .side {
-    width:min(300px,86vw); height:100dvh; height:100vh; padding:calc(70px + env(safe-area-inset-top)) 16px 24px;
+    width:min(300px,86vw); height:100vh; height:100dvh; padding:calc(70px + env(safe-area-inset-top)) 16px 24px;
     position:fixed; inset:0 auto 0 0; z-index:12000; overflow-y:auto;
     transform:translateX(-105%); transition:transform .28s cubic-bezier(.22,.7,.25,1);
     box-shadow:16px 0 38px #02061766; backdrop-filter:none;
@@ -839,6 +839,7 @@ body.nav-menu-open { overflow:hidden; }
   .page.active { animation:pageFadeIn .18s ease both; }
   .grid>.card,.subjects>.subject { animation:none; }
   .hero .orb { animation:none; }
+  body:before { animation:none; }
 }
 @media(max-width:520px) {
   .side { width:min(290px,88vw); }
