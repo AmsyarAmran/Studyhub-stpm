@@ -468,6 +468,7 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
  <div class="navlabel">Navigasi</div>
  <nav class="nav nav-dashboard">
   <button class="active" data-page="home"><b>⌂</b> Dashboard</button>
+  <button data-page="tutor"><b>✦</b> Tutor AI Syar</button>
  </nav>
  <div class="nav-groups">
   <details class="nav-group">
@@ -731,6 +732,28 @@ body.ai-shy .ai-chat-message.assistant::before{background-position:100% center!i
  </div>
  
 </section>
+<section id="tutor" class="page">
+ <div class="sectionhead"><div><div class="eyebrow">Pembelajaran peribadi</div><h2>Tutor AI Syar</h2></div></div>
+ <div class="hero">
+  <div><h2>Belajar langkah demi langkah bersama Syar</h2><p>Pilih subjek dan jenis bantuan. Syar akan membantu menerangkan konsep, menyusun isi dan membimbing latihan.</p></div>
+  <div class="orb" aria-hidden="true">✦</div>
+ </div>
+ <div class="sectionhead"><h2>Pilih subjek</h2></div>
+ <div class="subjects tutor-subjects">
+  <button class="subject tutor-prompt" data-tutor-prompt="Saya mahu belajar Pengajian Am (PAM). Bimbing saya memahami topik yang saya nyatakan selepas ini. Terangkan secara berperingkat dan beri contoh yang sesuai." style="text-align:left;color:inherit;font:inherit"><div class="code">PAM</div><p>Pengajian Am</p></button>
+  <button class="subject tutor-prompt" data-tutor-prompt="Saya mahu belajar Bahasa Melayu (BM). Bimbing saya memahami topik yang saya nyatakan selepas ini. Terangkan secara berperingkat dan beri contoh yang sesuai." style="text-align:left;color:inherit;font:inherit"><div class="code">BM</div><p>Bahasa Melayu</p></button>
+  <button class="subject tutor-prompt" data-tutor-prompt="Saya mahu belajar Kesusasteraan Melayu Komunikatif (KMK). Bimbing saya memahami teks, konsep dan teknik menjawab secara berperingkat." style="text-align:left;color:inherit;font:inherit"><div class="code">KMK</div><p>Kesusasteraan Melayu Komunikatif</p></button>
+  <button class="subject tutor-prompt" data-tutor-prompt="Saya mahu belajar Seni Visual (SENI). Bimbing saya memahami konsep dan topik yang saya nyatakan selepas ini dengan contoh yang sesuai." style="text-align:left;color:inherit;font:inherit"><div class="code">SENI</div><p>Seni Visual</p></button>
+ </div>
+ <div class="sectionhead"><h2>Bagaimana Syar boleh bantu?</h2></div>
+ <div class="grid">
+  <button class="card tutor-prompt" data-tutor-prompt="Terangkan satu topik kepada saya dari asas hingga saya faham. Gunakan bahasa yang mudah dan contoh." style="text-align:left;color:inherit;font:inherit"><strong>📘 Terangkan topik</strong><small>Fahami konsep dengan penerangan mudah dan contoh.</small></button>
+  <button class="card tutor-prompt" data-tutor-prompt="Bimbing saya menjawab soalan secara langkah demi langkah. Jangan terus berikan jawapan penuh; beri petunjuk dahulu." style="text-align:left;color:inherit;font:inherit"><strong>🧭 Bimbing jawapan</strong><small>Belajar membina jawapan dengan panduan berperingkat.</small></button>
+  <button class="card tutor-prompt" data-tutor-prompt="Semak jawapan yang akan saya berikan. Kenal pasti kekuatan, perkara yang perlu dibaiki dan cadangkan pembetulan." style="text-align:left;color:inherit;font:inherit"><strong>✍️ Semak jawapan</strong><small>Dapatkan maklum balas dan cadangan penambahbaikan.</small></button>
+  <button class="card tutor-prompt" data-tutor-prompt="Sediakan latihan ringkas mengikut topik yang saya pilih. Berikan satu soalan pada satu masa dan semak jawapan saya." style="text-align:left;color:inherit;font:inherit"><strong>📝 Latihan berpandu</strong><small>Jawab satu soalan pada satu masa dengan petunjuk.</small></button>
+ </div>
+ <div class="card"><strong>Mulakan sesi dengan Syar</strong><p class="muted">Pilih mana-mana kad di atas untuk membuka ruang tutor. Kamu juga boleh terus bertanya dalam chat Syar.</p><button class="btn" type="button" id="openTutorChat">Buka Tutor AI Syar</button></div>
+</section>
 <section id="about" class="page">
  <div class="sectionhead"><h2>Tentang STUDYHUB</h2></div>
  <div class="card"><p>STUDYHUB ialah ruang pembelajaran ringkas untuk pelajar STPM. Fokus awal projek ini ialah bahan percubaan Semester 1 bagi Pengajian Am (PAM), Kesusasteraan Melayu Komunikatif (KMK), Seni Visual (SENI) dan Bahasa Melayu (BM).</p></div>
@@ -753,7 +776,7 @@ body.ai-shy .ai-chat-message.assistant::before{background-position:100% center!i
   <div><strong>Sembang dengan Syar</strong><small>Pembantu StudyHub</small></div>
   <button id="studyHubAICloseChat" type="button" aria-label="Tutup chat">Tutup ✕</button>
  </div>
- <p class="ai-chat-note">Tanya apa-apa berkaitan pembelajaran dan penggunaan StudyHub.</p>
+ <p class="ai-chat-note">Tutor AI Syar · Pilih subjek, minta penerangan, latihan atau semakan jawapan.</p>
  <div class="ai-chat-messages" id="studyHubAIMessages" aria-live="polite">
   <div class="ai-chat-welcome">Assalamualaikum! Saya Syar. Apa yang boleh saya bantu?</div>
  </div>
@@ -1809,6 +1832,22 @@ document.getElementById("profilePhotoInput").addEventListener("change",event=>{
 // STUDYHUB SYAR — ucapan alu-aluan dan chat teks/suara.
 const studyHubAIStatus = document.getElementById("studyHubAIStatus");
 const studyHubAIStatusText = document.getElementById("studyHubAIStatusText");
+
+// Tutor AI Syar: kad subjek dan aktiviti membuka sesi chat dengan arahan pembelajaran.
+function studyHubOpenTutorPrompt(prompt){
+ const input=document.getElementById("studyHubAITextInput");
+ const panel=document.getElementById("studyHubAIChatPanel");
+ const mascot=document.getElementById("studyHubMascot");
+ if(input) input.value=prompt;
+ if(panel && panel.hidden && mascot) mascot.click();
+ if(input) input.focus();
+}
+document.querySelectorAll(".tutor-prompt").forEach(button=>{
+ button.addEventListener("click",()=>studyHubOpenTutorPrompt(button.dataset.tutorPrompt||"Bimbing saya belajar satu topik STPM secara langkah demi langkah."));
+});
+document.getElementById("openTutorChat")?.addEventListener("click",()=>{
+ studyHubOpenTutorPrompt("Hai Syar! Saya mahu mulakan sesi pembelajaran. Bantu saya belajar secara langkah demi langkah.");
+});
 
 // STUDYHUB SYAR TEXT CHAT
 const STUDYHUB_SYAR_CHAT_URL = "https://studyhub-sya.amsyar291008.workers.dev/chat";
