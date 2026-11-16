@@ -736,6 +736,45 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#7b78e8!import
  body:before,main,.page.active,.hero:before,.hero .orb,.card,.subject,.grid>.card,.subjects>.subject{animation:none!important}
  .hero,.nav-group,.nav-dashboard button,.nav button,.btn,.card,.subject,.tablewrap{transition:none!important}
 }
+
+/* PENYESUAIAN SAFARI iOS, IPAD DAN PAPARAN KEYBOARD */
+@supports (padding: max(0px)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  .ai-chat-panel {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--studyhub-keyboard-offset, 0px));
+    max-height: calc(var(--studyhub-visual-height, 100dvh) - 28px - env(safe-area-inset-top));
+    max-height: min(620px, calc(var(--studyhub-visual-height, 100dvh) - 28px - env(safe-area-inset-top)));
+  }
+  .studyhub-ai-status {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+  }
+}
+.ai-chat-messages { min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.ai-chat-panel { min-height: 0; }
+.ai-chat-form textarea, .ai-chat-form input { font-size: 16px; }
+.ai-chat-replay {
+  display: block; margin-top: 8px; padding: 5px 9px; border: 1px solid #52658a;
+  border-radius: 8px; background: #263653; color: #eaf5ff; font-size: 11px;
+  font-weight: 700; cursor: pointer;
+}
+@media(max-width:520px) {
+  .ai-chat-panel {
+    right: max(8px, env(safe-area-inset-right));
+    left: max(8px, env(safe-area-inset-left));
+    width: auto;
+    bottom: calc(72px + max(8px, env(safe-area-inset-bottom)) + var(--studyhub-keyboard-offset, 0px));
+    max-height: calc(var(--studyhub-visual-height, 100dvh) - 100px - env(safe-area-inset-top));
+    padding: 12px;
+  }
+  .ai-chat-messages { max-height: none; }
+}
+@supports not (height: 100dvh) {
+  .ai-chat-panel { max-height: calc(100vh - 32px); }
+}
+
 </style>
   <div class="admin-quick-nav"><a href="#adminLocationSection">📍 Lokasi</a><a href="#adminQuizSection">📝 Pengurusan kuiz</a><a href="#adminQuizListSection">📚 Senarai soalan</a></div>
   <div class="admin-logout-row"><span class="tag" id="pendingCount">0 permohonan</span><button class="btn" id="adminLogoutButton" type="button">Log keluar</button></div>
@@ -1950,6 +1989,15 @@ function studyHubSYARAddChatMessage(role, message) {
   const bubble = document.createElement("div");
   bubble.className = "ai-chat-message " + role;
   bubble.innerHTML = studyHubSYARFormatChatText(message);
+  if (role === "assistant") {
+    const voiceButton = document.createElement("button");
+    voiceButton.type = "button";
+    voiceButton.className = "ai-chat-replay";
+    voiceButton.textContent = "🔊 Dengar";
+    voiceButton.setAttribute("aria-label", "Dengar semula jawapan Syar");
+    voiceButton.addEventListener("click", () => studyHubSYARSpeakReply(message));
+    bubble.appendChild(voiceButton);
+  }
   studyHubAIMessages.appendChild(bubble);
   studyHubAIMessages.scrollTop = studyHubAIMessages.scrollHeight;
 }
@@ -2203,5 +2251,23 @@ studyHubAITextForm.addEventListener("submit", async event => {
 });
 
 </script>
+
+<script>
+/* Safari iOS: laraskan ruang chat mengikut visual viewport apabila papan kekunci dibuka. */
+(function () {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const updateStudyHubViewport = () => {
+    const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+    document.documentElement.style.setProperty("--studyhub-visual-height", viewport.height + "px");
+    document.documentElement.style.setProperty("--studyhub-keyboard-offset", keyboardOffset + "px");
+  };
+  viewport.addEventListener("resize", updateStudyHubViewport, {passive:true});
+  viewport.addEventListener("scroll", updateStudyHubViewport, {passive:true});
+  window.addEventListener("orientationchange", updateStudyHubViewport, {passive:true});
+  updateStudyHubViewport();
+})();
+</script>
+
 </body>
 </html>
