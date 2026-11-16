@@ -1726,10 +1726,6 @@ async function loadOwnPublicStudentProfile(){
    const localBlob=await readProfileBackgroundBlob().catch(()=>null);
    if(localBlob)data.backgroundMediaType=local.backgroundMediaType;
   }
-  if(local.avatarChosen&&!local.photo&&!local.photoUrl)data.photoUrl="";
-  if(local.backgroundChosen&&!local.backgroundMediaType&&!local.backgroundUrl){
-   data.backgroundUrl="";data.backgroundMediaType="";
-  }
   try{localStorage.setItem(profileStorageKey(),JSON.stringify(data));}catch(error){}
   applyStudentProfile();
   if(data.photo||data.backgroundMediaType&&await readProfileBackgroundBlob().catch(()=>null)){
