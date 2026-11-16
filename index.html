@@ -102,6 +102,8 @@ a:hover{color:white!important;text-decoration:underline}
 @media(max-width:650px){#admin .admin-hero{padding:18px}#admin .admin-hero-mark{width:48px;height:48px;font-size:23px}#admin .admin-stats{grid-template-columns:1fr 1fr}#admin .admin-stats .card:first-child{grid-column:1/-1}#admin .admin-stats .stat{font-size:27px}#admin .admin-quick-nav{gap:7px}#admin .admin-quick-nav a{font-size:11px;padding:8px 10px}#admin .admin-logout-row{align-items:flex-start}}
 #admin .notice{border-color:#8b405b;color:#e5c0cc}
 
+/* Paparan profil awam dalam Direktori Pelajar */
+.public-profile-overlay{position:fixed;inset:0;z-index:30000;background:#050a16c9;backdrop-filter:blur(7px);display:grid;place-items:center;padding:18px}.public-profile-overlay[hidden]{display:none}.public-profile-dialog{position:relative;width:min(100%,460px);max-height:min(82vh,680px);overflow:auto;border:1px solid var(--line);border-radius:22px;background:var(--panel);padding:18px;box-shadow:0 24px 80px #0009;animation:publicProfileRise 260ms cubic-bezier(.16,1,.3,1) both}.public-profile-close{position:absolute;right:13px;top:12px;width:36px;height:36px;border:0;border-radius:50%;background:#ffffff18;color:white;font-size:25px;cursor:pointer}.public-profile-cover{min-height:145px;border-radius:16px;padding:18px;display:flex;align-items:end;gap:14px;background:linear-gradient(125deg,#43358d,#176c86)}.public-profile-avatar{width:76px;height:76px;flex:none;display:grid;place-items:center;border:4px solid #b8a5ff;border-radius:50%;background:#111a32;font-size:36px}.public-profile-cover h3{margin:4px 40px 4px 0;overflow-wrap:anywhere}.public-profile-cover .muted{color:#e1eafa;margin:0;font-size:12px}.public-profile-details{padding:16px 4px 2px}.public-profile-details h4{margin:0 0 8px}.public-profile-details p{line-height:1.6}.student-profile-link{padding:0;border:0;background:none;color:var(--cyan,#72d9ef);font:inherit;text-align:left;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.student-profile-link:hover{color:#fff}@keyframes publicProfileRise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 /* Profil pelajar */
 .profile-shell{border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--panel);margin:12px 0 20px}
 .profile-cover{min-height:185px;border-radius:18px;padding:22px;display:flex;align-items:end;gap:18px;background:linear-gradient(125deg,#43358d,#176c86);border:1px solid #ffffff25;position:relative;overflow:hidden}
@@ -551,6 +553,7 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
  </div>
  <div class="filters"><input id="studentSearch" placeholder="Cari nama paparan..." aria-label="Cari nama pelajar"></div>
  <div class="tablewrap"><table style="min-width:0"><thead><tr><th>Bil.</th><th>Nama paparan</th><th>Tarikh disertai</th></tr></thead><tbody id="studentRows"><tr><td colspan="3" class="muted">Memuatkan senarai pelajar...</td></tr></tbody></table><div id="studentEmpty" class="empty" hidden>Belum ada nama yang diluluskan untuk dipaparkan.</div></div>
+ <div id="publicStudentProfile" class="public-profile-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="publicProfileName"><div class="public-profile-dialog"><button type="button" id="publicProfileClose" class="public-profile-close" aria-label="Tutup profil">×</button><div class="public-profile-cover"><div class="public-profile-avatar" id="publicProfileAvatar">🌟</div><div><div class="eyebrow">STUDYHUB STUDENT</div><h3 id="publicProfileName">Pelajar</h3><p id="publicProfileJoined" class="muted"></p></div></div><div class="public-profile-details"><h4>Profil awam</h4><p id="publicProfileBio" class="muted">Butiran profil tambahan belum disegerakkan untuk paparan awam.</p><p class="muted" style="font-size:12px;margin-bottom:0">E-mel, lokasi dan maklumat akaun peribadi tidak dipaparkan.</p></div></div></div>
  
 </section>
 
@@ -1128,12 +1131,26 @@ function renderStudents(){
     const date = student.created_at
       ? new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"short",year:"numeric"})
       : "—";
-    return "<tr><td>"+(index+1)+"</td><td>"+escapeStudentText(student.display_name)+"</td><td>"+date+"</td></tr>";
+    return "<tr><td>"+(index+1)+"</td><td><button type=\"button\" class=\"student-profile-link\" data-public-student=\""+index+"\">"+escapeStudentText(student.display_name)+"</button></td><td>"+date+"</td></tr>";
   }).join("");
   document.getElementById("studentCount").textContent = approvedStudents.length+" pelajar";
   document.getElementById("studentEmpty").hidden = filtered.length !== 0;
   if(!filtered.length) studentRows.innerHTML = "";
 }
+
+function openPublicStudentProfile(student){
+ if(!student)return;
+ document.getElementById("publicProfileName").textContent=student.display_name||"Pelajar";
+ document.getElementById("publicProfileJoined").textContent="Ahli sejak "+(student.created_at?new Date(student.created_at).toLocaleDateString("ms-MY",{day:"numeric",month:"long",year:"numeric"}):"tarikh tidak tersedia");
+ document.getElementById("publicProfileAvatar").textContent="🌟";
+ document.getElementById("publicProfileBio").textContent="Profil awam tambahan seperti avatar pilihan, bingkai, background dan bio akan dipaparkan selepas tetapan profil disegerakkan ke pangkalan data.";
+ const panel=document.getElementById("publicStudentProfile");panel.hidden=false;document.body.style.overflow="hidden";
+}
+function closePublicStudentProfile(){document.getElementById("publicStudentProfile").hidden=true;document.body.style.overflow="";}
+studentRows.addEventListener("click",event=>{const button=event.target.closest("[data-public-student]");if(!button)return;const student=approvedStudents[Number(button.dataset.publicStudent)];openPublicStudentProfile(student);});
+document.getElementById("publicProfileClose").addEventListener("click",closePublicStudentProfile);
+document.getElementById("publicStudentProfile").addEventListener("click",event=>{if(event.target.id==="publicStudentProfile")closePublicStudentProfile();});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!document.getElementById("publicStudentProfile").hidden)closePublicStudentProfile();});
 
 async function loadStudents(){
   try{
