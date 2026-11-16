@@ -2155,7 +2155,7 @@ async function handleProfileBackgroundUpload(event,type){
  const note=document.getElementById("profileSaveNote");
  const allowed=type==="video"?["video/mp4","video/webm"].includes(file.type):file.type.startsWith("image/");
  if(!allowed){note.textContent=type==="video"?"Pilih video MP4 atau WebM.":"Pilih fail gambar yang sah.";event.target.value="";return;}
- if(file.size>10*1024*1024){note.textContent="Fail background mestilah tidak melebihi 10 MB.";event.target.value="";return;}
+ if(file.size>20*1024*1024){note.textContent="Fail background mestilah tidak melebihi 20 MB.";event.target.value="";return;}
  try{
   await saveProfileBackgroundBlob(file);
   const data=readStudentProfile();data.backgroundMediaType=type;data.backgroundChosen=true;saveStudentProfile(data);applyStudentProfile();
