@@ -2335,11 +2335,12 @@ function studyHubSYARSetReplyExpression(message) {
   ];
   const classes = ["ai-love","ai-worried","ai-sad","ai-mischievous","ai-wink","ai-cool","ai-surprised","ai-happy"];
   document.body.classList.remove(...classes);
+  if (studyHubSYARSetReplyExpression.timer) window.clearTimeout(studyHubSYARSetReplyExpression.timer);
   const match = states.find(([, pattern]) => pattern.test(text));
   if (!match) return;
   const chosen = match[0];
   document.body.classList.add(chosen);
-  window.setTimeout(() => document.body.classList.remove(chosen), 2600);
+  studyHubSYARSetReplyExpression.timer = window.setTimeout(() => document.body.classList.remove(chosen), 2600);
 }
 function studyHubSYARSetSpeaking(isSpeaking) {
   document.body.classList.toggle("ai-speaking", !!isSpeaking);
@@ -2359,7 +2360,10 @@ function studyHubSYARApplySoftFemaleVoice(utterance) {
   if (chosenVoice) utterance.voice = chosenVoice;
 }
 function studyHubSYARSpeakReply(message) {
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    studyHubSYARSetReplyExpression(message);
+    return;
+  }
   window.speechSynthesis.cancel();
   studyHubSYARSetSpeaking(false);
   const utterance = new SpeechSynthesisUtterance(studyHubSYARCleanForSpeech(message));
@@ -2367,9 +2371,13 @@ function studyHubSYARSpeakReply(message) {
   utterance.onstart = () => studyHubSYARSetSpeaking(true);
   utterance.onend = () => {
     studyHubSYARSetSpeaking(false);
+    studyHubSYARSetReplyExpression(message);
     studyHubSYARScheduleIdlePrompt();
   };
-  utterance.onerror = () => studyHubSYARSetSpeaking(false);
+  utterance.onerror = () => {
+    studyHubSYARSetSpeaking(false);
+    studyHubSYARSetReplyExpression(message);
+  };
   window.speechSynthesis.speak(utterance);
 }
 async function studyHubSYARSendMessage(rawMessage) {
@@ -2410,7 +2418,6 @@ async function studyHubSYARSendMessage(rawMessage) {
     studyHubSYARChatHistory.push({role:"assistant",content:reply});
     studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
     studyHubSYARAddChatMessage("assistant",reply);
-    studyHubSYARSetReplyExpression(reply);
     studyHubSYARSpeakReply(reply);
     if (!studentAccessToken) {
       studyHubSYARGuestRemaining = Number.isFinite(Number(result.remaining)) ? Number(result.remaining) : null;
