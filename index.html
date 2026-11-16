@@ -456,7 +456,7 @@ body.ai-shy .studyhub-mascot-avatar{background-position:100% center}
 @media(max-width:520px){
  .studyhub-mascot{right:12px;bottom:84px;gap:7px}
  .studyhub-mascot-bubble{max-width:142px;padding:7px 9px;font-size:10px}
- .studyhub-mascot-avatar{width:48px;height:48px;border-radius:16px;font-size:26px}
+ .studyhub-mascot-avatar{width:48px;height:48px;border-radius:50%;font-size:26px}
 }
 @media(prefers-reduced-motion:reduce){.studyhub-mascot{animation:none}}
 </style>
@@ -2037,6 +2037,8 @@ function studyHubSYARQueueDashboardWelcome() {
 function studyHubSYAROpenChat() {
   studyHubAIChatPanel.hidden = false;
   studyHubAIOpenChat.setAttribute("aria-expanded","true");
+  document.body.classList.add("ai-happy");
+  window.setTimeout(() => document.body.classList.remove("ai-happy"), 1800);
   studyHubAIChatPanel.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 document.getElementById("studyHubMascot").addEventListener("click", studyHubSYAROpenChat);
