@@ -2378,16 +2378,39 @@ studyHubAITextForm.addEventListener("submit", async event => {
   100% {opacity:0;transform:translate(-50%,-50%) scale(3.8)}
 }
 .sh-touch-trail {
-  position:fixed;z-index:19999;pointer-events:none;width:58px;height:58px;
-  border-radius:50%;opacity:0;
-  background:radial-gradient(circle,rgba(105,205,255,.18) 0%,rgba(105,205,255,.08) 38%,transparent 72%);
-  transform:translate(-50%,-50%);transition:opacity 180ms ease;
+  position:fixed;z-index:19999;pointer-events:none;width:42px;height:42px;
+  border-radius:50%;opacity:0;isolation:isolate;
+  background:radial-gradient(circle,rgba(225,250,255,.48) 0%,rgba(105,205,255,.28) 24%,rgba(65,175,255,.13) 52%,transparent 74%);
+  filter:drop-shadow(0 0 5px rgba(105,215,255,.55));
+  transform:translate(-50%,-50%);transition:opacity 150ms ease;
   will-change:left,top,opacity;
 }
+.sh-touch-trail::before,.sh-touch-trail::after {
+  content:"";position:absolute;pointer-events:none;opacity:0;
+}
+.sh-touch-trail::before {
+  width:6px;height:6px;top:5px;right:6px;border-radius:50%;
+  background:#f3fdff;box-shadow:0 0 5px 2px rgba(180,240,255,.9),0 0 11px 4px rgba(75,190,255,.55);
+}
+.sh-touch-trail::after {
+  width:15px;height:2px;top:9px;right:2px;border-radius:50%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
+  filter:blur(.35px);transform:rotate(-42deg);
+}
 .sh-touch-trail.is-active {opacity:1}
+.sh-touch-trail.is-active::before {animation:shTouchSparkle 760ms ease-in-out infinite}
+.sh-touch-trail.is-active::after {animation:shTouchGlint 920ms ease-in-out infinite}
+@keyframes shTouchSparkle {
+  0%,100% {opacity:.28;transform:scale(.65)}
+  45% {opacity:1;transform:scale(1.25)}
+}
+@keyframes shTouchGlint {
+  0%,100% {opacity:0;transform:translate(-2px,2px) rotate(-42deg) scaleX(.55)}
+  50% {opacity:.9;transform:translate(2px,-2px) rotate(-42deg) scaleX(1)}
+}
 @media(hover:none) and (pointer:coarse) {
   .sh-touch-ripple {width:26px;height:26px}
-  .sh-touch-trail {width:68px;height:68px}
+  .sh-touch-trail {width:48px;height:48px}
 }
 
 /* Chat Syar: muncul dari bawah dengan gerakan lembut */
