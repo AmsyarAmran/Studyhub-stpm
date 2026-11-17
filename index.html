@@ -2449,9 +2449,9 @@ const STUDYHUB_SYAR_ACTIONS = Object.freeze([
 
 function studyHubSYARNormalizeIntent(value) {
   return String(value || "").toLowerCase().normalize("NFD")
-    .replace(/[\\u0300-\\u036f]/g,"")
-    .replace(/[^a-z0-9\\s]/g," ")
-    .replace(/\\s+/g," ").trim();
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s]/g," ")
+    .replace(/\s+/g," ").trim();
 }
 
 function studyHubSYARResolveIntent(message) {
@@ -2484,7 +2484,7 @@ function studyHubSYARRunIntent(intent) {
   const activePage = document.querySelector(".page.active");
   const actualPage = activePage?.id || "";
   if (actualPage === intent.page) {
-    const label = button.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\\s*/,"");
+    const label = button.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\s*/,"");
     return "Baik, saya buka " + (label || intent.id) + ".";
   }
   if (intent.page === "quiz" && actualPage === "profile") {
