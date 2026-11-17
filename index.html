@@ -2723,16 +2723,19 @@ function studyHubSYARVoiceHandleWake(transcript) {
   const match = clean.match(/\b(?:hey|hai|hi)\s+syar\b/);
   if (!match) return false;
   const remainder = clean.slice(match.index + match[0].length).trim();
+  studyHubSYARVoiceStopRecognition();
   studyHubSYARVoiceCommandHandled = false;
   studyHubSYARVoiceMode = "command";
-  studyHubSYARVoiceStopRecognition();
   if (remainder.length > 1) {
     studyHubSYARVoiceCommandHandled = true;
-    studyHubSYARSendMessage(remainder);
-    studyHubSYARVoiceRestartTimer = setTimeout(() => {
-      if (studyHubSYARVoiceEnabled && !studyHubSYARVoicePausedForSpeech) studyHubSYARVoiceStartRecognition("wake");
-    }, 1200);
+    studyHubSYARVoiceSetStatus("Ya, saya mendengar. Arahan sedang diproses…");
+    Promise.resolve(studyHubSYARSendMessage(remainder)).finally(() => {
+      if (studyHubSYARVoiceEnabled && !studyHubSYARVoicePausedForSpeech) {
+        studyHubSYARVoiceRestartTimer = setTimeout(() => studyHubSYARVoiceStartRecognition("wake"),1200);
+      }
+    });
   } else {
+    studyHubSYARVoiceSetStatus("Ya, saya mendengar. Sila berikan arahan sekarang.");
     studyHubSYARVoiceRestartTimer = setTimeout(() => {
       if (!studyHubSYARVoiceEnabled || studyHubSYARVoicePausedForSpeech || document.hidden) return;
       studyHubSYARVoiceStartRecognition("command");
@@ -2740,13 +2743,13 @@ function studyHubSYARVoiceHandleWake(transcript) {
         if (studyHubSYARVoiceMode === "command" && !studyHubSYARVoiceCommandHandled) {
           studyHubSYARVoiceSetStatus("Tiada arahan diterima. Kembali menunggu Hey Syar.");
           studyHubSYARVoiceStopRecognition();
-          studyHubSYARVoiceRestartTimer = setTimeout(() => studyHubSYARVoiceStartRecognition("wake"),500);
+          studyHubSYARVoiceRestartTimer = setTimeout(() => {
+            if (studyHubSYARVoiceEnabled && !studyHubSYARVoicePausedForSpeech && !document.hidden) studyHubSYARVoiceStartRecognition("wake");
+          },500);
         }
       },10000);
     },350);
   }
-  document.body.classList.remove("ai-listening");
-  studyHubSYARVoiceSetStatus("Ya, saya mendengar. Sila berikan arahan.");
   return true;
 }
 function studyHubSYARVoiceInit() {
@@ -2763,22 +2766,23 @@ function studyHubSYARVoiceInit() {
     document.body.classList.add("ai-listening");
   };
   studyHubSYARVoiceRecognition.onresult = event => {
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const result = event.results[i];
-      const transcript = String(result[0]?.transcript || "").trim();
-      if (!transcript) continue;
-      if (studyHubSYARVoiceMode === "wake") {
-        if (studyHubSYARVoiceHandleWake(transcript)) break;
-      } else if (result.isFinal && !studyHubSYARVoiceCommandHandled) {
-        studyHubSYARVoiceCommandHandled = true;
-        clearTimeout(studyHubSYARVoiceCommandTimer);
-        studyHubSYARVoiceStopRecognition();
-        studyHubSYARSendMessage(transcript);
-        studyHubSYARVoiceRestartTimer = setTimeout(() => {
-          if (studyHubSYARVoiceEnabled && !studyHubSYARVoicePausedForSpeech) studyHubSYARVoiceStartRecognition("wake");
-        },1200);
-        break;
-      }
+    const transcript = Array.from(event.results)
+      .map(result => String(result[0]?.transcript || "").trim())
+      .filter(Boolean).join(" ");
+    if (!transcript) return;
+    if (studyHubSYARVoiceMode === "wake") {
+      studyHubSYARVoiceHandleWake(transcript);
+      return;
+    }
+    const lastResult = event.results[event.results.length - 1];
+    if (lastResult?.isFinal && !studyHubSYARVoiceCommandHandled) {
+      studyHubSYARVoiceCommandHandled = true;
+      clearTimeout(studyHubSYARVoiceCommandTimer);
+      studyHubSYARVoiceStopRecognition();
+      studyHubSYARSendMessage(transcript);
+      studyHubSYARVoiceRestartTimer = setTimeout(() => {
+        if (studyHubSYARVoiceEnabled && !studyHubSYARVoicePausedForSpeech && !document.hidden) studyHubSYARVoiceStartRecognition("wake");
+      },1200);
     }
   };
   studyHubSYARVoiceRecognition.onerror = event => {
