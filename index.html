@@ -2437,14 +2437,14 @@ async function studyHubSYARSpeakReply(message) {
   }
 }
 const STUDYHUB_SYAR_ACTIONS = Object.freeze([
-  { id:"home", page:"home", aliases:["dashboard","halaman utama","laman utama","utama"] },
-  { id:"tutor", page:"tutor", aliases:["tutor ai syar","tutor ai","tutor","belajar"] },
-  { id:"profile", page:"profile", aliases:["profil saya","profil"] },
-  { id:"students", page:"students", aliases:["direktori pelajar","senarai pelajar","nama pelajar","pelajar"] },
-  { id:"bank", page:"bank", aliases:["bank soalan","soalan percubaan"] },
-  { id:"quiz", page:"quiz", aliases:["kuiz interaktif","kuiz"] },
+  { id:"home", page:"home", aliases:["dashboard","halaman utama","laman utama","utama","home","home page"] },
+  { id:"tutor", page:"tutor", aliases:["tutor ai syar","tutor ai","tutor","belajar","study tutor"] },
+  { id:"profile", page:"profile", aliases:["profil saya","profil","my profile","profile"] },
+  { id:"students", page:"students", aliases:["direktori pelajar","senarai pelajar","nama pelajar","pelajar","student directory","students"] },
+  { id:"bank", page:"bank", aliases:["bank soalan","soalan percubaan","question bank"] },
+  { id:"quiz", page:"quiz", aliases:["kuiz interaktif","kuiz","interactive quiz","quiz"] },
   { id:"leaderboard", page:"leaderboard", aliases:["leaderboard","papan kedudukan"] },
-  { id:"about", page:"about", aliases:["tentang studyhub","tentang"] }
+  { id:"about", page:"about", aliases:["tentang studyhub","tentang","about studyhub","about"] }
 ]);
 
 function studyHubSYARNormalizeIntent(value) {
@@ -2455,10 +2455,11 @@ function studyHubSYARNormalizeIntent(value) {
 }
 
 function studyHubSYARResolveIntent(message) {
-  const text = studyHubSYARNormalizeIntent(message);
-  if (/^(?:tolong )?(?:buka|paparkan) (?:chat|sembang) syar$/.test(text)) return { type:"chat-open" };
-  if (/^(?:tolong )?tutup (?:chat|sembang) syar$/.test(text)) return { type:"chat-close" };
-  const match = text.match(/^(?:(?:tolong|sila) )?(?:(?:saya )?(?:nak|mahu) )?(?:buka|pergi ke|masuk ke|paparkan|tunjuk) (.+)$/);
+  const text = studyHubSYARNormalizeIntent(message)
+    .replace(/^(?:(?:hey|hai|hi) syar|syar)\s*/,"").trim();
+  if (/^(?:tolong )?(?:buka|paparkan|open|show) (?:chat|sembang) syar$/.test(text)) return { type:"chat-open" };
+  if (/^(?:tolong )?(?:tutup|close) (?:chat|sembang) syar$/.test(text)) return { type:"chat-close" };
+  const match = text.match(/^(?:(?:tolong|sila) )?(?:(?:saya )?(?:nak|mahu|want to) )?(?:buka|pergi ke|masuk ke|paparkan|tunjuk|open|go to|show) (.+)$/);
   if (!match) return null;
   const target = match[1].replace(/^(?:halaman|page) /,"").trim();
   for (const action of STUDYHUB_SYAR_ACTIONS) {
