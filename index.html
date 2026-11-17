@@ -2436,9 +2436,82 @@ async function studyHubSYARSpeakReply(message) {
     if (studyHubAIStatusText) studyHubAIStatusText.textContent = error?.message || "Suara Syar tidak dapat dimainkan. Cuba lagi.";
   }
 }
+const STUDYHUB_SYAR_ACTIONS = Object.freeze([
+  { id:"home", page:"home", aliases:["dashboard","halaman utama","laman utama","utama"] },
+  { id:"tutor", page:"tutor", aliases:["tutor ai syar","tutor ai","tutor","belajar"] },
+  { id:"profile", page:"profile", aliases:["profil saya","profil"] },
+  { id:"students", page:"students", aliases:["direktori pelajar","senarai pelajar","nama pelajar","pelajar"] },
+  { id:"bank", page:"bank", aliases:["bank soalan","soalan percubaan"] },
+  { id:"quiz", page:"quiz", aliases:["kuiz interaktif","kuiz"] },
+  { id:"leaderboard", page:"leaderboard", aliases:["leaderboard","papan kedudukan"] },
+  { id:"about", page:"about", aliases:["tentang studyhub","tentang"] }
+]);
+
+function studyHubSYARNormalizeIntent(value) {
+  return String(value || "").toLowerCase().normalize("NFD")
+    .replace(/[\\u0300-\\u036f]/g,"")
+    .replace(/[^a-z0-9\\s]/g," ")
+    .replace(/\\s+/g," ").trim();
+}
+
+function studyHubSYARResolveIntent(message) {
+  const text = studyHubSYARNormalizeIntent(message);
+  if (/^(?:tolong )?(?:buka|paparkan) (?:chat|sembang) syar$/.test(text)) return { type:"chat-open" };
+  if (/^(?:tolong )?tutup (?:chat|sembang) syar$/.test(text)) return { type:"chat-close" };
+  const match = text.match(/^(?:(?:tolong|sila) )?(?:(?:saya )?(?:nak|mahu) )?(?:buka|pergi ke|masuk ke|paparkan|tunjuk) (.+)$/);
+  if (!match) return null;
+  const target = match[1].replace(/^(?:halaman|page) /,"").trim();
+  for (const action of STUDYHUB_SYAR_ACTIONS) {
+    if (action.aliases.includes(target)) return { type:"navigate", page:action.page, id:action.id };
+  }
+  return null;
+}
+
+function studyHubSYARRunIntent(intent) {
+  if (intent.type === "chat-open") {
+    studyHubSYAROpenChat();
+    return "Baik, ruang sembang Syar sudah dibuka.";
+  }
+  if (intent.type === "chat-close") {
+    studyHubAIChatPanel.hidden = true;
+    studyHubAIOpenChat.setAttribute("aria-expanded","false");
+    return "Baik, ruang sembang Syar ditutup.";
+  }
+  if (intent.type !== "navigate") return "";
+  const button = document.querySelector('[data-page="' + intent.page + '"]');
+  if (!button) return "Maaf, halaman itu tidak tersedia sekarang.";
+  button.click();
+  const activePage = document.querySelector(".page.active");
+  const actualPage = activePage?.id || "";
+  if (actualPage === intent.page) {
+    const label = button.textContent.trim().replace(/^[⌂▤▦ⓘ◎♙✎★⚙]\\s*/,"");
+    return "Baik, saya buka " + (label || intent.id) + ".";
+  }
+  if (intent.page === "quiz" && actualPage === "profile") {
+    const note = document.getElementById("profileCompletionStatus");
+    return "Untuk membuka Kuiz Interaktif, sila lengkapkan profil dan pilihan yang diperlukan dahulu. Saya sudah bawa anda ke Profil Saya.";
+  }
+  return "Saya tidak dapat membuka halaman itu sekarang. Sila semak akses akaun anda.";
+}
+
 async function studyHubSYARSendMessage(rawMessage) {
   const message = String(rawMessage || "").trim();
   if (!message || studyHubSYARChatBusy) return;
+  const localIntent = studyHubSYARResolveIntent(message);
+  if (localIntent) {
+    studyHubSYARChatBusy = true;
+    studyHubSYARAddChatMessage("user",message);
+    studyHubSYARChatHistory.push({role:"user",content:message});
+    studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
+    const localReply = studyHubSYARRunIntent(localIntent);
+    studyHubSYARChatHistory.push({role:"assistant",content:localReply});
+    studyHubSYARChatHistory = studyHubSYARChatHistory.slice(-8);
+    studyHubSYARAddChatMessage("assistant",localReply);
+    studyHubSYARSetChatStatus(localReply);
+    studyHubSYARSpeakReply(localReply);
+    studyHubSYARChatBusy = false;
+    return;
+  }
   if (studentAccessToken && !studentApproved) {
     studyHubSYARSetChatStatus("Akaun anda masih menunggu kelulusan. Sesi tetamu tidak tersedia untuk akaun ini.");
     return;
