@@ -2722,7 +2722,7 @@ function studyHubSYARVoiceInit() {
     studyHubSYARVoiceStarting = false;
     document.body.classList.remove("ai-listening");
     if (!studyHubSYARVoiceEnabled || studyHubSYARVoicePausedForSpeech || document.hidden) return;
-    if (studyHubSYARVoiceMode === "command" && !studyHubSYARVoiceCommandHandled) return;
+    if (studyHubSYARVoiceMode === "command") return;
     studyHubSYARVoiceRestartTimer = setTimeout(() => {
       if (studyHubSYARVoiceEnabled && !studyHubSYARVoicePausedForSpeech && !document.hidden) studyHubSYARVoiceStartRecognition("wake");
     },650);
@@ -2748,6 +2748,8 @@ studyHubSYARVoiceToggle?.addEventListener("click",() => {
     studyHubSYARVoiceSetStatus("Pengesanan suara dimatikan. Mikrofon tidak sedang digunakan oleh Syar.");
     return;
   }
+  const consent = window.confirm("Untuk mengesan kata panggilan Hey Syar, mikrofon akan aktif selagi StudyHub berada di hadapan. Pengecaman suara mungkin diproses oleh perkhidmatan dalam talian pelayar. Teruskan?");
+  if (!consent) return;
   studyHubSYARVoiceEnabled = true;
   studyHubSYARVoiceToggle.setAttribute("aria-pressed","true");
   studyHubSYARVoiceToggle.textContent = "⏹ Matikan mikrofon";
