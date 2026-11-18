@@ -2265,6 +2265,7 @@ document.getElementById("openTutorChat")?.addEventListener("click",()=>{
 
 // STUDYHUB SYAR TEXT CHAT
 const STUDYHUB_SYAR_CHAT_URL = "https://studyhub-sya.amsyar291008.workers.dev/chat";
+const STUDYHUB_SYAR_TTS_URL = "https://studyhub-sya.amsyar291008.workers.dev/tts";
 const studyHubAIChatPanel = document.getElementById("studyHubAIChatPanel");
 const studyHubAIChatStatus = document.getElementById("studyHubAIChatStatus");
 const studyHubAIMessages = document.getElementById("studyHubAIMessages");
@@ -2358,33 +2359,42 @@ function studyHubSYARSetSpeaking(isSpeaking) {
   if (isSpeaking) document.body.classList.remove("ai-surprised","ai-shy","ai-angry","ai-crying","ai-embarrassed","ai-love","ai-worried","ai-sad","ai-mischievous","ai-wink","ai-cool","ai-happy");
 }
 let studyHubSYARCurrentUtterance = null;
+let studyHubSYARCurrentAudio = null;
+let studyHubSYARCurrentAudioUrl = null;
+function studyHubSYARReleaseAudio() {
+  if (studyHubSYARCurrentAudio) {
+    studyHubSYARCurrentAudio.onended = null;
+    studyHubSYARCurrentAudio.onerror = null;
+    try { studyHubSYARCurrentAudio.pause(); } catch (_) {}
+    studyHubSYARCurrentAudio = null;
+  }
+  if (studyHubSYARCurrentAudioUrl) {
+    URL.revokeObjectURL(studyHubSYARCurrentAudioUrl);
+    studyHubSYARCurrentAudioUrl = null;
+  }
+}
 function studyHubSYARStopAudio() {
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  studyHubSYARReleaseAudio();
   studyHubSYARCurrentUtterance = null;
   studyHubSYARSetSpeaking(false);
 }
 function studyHubSYARFinishSpeech(message) {
   studyHubSYARCurrentUtterance = null;
+  studyHubSYARReleaseAudio();
   studyHubSYARSetSpeaking(false);
   studyHubSYARVoiceResumeAfterSpeech();
   studyHubSYARSetReplyExpression(message);
   if (studyHubAIStatusText) studyHubAIStatusText.textContent = "Syar sedia membantu kamu.";
   studyHubSYARScheduleIdlePrompt();
 }
-function studyHubSYARSpeakReply(message) {
-  studyHubSYARVoicePauseForSpeech();
-  const speechText = studyHubSYARCleanForSpeech(message).slice(0, 1000);
-  if (!speechText) {
-    studyHubSYARVoiceResumeAfterSpeech();
-    return;
-  }
+function studyHubSYARSpeakWithBrowser(message, speechText) {
   if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
     if (studyHubAIStatusText) studyHubAIStatusText.textContent = "Fungsi suara tidak disokong oleh pelayar ini. Jawapan Syar masih tersedia dalam bentuk teks.";
     studyHubSYARVoiceResumeAfterSpeech();
     return;
   }
   window.speechSynthesis.cancel();
-  clearTimeout(studyHubSYARIdleTimer);
   const utterance = new SpeechSynthesisUtterance(speechText);
   utterance.lang = "ms-MY";
   utterance.rate = 0.95;
@@ -2412,11 +2422,67 @@ function studyHubSYARSpeakReply(message) {
   };
   try {
     window.speechSynthesis.speak(utterance);
-  } catch (error) {
+  } catch (_) {
     studyHubSYARCurrentUtterance = null;
     studyHubSYARSetSpeaking(false);
     studyHubSYARVoiceResumeAfterSpeech();
-    if (studyHubAIStatusText) studyHubAIStatusText.textContent = "Suara pelayar tidak dapat dimulakan. Jawapan Syar masih tersedia dalam bentuk teks.";
+    if (studyHubAIStatusText) studyHubAIStatusText.textContent = "Suara tidak dapat dimulakan. Jawapan Syar masih tersedia dalam bentuk teks.";
+  }
+}
+async function studyHubSYARSpeakReply(message) {
+  studyHubSYARVoicePauseForSpeech();
+  const speechText = studyHubSYARCleanForSpeech(message).slice(0, 1000);
+  if (!speechText) {
+    studyHubSYARVoiceResumeAfterSpeech();
+    return;
+  }
+  clearTimeout(studyHubSYARIdleTimer);
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  studyHubSYARReleaseAudio();
+  studyHubSYARCurrentUtterance = null;
+
+  // ElevenLabs digunakan untuk pelajar yang telah log masuk dan diluluskan.
+  // Sesi tetamu atau kegagalan rangkaian kekal menggunakan suara terbina dalam pelayar.
+  if (!studentAccessToken || !studentApproved) {
+    studyHubSYARSpeakWithBrowser(message, speechText);
+    return;
+  }
+  try {
+    const response = await fetch(STUDYHUB_SYAR_TTS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + studentAccessToken
+      },
+      body: JSON.stringify({ text: speechText })
+    });
+    if (!response.ok) throw new Error("TTS request failed");
+    const audioBlob = await response.blob();
+    if (!audioBlob.size || !audioBlob.type.includes("audio")) throw new Error("Invalid audio response");
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    studyHubSYARCurrentAudioUrl = audioUrl;
+    studyHubSYARCurrentAudio = audio;
+    audio.onplay = () => {
+      if (studyHubSYARCurrentAudio !== audio) return;
+      studyHubSYARSetSpeaking(true);
+      if (studyHubAIStatusText) studyHubAIStatusText.textContent = "Syar sedang bercakap...";
+    };
+    audio.onended = () => {
+      if (studyHubSYARCurrentAudio !== audio) return;
+      studyHubSYARFinishSpeech(message);
+    };
+    audio.onerror = () => {
+      if (studyHubSYARCurrentAudio !== audio) return;
+      studyHubSYARReleaseAudio();
+      studyHubSYARSetSpeaking(false);
+      studyHubSYARSpeakWithBrowser(message, speechText);
+    };
+    await audio.play();
+  } catch (_) {
+    studyHubSYARReleaseAudio();
+    studyHubSYARSetSpeaking(false);
+    studyHubSYARSpeakWithBrowser(message, speechText);
   }
 }
 const STUDYHUB_SYAR_ACTIONS = Object.freeze([
