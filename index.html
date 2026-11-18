@@ -2704,7 +2704,7 @@ function studyHubSYARVoiceNormalize(text) {
 function studyHubSYARVoiceHandleWake(transcript) {
   const clean = studyHubSYARVoiceNormalize(transcript);
   // Terima variasi sebutan dan salah transkripsi lazim bagi nama Syar.
-  const match = clean.match(/\b(?:hey|hai|hi)\s+(?:syar|sya|syah|share)\b/);
+  const match = clean.match(/\b(?:hey|hai|hi|hei)\s+(?:syar|sya|syah|share|sher|sye|sha|saya)\b/);
   if (!match) return false;
   const remainder = clean.slice(match.index + match[0].length).trim();
   studyHubSYARVoiceStopRecognition();
@@ -2770,6 +2770,11 @@ function studyHubSYARVoiceInit() {
       });
       for (const candidate of candidates) {
         if (studyHubSYARVoiceHandleWake(candidate)) return;
+      }
+      // Paparkan hasil yang didengar apabila frasa panggilan belum sepadan.
+      const finalResult = results.some(result => result.isFinal);
+      if (finalResult && transcript) {
+        studyHubSYARVoiceSetStatus("Saya dengar: “" + transcript + "”. Sebut “Hai Syar” sekali lagi.");
       }
       return;
     }
