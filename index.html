@@ -2478,6 +2478,24 @@ function studyHubSYARRunIntent(intent) {
   return "Saya tidak dapat membuka halaman itu sekarang. Sila semak akses akaun anda.";
 }
 
+function studyHubSYARGetPageContext() {
+  const activePage = document.querySelector(".page.active");
+  if (!activePage) return "Halaman semasa: tidak dikenal pasti.";
+  const pageNames = {
+    home:"Halaman Utama",
+    tutor:"Tutor AI",
+    profile:"Profil Saya",
+    students:"Nama Pelajar",
+    bank:"Bank Soalan",
+    quiz:"Kuiz Interaktif",
+    leaderboard:"Papan Kedudukan",
+    about:"Tentang StudyHub"
+  };
+  const pageId = String(activePage.id || "").replace(/^page-/, "");
+  const pageName = pageNames[pageId] || activePage.querySelector("h1,h2")?.textContent?.trim() || "Halaman StudyHub";
+  return "Konteks halaman StudyHub semasa: " + pageName + ". Jika soalan pengguna berkaitan halaman ini, gunakan konteks tersebut. Jika tidak berkaitan, jawab seperti biasa.";
+}
+
 async function studyHubSYARSendMessage(rawMessage) {
   const message = String(rawMessage || "").trim();
   if (!message || studyHubSYARChatBusy) return;
@@ -2522,7 +2540,7 @@ async function studyHubSYARSendMessage(rawMessage) {
     const response = await fetch(STUDYHUB_SYAR_CHAT_URL,{
       method:"POST",
       headers:requestHeaders,
-      body:JSON.stringify({messages:studyHubSYARChatHistory})
+      body:JSON.stringify({messages:studyHubSYARChatHistory.map((item,index) => index === studyHubSYARChatHistory.length - 1 && item.role === "user" ? {...item,content:"[" + studyHubSYARGetPageContext() + "]\\n" + item.content} : item)})
     });
     const result = await response.json().catch(()=>({}));
     if (!response.ok) throw new Error(result.error || "Syar belum dapat membalas. Cuba lagi.");
