@@ -2704,7 +2704,7 @@ function studyHubSYARVoiceNormalize(text) {
 function studyHubSYARVoiceHandleWake(transcript) {
   const clean = studyHubSYARVoiceNormalize(transcript);
   // Terima variasi sebutan dan salah transkripsi lazim bagi nama Syar.
-  const match = clean.match(/\b(?:hey|hai|hi|hei)\s+(?:syar|sya|syah|share|sher|sye|sha|saya)\b/);
+  const match = clean.match(/\b(?:hey|hai|hi|hei)\s+(?:syar|sya|syah|share|sher|sye|sha|saya)\b|\b(?:aisyah|aisyat|aisya|aisha|aysha)\b/);
   if (!match) return false;
   const remainder = clean.slice(match.index + match[0].length).trim();
   studyHubSYARVoiceStopRecognition();
